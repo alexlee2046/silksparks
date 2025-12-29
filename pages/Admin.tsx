@@ -3,6 +3,7 @@ import { Screen, NavProps } from '../types';
 import { motion } from 'framer-motion';
 import { GlassCard } from '../components/GlassCard';
 import { GlowButton } from '../components/GlowButton';
+import { supabase } from '../services/supabase';
 
 const AdminLayout: React.FC<{ title: string; children: React.ReactNode; setScreen: (s: Screen) => void }> = ({ title, children, setScreen }) => (
   <motion.div
@@ -145,54 +146,75 @@ const ProviderCard = ({ name, icon, connected }: any) => (
   </div>
 );
 
-export const Currency: React.FC<NavProps> = ({ setScreen }) => (
-  <AdminLayout title="Currency & Localization" setScreen={setScreen}>
-    <GlassCard className="p-8 border-white/5">
-      <h2 className="text-xl font-bold text-white mb-8 font-display flex items-center gap-2">
-        <span className="text-primary">✦</span> General Preferences
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-3">
-          <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">Base Store Currency</label>
-          <div className="relative">
-            <select className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white appearance-none outline-none focus:border-primary/50 transition-colors cursor-pointer">
-              <option>USD - United States Dollar ($)</option>
-              <option>EUR - Euro (€)</option>
-              <option>GBP - British Pound (£)</option>
-            </select>
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/40 pointer-events-none">expand_more</span>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">Primary Language</label>
-          <div className="relative">
-            <select className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white appearance-none outline-none focus:border-primary/50 transition-colors cursor-pointer">
-              <option>English (Universal)</option>
-              <option>Chinese (Simplified)</option>
-              <option>French (Standard)</option>
-            </select>
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/40 pointer-events-none">expand_more</span>
-          </div>
-        </div>
-      </div>
-    </GlassCard>
+export const Currency: React.FC<NavProps> = ({ setScreen }) => {
+  const [currencies, setCurrencies] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-    <GlassCard className="overflow-hidden border-white/5 p-0">
-      <div className="p-8 border-b border-white/5 flex justify-between items-center">
-        <h2 className="text-xl font-bold text-white font-display">Active Multi-Currencies</h2>
-        <button className="text-[10px] font-bold text-primary uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2">
-          <span className="material-symbols-outlined text-sm">add</span> Add Currency
-        </button>
-      </div>
-      <div className="divide-y divide-white/5">
-        <CurrencyRow name="United States Dollar" code="USD" rate="1.0000" defaultC />
-        <CurrencyRow name="Euro" code="EUR" rate="0.9245" />
-        <CurrencyRow name="British Pound" code="GBP" rate="0.7892" />
-        <CurrencyRow name="Chinese Yuan" code="CNY" rate="7.2450" />
-      </div>
-    </GlassCard>
-  </AdminLayout>
-);
+  React.useEffect(() => {
+    const fetchCurrencies = async () => {
+      const { data, error } = await supabase
+        .from('currencies')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (!error && data) {
+        setCurrencies(data);
+      }
+      setLoading(false);
+    };
+    fetchCurrencies();
+  }, []);
+
+  return (
+    <AdminLayout title="Currency & Localization" setScreen={setScreen}>
+      <GlassCard className="p-8 border-white/5">
+        <h2 className="text-xl font-bold text-white mb-8 font-display flex items-center gap-2">
+          <span className="text-primary">✦</span> General Preferences
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-3">
+            <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">Base Store Currency</label>
+            <div className="relative">
+              <select className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white appearance-none outline-none focus:border-primary/50 transition-colors cursor-pointer">
+                {currencies.map(c => (
+                  <option key={c.code} selected={c.is_default}>{c.code} - {c.name}</option>
+                ))}
+              </select>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/40 pointer-events-none">expand_more</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">Primary Language</label>
+            <div className="relative">
+              <select className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white appearance-none outline-none focus:border-primary/50 transition-colors cursor-pointer">
+                <option>English (Universal)</option>
+                <option>Chinese (Simplified)</option>
+                <option>French (Standard)</option>
+              </select>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/40 pointer-events-none">expand_more</span>
+            </div>
+          </div>
+        </div>
+      </GlassCard>
+
+      <GlassCard className="overflow-hidden border-white/5 p-0">
+        <div className="p-8 border-b border-white/5 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white font-display">Active Multi-Currencies</h2>
+          <button className="text-[10px] font-bold text-primary uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2">
+            <span className="material-symbols-outlined text-sm">add</span> Add Currency
+          </button>
+        </div>
+        <div className="divide-y divide-white/5">
+          {loading ? (
+            <div className="p-10 text-center text-white/20 text-xs tracking-widest uppercase">Aligning cosmic rates...</div>
+          ) : currencies.map(c => (
+            <CurrencyRow key={c.id} name={c.name} code={c.code} rate={c.rate.toFixed(4)} defaultC={c.is_default} />
+          ))}
+        </div>
+      </GlassCard>
+    </AdminLayout>
+  );
+};
 
 const CurrencyRow = ({ name, code, rate, defaultC }: any) => (
   <div className="grid grid-cols-12 gap-4 px-8 py-5 items-center hover:bg-white/5 transition-all duration-300 group">
@@ -217,33 +239,54 @@ const CurrencyRow = ({ name, code, rate, defaultC }: any) => (
   </div>
 );
 
-export const Shipping: React.FC<NavProps> = ({ setScreen }) => (
-  <AdminLayout title="Shipping Rate Templates" setScreen={setScreen}>
-    <div className="grid grid-cols-1 gap-8">
-      <GlassCard className="overflow-hidden border-white/5 p-0">
-        <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold text-white font-display">Global Shipping Profile</h2>
-            <p className="text-sm text-white/40 font-light flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm">inventory_2</span> 42 products active • <span className="material-symbols-outlined text-sm">public</span> 3 shipping zones
-            </p>
+export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
+  const [zones, setZones] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchShipping = async () => {
+      const { data, error } = await supabase
+        .from('shipping_zones')
+        .select('*, shipping_rates(*)');
+
+      if (!error && data) {
+        setZones(data);
+      }
+      setLoading(false);
+    };
+    fetchShipping();
+  }, []);
+
+  return (
+    <AdminLayout title="Shipping Rate Templates" setScreen={setScreen}>
+      <div className="grid grid-cols-1 gap-8">
+        <GlassCard className="overflow-hidden border-white/5 p-0">
+          <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold text-white font-display">Global Shipping Profile</h2>
+              <p className="text-sm text-white/40 font-light flex items-center gap-2">
+                <span className="material-symbols-outlined text-sm">inventory_2</span> {zones.length * 10} products active • <span className="material-symbols-outlined text-sm">public</span> {zones.length} shipping zones
+              </p>
+            </div>
+            <GlowButton variant="secondary" className="h-10 text-xs" icon="add">New Profile</GlowButton>
           </div>
-          <GlowButton variant="secondary" className="h-10 text-xs" icon="add">New Profile</GlowButton>
-        </div>
-        <div className="p-8 space-y-8">
-          <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm text-primary">public</span> Configured Zones
-          </h3>
-          <div className="grid grid-cols-1 gap-6">
-            <ShippingZone name="Domestic - North America" rates={[{ name: 'Standard (3-5 Days)', price: '$8.00' }, { name: 'Express (1-2 Days)', price: 'Free' }]} />
-            <ShippingZone name="Mainland China / Asia Pacific" rates={[{ name: 'Intl Saver (2-3 Weeks)', price: '$18.50' }, { name: 'Aramax Direct', price: '$45.00' }]} />
-            <ShippingZone name="European Union" rates={[{ name: 'Standard Flat Rate', price: 'Free' }]} />
+          <div className="p-8 space-y-8">
+            <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm text-primary">public</span> Configured Zones
+            </h3>
+            <div className="grid grid-cols-1 gap-6">
+              {loading ? (
+                <div className="p-10 text-center text-white/20 text-xs tracking-widest uppercase">Calculating cosmic distances...</div>
+              ) : zones.map(zone => (
+                <ShippingZone key={zone.id} name={zone.name} rates={zone.shipping_rates.map((r: any) => ({ name: r.name, price: `$${r.price.toFixed(2)}` }))} />
+              ))}
+            </div>
           </div>
-        </div>
-      </GlassCard>
-    </div>
-  </AdminLayout>
-);
+        </GlassCard>
+      </div>
+    </AdminLayout>
+  );
+};
 
 const ShippingZone = ({ name, rates }: any) => (
   <div className="border border-white/5 rounded-2xl bg-black/20 overflow-hidden group hover:border-primary/20 transition-all duration-300">

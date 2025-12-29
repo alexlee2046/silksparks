@@ -4,11 +4,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard } from '../components/GlassCard';
 import { GlowButton } from '../components/GlowButton';
 import { useUser } from '../context/UserContext';
-
-// Mock function
-const generateId = () => Math.random().toString(36).substr(2, 9);
+import { supabase } from '../services/supabase';
 
 export const Experts: React.FC<NavProps> = ({ setScreen }) => {
+  const [experts, setExperts] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchExperts = async () => {
+      const { data, error } = await supabase
+        .from('experts')
+        .select('*')
+        .order('rating', { ascending: false });
+
+      if (!error && data) {
+        setExperts(data);
+      }
+      setLoading(false);
+    };
+    fetchExperts();
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -19,6 +35,10 @@ export const Experts: React.FC<NavProps> = ({ setScreen }) => {
 
   return (
     <div className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-10 py-10 bg-background-dark min-h-screen">
+      {/* Back Button */}
+      <button onClick={() => setScreen(Screen.HOME)} className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group w-fit mb-8">
+        <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span> Back to Home
+      </button>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -62,32 +82,45 @@ export const Experts: React.FC<NavProps> = ({ setScreen }) => {
         </motion.aside>
 
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
           className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          <ExpertCard name="Madame Luna" title="Vedic Astrologer" rating="5.0" reviews="124" price="$4.99/min" tags={['Vedic', 'Career', 'Love']} image="https://lh3.googleusercontent.com/aida-public/AB6AXuBZ3QcnzwRBOcqrDirRwX-55X8MrEPSe9cmK7bcZCcgdWLgTy8ei-ZTccTrYTk29pUG1J_9nGewTpAa9cFVoZdUT8F1l4A5l0qp-zXz4KeMlfccSqmZuJfkBNddUs37QmmV97qc57JV5G5bmhzrDFjryW6-FmCCvTPnAmms_UaV9dbbAVqILt7GoVChJGRKfMaHxuH3Jb4tqBXEq1zGmpUzsTPkzLMWjeFed37h5GDhg23VS4Qe2hltjMKnHjGgM0wUDzEkvO25cfuW" onBook={() => setScreen(Screen.BOOKING)} />
-          <ExpertCard name="Dr. Orion Star" title="Numerologist & Guide" rating="4.8" reviews="89" price="$3.50/min" tags={['Numerology', 'Life Path']} image="https://lh3.googleusercontent.com/aida-public/AB6AXuCxw22VgA5Cvl-A6GU7xjeBDwwUFB5axXfjKNC-U-8MzCH-p6_xaLq5Cwm_KpA4WQIL8U3T2Meus356t2g9O_P4YkFJH1_6078o5d2ED_-hE1QY7nwZ8CuqczQlYzm9C4g-nDmKcPVDIsJTN1e6XdBXplNI9mUWCeFGKbVmPfYKMA0kYDv2n062E9Vkyk0CABEnw8XcmZFzr5sr6ArY2gjzWMFLm7UXpkByGE22pydE1GTp5C_5p2wEzgSZtk3TR0GUVk8R9g3e2MIf" onBook={() => setScreen(Screen.BOOKING)} />
-          <ExpertCard name="Selene Mystic" title="Intuitive Tarot Reader" rating="4.9" reviews="210" price="$5.25/min" tags={['Tarot', 'Relationships', 'Clarity']} image="https://lh3.googleusercontent.com/aida-public/AB6AXuDfu8drFjzFAoN_gw744HmZL1_-4gTbuQmaXzsVGwaw1xF2zN9xBve3D7WYrniEqwvU9svW_jqyislzCVgnjlpThmLCEsk6aGTCijwpluCjNNmHp7YEzMUpO3FPBRLTxFFvbhBE5LV6Cjx7GjYjg_DpsYBRvAw5EmPEWzXYdqhJ_crpzC7EHmKpTfjqZjW9Te4k4BnWFMnTp5FAVXykzSNopdipnaHqdE9WDoXVSlCkMzbtmh1nFfe4HViX8FgiS1-EQdy7cGwguDvO" onBook={() => setScreen(Screen.BOOKING)} />
+          {loading ? (
+            <div className="col-span-full py-20 text-center text-white/20 tracking-widest uppercase italic">Searching the cosmos for available guides...</div>
+          ) : experts.map((expert, index) => (
+            <ExpertCard
+              key={expert.id}
+              index={index}
+              name={expert.name}
+              title={expert.title}
+              rating={expert.rating.toFixed(1)}
+              reviews={expert.review_count}
+              price={`$${expert.price_per_min}/min`}
+              tags={expert.tags || []}
+              image={expert.image_url}
+              isOnline={expert.is_online}
+              onBook={() => setScreen(Screen.BOOKING)}
+            />
+          ))}
         </motion.div>
       </div>
     </div>
   );
 };
 
-const ExpertCard = ({ name, title, rating, reviews, price, tags, image, onBook }: any) => (
-  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+const ExpertCard = ({ name, title, rating, reviews, price, tags, image, isOnline, onBook, index }: any) => (
+  <div className="animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
     <GlassCard hoverEffect interactive className="flex flex-col h-full group p-0 overflow-hidden bg-surface-dark/40">
       <div className="relative aspect-[4/3] w-full bg-cover bg-top group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url('${image}')` }}>
         <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-transparent to-transparent opacity-90"></div>
-        <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-green-400">Online</span>
-        </div>
+        {isOnline && (
+          <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-green-400">Online</span>
+          </div>
+        )}
         <div className="absolute bottom-3 right-3 bg-primary text-background-dark font-bold text-xs px-2 py-1 rounded shadow-lg shadow-black/50">{price}</div>
       </div>
 
@@ -121,7 +154,7 @@ const ExpertCard = ({ name, title, rating, reviews, price, tags, image, onBook }
         </div>
       </div>
     </GlassCard>
-  </motion.div>
+  </div>
 );
 
 
@@ -129,6 +162,10 @@ export const Booking: React.FC<NavProps> = ({ setScreen }) => {
   return (
     <div className="flex-1 bg-silk-pattern relative bg-background-dark min-h-screen">
       <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-12 md:py-16">
+        {/* Back Button */}
+        <button onClick={() => setScreen(Screen.EXPERTS)} className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group w-fit mb-8">
+          <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span> Back to Experts
+        </button>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -388,9 +425,8 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
 export const Delivery: React.FC<NavProps> = ({ setScreen }) => {
   const { addOrder } = useUser();
 
-  const handleSelect = (deliveryType: string) => {
+  const handleSelect = async (deliveryType: string) => {
     const newOrder: any = {
-      id: generateId(),
       date: new Date(),
       items: [
         {
@@ -405,7 +441,7 @@ export const Delivery: React.FC<NavProps> = ({ setScreen }) => {
       status: 'pending'
     };
 
-    addOrder(newOrder);
+    await addOrder(newOrder);
     setScreen(Screen.USER_DASHBOARD);
   };
 

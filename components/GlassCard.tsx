@@ -39,10 +39,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     const cursorStyles = interactive ? "cursor-pointer" : "";
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+        <div
             className={cn(baseStyles, intensityStyles[intensity], hoverStyles, cursorStyles, className)}
             onClick={onClick}
         >
@@ -53,6 +50,6 @@ export const GlassCard: React.FC<GlassCardProps> = ({
             <div className="relative z-10">
                 {children}
             </div>
-        </motion.div>
+        </div>
     );
 };

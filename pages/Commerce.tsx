@@ -3,8 +3,27 @@ import { Screen, NavProps } from '../types';
 import { motion } from 'framer-motion';
 import { GlassCard } from '../components/GlassCard';
 import { GlowButton } from '../components/GlowButton';
+import { supabase } from '../services/supabase';
 
 export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
+  const [products, setProducts] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setProducts(data);
+      }
+      setLoading(false);
+    };
+    fetchProducts();
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -14,12 +33,16 @@ export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 1, y: 0 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
 
   return (
     <div className="flex-1 w-full max-w-[1440px] mx-auto p-4 lg:p-10 flex flex-col gap-8 bg-background-dark min-h-screen">
+      {/* Back Button */}
+      <button onClick={() => setScreen(Screen.HOME)} className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group w-fit">
+        <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span> Back to Home
+      </button>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -64,7 +87,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
 
         <div className="flex-1 w-full">
           <div className="flex justify-between items-center mb-6">
-            <p className="text-text-muted text-sm"><span className="text-white font-bold">124</span> artifacts found</p>
+            <p className="text-text-muted text-sm"><span className="text-white font-bold">{products.length}</span> artifacts found</p>
             <div className="flex items-center gap-3">
               <button className="flex items-center gap-2 px-4 py-2 bg-surface-dark/50 border border-white/10 rounded-full text-sm text-white hover:bg-white/5 transition-colors">
                 <span>Sort: Newest</span>
@@ -74,62 +97,22 @@ export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
           </div>
 
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
             className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
           >
-            <ShopItem
-              variants={itemVariants}
-              title="Obsidian Protection Bracelet"
-              price="$45.00"
-              element="Earth"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuA4DE-jq71h8_QHt2yenr9r7tyKtP8FrpOaR9K8X3OS1qN4pUf9pnqUCDaPJNPK_xzKYusszDPgS-86ya7sjUZGrqCRJ3NEed7CqrIRA24ZZ0xG2Cc2YgwXAw1-FrT7QvhVKQ1qW_7yg_QS9hLZRp4T9PEvxi4EAfpbgUIhVXIuPqyAon_etxghHkQri3_hKYWDq7iL-xc9PKjxbm10QlYh7dlicgnev1pDO00olj_uZAvE2dv-YpZ6IMX53yi7sjYIPdz4WjWdWTvE"
-              badge="Bestseller"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-            />
-            <ShopItem
-              variants={itemVariants}
-              title="Rose Quartz Love Candle"
-              price="$32.00"
-              element="Fire"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuAvRmtApVlpulQQccjvUIgodevhDasrqJ9CCdWteJOp5qTN99NTy2LYFcEv-ILeVkHKqb_kHTIaTH_rHY_O7_HEwcPfkI6Pkmsmd1bfQGTVJcihWN3oULv842fg4FUebFudwLI0jhXLUv5iHwGmwMWo82s9zdsgWSePPCul0igiu3ABN1r8hqWhkxxm_wvdm0AWJNmN-CesbQZ0mVr2zgEwSrIALMaRUSM3xvqYqku_Lck6TUs30UgshMA2mazG7K7OQOB2WwgHVG0P"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-            />
-            <ShopItem
-              variants={itemVariants}
-              title="The Starseeker Tarot"
-              price="$60.00"
-              element="Spirit"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuCOfmNXXThcs-sxapcoNy42Jo6MxgrPsI2XKYU1-34mNBOxSowB0QxjWOxLrdJ4RGg4GFCWUFjxqXYKuYChYwI5Jtj35lpvLS5FMEjVmlifzja0PAna0nZ_DBXGBCAfkUBNRzSi8ojP4TpMVLuWcSSGat9ufEBD3tTI9IWvdYMM5qgv4gFbJfXdiMUE1XW_Cs0ICTCGKyacSV1N1Ki8WiHEeGeuHIFBWifqLy35_nQr_MY-7CtoWHFLmyYc4fPQecqguefb7qI3ZfRv"
-              badge="New"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-            />
-            <ShopItem
-              variants={itemVariants}
-              title="Amethyst Cluster"
-              price="$28.00"
-              element="Air"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuC6tOFPCVNjvrunWCHIor_I7XMU1DOq0W7DVtVxUhVhk1HU-dDwwJgpdZal06FBhu2-kiUNo5T4eAj2OAtQ51AaGg8kzfH-g_BLYYFTCOiTwJbjFm5Jz2YkIEufFwtKp3rv0Ss0cqDDsoxNzlHs749FSZL6xt8PNQfVzfoTlx5R4mLqkFSOuTlJTeTrBnRWefuf_d50unlE1GkKVzA-3_UwO2xa3t0Jw8RxvIrtg7iqgrnbO6IPBFjJ4K3ynyK6f207fPUNN10XP5kn"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-            />
-            <ShopItem
-              variants={itemVariants}
-              title="Sage Smudge Kit"
-              price="$18.00"
-              element="Earth"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuA-AdY206hxlR83qlVxMD-Q88yN3cd2MKaVK5447XsfcDr1WszvDY3CwDu1c2yyQ2zPWWHv5rtel2iE2vSLNnH42aIT2-ZqH_KEnE2MmiPao1jKJYI0QK7etHDmoXd7a7YXb_t_RqH0uz-jyK536vxYCTc9DqW1sKaeF0DothIBtP0zHUBL1GdczVzVLr4pQpdRl5I35lGZ2BNqjIS7oA7e4XMZy16n4rahvZm0dy45wF3CEJlEQAxhekLXKJAsDSItcazxkcEkN19q"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-            />
-            <ShopItem
-              variants={itemVariants}
-              title="Golden Altar Cloth"
-              price="$25.00"
-              element="Metal"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuAhY5G7Lu8i8SZ0j1jxgPwgZ-EDpJLlFyKeoZrEcN8TLorFjbYgVDjosWTf1ARtuVWbwn1997IhzVYzm4GrEIAT8bj-MJ9Ybg52R4T1ojI5Wk2jly6E27FEOEJucoXLYG0ilqI-y-QSMUtcROIFtzH3sMPHPu67KXcsUfUmKPABQUd3dET7SBSkSRT4MkLoIz8Ig96o9-KtM5X2IuzxYfKG70LZNT3oM6ys3p1ZlrMknI5xoS210T-ZzgBUSLFox6No40ID9S1Mbyoy"
-              badge="Sale"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-            />
+            {loading ? (
+              <div className="col-span-full py-20 text-center text-white/20 tracking-widest uppercase">Summoning mystical artifacts...</div>
+            ) : products.map((product, index) => (
+              <ShopItem
+                key={product.id}
+                index={index}
+                title={product.title}
+                price={`$${product.price.toFixed(2)}`}
+                element={product.element}
+                image={product.image_url}
+                badge={product.badge}
+                onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
+              />
+            ))}
           </motion.div>
         </div>
       </div>
@@ -161,8 +144,12 @@ const FilterSection = ({ title, icon, items }: any) => (
   </div>
 );
 
-const ShopItem = ({ title, price, element, image, badge, onClick, variants }: any) => (
-  <motion.div variants={variants} onClick={onClick}>
+const ShopItem = ({ title, price, element, image, badge, onClick, index }: any) => (
+  <div
+    className="animate-fade-in-up"
+    style={{ animationDelay: `${index * 0.1}s` }}
+    onClick={onClick}
+  >
     <GlassCard hoverEffect interactive className="flex flex-col gap-3 group h-full">
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-surface-dark border border-white/5">
         {badge && <div className="absolute top-3 left-3 z-10"><span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-bold text-white border border-primary/30 uppercase tracking-widest shadow-lg">{badge}</span></div>}
@@ -183,22 +170,35 @@ const ShopItem = ({ title, price, element, image, badge, onClick, variants }: an
         </div>
       </div>
     </GlassCard>
-  </motion.div>
+  </div>
 );
 
-export const ProductDetail: React.FC<NavProps> = () => {
+export const ProductDetail: React.FC<NavProps> = ({ setScreen }) => {
+  const [selectedImage, setSelectedImage] = React.useState(0);
+
+  const images = [
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuBBVcw7kCDLa8cjlN-Cpv6lAWzfEKIStgYXZZteeoIzSDzdGYs_4qE1K5BMv79WJjraNSNzy5Ve0xJ_6HPtAlsBEaAjFS7U0f6NUTXjKyZVOV665EBdL_YGpoGgqzCCOHOFX3u8lUx8KzrhSVuQ4X0Kz601UNyhTIJH_l0WTUT9ARN0BwH1Mbcyl3_osD7AcvrCABsSERr8ZXfANvM0tGO1Hp_Ko68cqEyz8hdGfmpcbKHyhUbzMBT6rhqhc0Gkem4K148akYmdosJ1",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuBBVcw7kCDLa8cjlN-Cpv6lAWzfEKIStgYXZZteeoIzSDzdGYs_4qE1K5BMv79WJjraNSNzy5Ve0xJ_6HPtAlsBEaAjFS7U0f6NUTXjKyZVOV665EBdL_YGpoGgqzCCOHOFX3u8lUx8KzrhSVuQ4X0Kz601UNyhTIJH_l0WTUT9ARN0BwH1Mbcyl3_osD7AcvrCABsSERr8ZXfANvM0tGO1Hp_Ko68cqEyz8hdGfmpcbKHyhUbzMBT6rhqhc0Gkem4K148akYmdosJ1",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuBBVcw7kCDLa8cjlN-Cpv6lAWzfEKIStgYXZZteeoIzSDzdGYs_4qE1K5BMv79WJjraNSNzy5Ve0xJ_6HPtAlsBEaAjFS7U0f6NUTXjKyZVOV665EBdL_YGpoGgqzCCOHOFX3u8lUx8KzrhSVuQ4X0Kz601UNyhTIJH_l0WTUT9ARN0BwH1Mbcyl3_osD7AcvrCABsSERr8ZXfANvM0tGO1Hp_Ko68cqEyz8hdGfmpcbKHyhUbzMBT6rhqhc0Gkem4K148akYmdosJ1"
+  ];
+
   return (
     <div className="flex h-full grow flex-col bg-background-dark min-h-screen">
       <div className="px-4 lg:px-20 xl:px-40 flex flex-1 justify-center py-10">
         <div className="flex flex-col max-w-[1200px] flex-1">
+          {/* Back Button */}
+          <button onClick={() => setScreen(Screen.SHOP_LIST)} className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group w-fit mb-4">
+            <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span> Back to Shop
+          </button>
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex flex-wrap gap-2 px-4 py-2 text-sm mb-6"
           >
-            <span className="text-text-muted hover:text-white cursor-pointer transition-colors">Shop</span>
+            <span onClick={() => setScreen(Screen.SHOP_LIST)} className="text-text-muted hover:text-white cursor-pointer transition-colors">Shop</span>
             <span className="text-text-muted">/</span>
-            <span className="text-text-muted hover:text-white cursor-pointer transition-colors">Candles</span>
+            <span onClick={() => setScreen(Screen.SHOP_LIST)} className="text-text-muted hover:text-white cursor-pointer transition-colors">Candles</span>
             <span className="text-text-muted">/</span>
             <span className="text-white font-medium">The Mystic Oud Candle</span>
           </motion.div>
@@ -211,16 +211,23 @@ export const ProductDetail: React.FC<NavProps> = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden group shadow-2xl border border-white/5"
               >
-                <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBBVcw7kCDLa8cjlN-Cpv6lAWzfEKIStgYXZZteeoIzSDzdGYs_4qE1K5BMv79WJjraNSNzy5Ve0xJ_6HPtAlsBEaAjFS7U0f6NUTXjKyZVOV665EBdL_YGpoGgqzCCOHOFX3u8lUx8KzrhSVuQ4X0Kz601UNyhTIJH_l0WTUT9ARN0BwH1Mbcyl3_osD7AcvrCABsSERr8ZXfANvM0tGO1Hp_Ko68cqEyz8hdGfmpcbKHyhUbzMBT6rhqhc0Gkem4K148akYmdosJ1")' }}></div>
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-all duration-500"
+                  style={{ backgroundImage: `url("${images[selectedImage]}")` }}
+                ></div>
                 <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/10 hover:bg-black/60 transition-colors cursor-pointer">
                   <span className="material-symbols-outlined text-white text-[20px]">play_circle</span>
                   <span className="text-white text-xs font-bold uppercase tracking-wider">Preview Ritual</span>
                 </div>
               </motion.div>
               <div className="flex gap-4 overflow-x-auto pb-2">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className={`w-24 h-24 flex-shrink-0 rounded-lg border-2 ${i === 1 ? 'border-primary' : 'border-transparent'} overflow-hidden cursor-pointer`}>
-                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBVcw7kCDLa8cjlN-Cpv6lAWzfEKIStgYXZZteeoIzSDzdGYs_4qE1K5BMv79WJjraNSNzy5Ve0xJ_6HPtAlsBEaAjFS7U0f6NUTXjKyZVOV665EBdL_YGpoGgqzCCOHOFX3u8lUx8KzrhSVuQ4X0Kz601UNyhTIJH_l0WTUT9ARN0BwH1Mbcyl3_osD7AcvrCABsSERr8ZXfANvM0tGO1Hp_Ko68cqEyz8hdGfmpcbKHyhUbzMBT6rhqhc0Gkem4K148akYmdosJ1" className="w-full h-full object-cover" />
+                {images.map((img, index) => (
+                  <div
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`w-24 h-24 flex-shrink-0 rounded-lg border-2 ${selectedImage === index ? 'border-primary' : 'border-transparent'} overflow-hidden cursor-pointer hover:border-primary/50 transition-colors`}
+                  >
+                    <img src={img} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>

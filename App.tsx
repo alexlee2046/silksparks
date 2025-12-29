@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Screen } from './types';
 import { Layout } from './components/Layouts';
 import { Home } from './pages/Home';
@@ -8,11 +8,32 @@ import { ShopList, ProductDetail } from './pages/Commerce';
 import { Experts, Booking, Intake, Delivery } from './pages/Consultation';
 import { UserDashboard, Archives, Orders } from './pages/UserDashboard';
 import { Payments, Currency, Shipping } from './pages/Admin';
-import { UserProvider } from './context/UserContext';
+import { UserProvider, useUser } from './context/UserContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Auth } from './components/Auth';
 
-const App: React.FC = () => {
-  const [currentScreen, setScreen] = useState<Screen>(Screen.HOME);
+const AppContent: React.FC = () => {
+  const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.HOME);
+  const [showAuth, setShowAuth] = useState(false);
+  const { session, loading } = useUser();
+
+  // 包装 setScreen，在切换页面时自动滚动到顶部
+  const setScreen = useCallback((screen: Screen) => {
+    setCurrentScreen(screen);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full"
+        />
+      </div>
+    );
+  }
 
   const getLayoutType = () => {
     switch (currentScreen) {
@@ -31,6 +52,37 @@ const App: React.FC = () => {
 
   const renderScreen = () => {
     const props = { currentScreen, setScreen };
+
+    // 路由保护逻辑
+    const protectedScreens = [
+      Screen.USER_DASHBOARD, Screen.ARCHIVES, Screen.ORDERS,
+      Screen.ADMIN_PAYMENTS, Screen.ADMIN_CURRENCY, Screen.ADMIN_SHIPPING
+    ];
+
+    if (protectedScreens.includes(currentScreen) && !session) {
+      return (
+        <div className="min-h-screen bg-background-dark flex flex-col items-center justify-center gap-6 p-10 text-center">
+          <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+            <span className="material-symbols-outlined text-4xl">lock</span>
+          </div>
+          <h2 className="text-3xl font-display font-bold text-white uppercase tracking-wider">Access Restricted</h2>
+          <p className="text-white/40 max-w-sm">This area is reserved for seekers. Please sign in to view your cosmic space.</p>
+          <button
+            onClick={() => setShowAuth(true)}
+            className="px-10 py-4 bg-primary text-background-dark font-bold rounded-xl shadow-2xl hover:bg-white transition-all"
+          >
+            Sign In Now
+          </button>
+          <button
+            onClick={() => setScreen(Screen.HOME)}
+            className="text-white/40 text-sm hover:text-white transition-colors"
+          >
+            Return Home
+          </button>
+        </div>
+      );
+    }
+
     switch (currentScreen) {
       case Screen.HOME: return <Home {...props} />;
       case Screen.BIRTH_CHART: return <BirthChart {...props} />;
@@ -54,34 +106,32 @@ const App: React.FC = () => {
   };
 
   return (
-    <UserProvider>
-      <Layout setScreen={setScreen} type={getLayoutType()}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentScreen}
-            initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} // Custom bezier for premium feel
-            className="w-full h-full"
-          >
-            {renderScreen()}
-          </motion.div>
-        </AnimatePresence>
-      </Layout>
-
-      {/* Demo Navigation Helper */}
-      <div className="fixed bottom-4 right-4 z-[1000]">
-        <select
-          className="bg-black text-white text-xs p-2 rounded border border-white/20 opacity-50 hover:opacity-100 transition-opacity"
-          value={currentScreen}
-          onChange={(e) => setScreen(e.target.value as Screen)}
+    <Layout setScreen={setScreen} type={getLayoutType()} onAuthClick={() => setShowAuth(true)}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentScreen}
+          initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full h-full"
         >
-          {Object.values(Screen).map(screen => (
-            <option key={screen} value={screen}>{screen}</option>
-          ))}
-        </select>
-      </div>
+          {renderScreen()}
+        </motion.div>
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAuth && <Auth onClose={() => setShowAuth(false)} />}
+      </AnimatePresence>
+    </Layout>
+
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <UserProvider>
+      <AppContent />
     </UserProvider>
   );
 };

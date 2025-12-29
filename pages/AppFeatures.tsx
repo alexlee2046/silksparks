@@ -508,7 +508,10 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
             </div>
           </div>
           <div className="mt-8 flex justify-center gap-4">
-            <button className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-background-dark font-bold transition-all shadow-[0_0_20px_rgba(244,192,37,0.2)] flex items-center gap-2">
+            <button
+              onClick={() => setScreen(Screen.SHOP_LIST)}
+              className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-background-dark font-bold transition-all shadow-[0_0_20px_rgba(244,192,37,0.2)] flex items-center gap-2"
+            >
               <span className="material-symbols-outlined">shopping_bag</span> Shop Associated Crystals
             </button>
           </div>
