@@ -1,28 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { Screen, NavProps } from '../types';
-import { GeminiService } from '../services/GeminiService';
-import { BirthDataForm } from '../components/BirthDataForm';
-import { useUser } from '../context/UserContext';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from "react";
+import { Screen, NavProps } from "../types";
+import { GeminiService } from "../services/GeminiService";
+import { BirthDataForm } from "../components/BirthDataForm";
+import { useUser } from "../context/UserContext";
+import { motion } from "framer-motion";
 
 export const Home: React.FC<NavProps> = ({ setScreen }) => {
-  const [dailySpark, setDailySpark] = useState<string>("Aligning with the cosmos...");
+  const [dailySpark, setDailySpark] = useState<string>(
+    "Aligning with the cosmos...",
+  );
   const [showForm, setShowForm] = useState(false);
   const { isBirthDataComplete } = useUser();
 
   useEffect(() => {
     const fetchSpark = async () => {
-      const cached = localStorage.getItem('daily_spark');
+      const cached = localStorage.getItem("daily_spark");
       const today = new Date().toDateString();
-      const cachedDate = localStorage.getItem('daily_spark_date');
+      const cachedDate = localStorage.getItem("daily_spark_date");
 
       if (cached && cachedDate === today) {
         setDailySpark(cached);
       } else {
         const spark = await GeminiService.generateDailySpark("Scorpio");
         setDailySpark(spark);
-        localStorage.setItem('daily_spark', spark);
-        localStorage.setItem('daily_spark_date', today);
+        localStorage.setItem("daily_spark", spark);
+        localStorage.setItem("daily_spark_date", today);
       }
     };
     fetchSpark();
@@ -34,9 +36,9 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.3
-      }
-    }
+        delayChildren: 0.3,
+      },
+    },
   };
 
   const itemVariants = {
@@ -44,8 +46,8 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }
-    }
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+    },
   };
 
   return (
@@ -60,19 +62,36 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
         <div className="max-w-[1280px] mx-auto px-4 md:px-10 py-3">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-lg animate-pulse">hotel_class</span>
+              <span className="material-symbols-outlined text-primary text-lg animate-pulse">
+                hotel_class
+              </span>
               <p className="text-white text-sm font-medium leading-tight">
-                <span className="text-primary font-bold">Daily Spark:</span> {dailySpark}
+                <span className="text-primary font-bold">Daily Spark:</span>{" "}
+                {dailySpark}
               </p>
             </div>
-            <button onClick={() => setScreen(Screen.BIRTH_CHART)} className="text-xs sm:text-sm font-bold flex items-center gap-1 text-text-muted hover:text-white transition-colors group">
-              View Horoscope <span className="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            <button
+              onClick={() => setScreen(Screen.BIRTH_CHART)}
+              className="text-xs sm:text-sm font-bold flex items-center gap-1 text-text-muted hover:text-white transition-colors group"
+            >
+              View Horoscope{" "}
+              <span className="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">
+                arrow_forward
+              </span>
             </button>
           </div>
         </div>
       </motion.div>
 
-      {showForm && <BirthDataForm onCancel={() => setShowForm(false)} onComplete={() => { setShowForm(false); setScreen(Screen.BIRTH_CHART); }} />}
+      {showForm && (
+        <BirthDataForm
+          onCancel={() => setShowForm(false)}
+          onComplete={() => {
+            setShowForm(false);
+            setScreen(Screen.BIRTH_CHART);
+          }}
+        />
+      )}
 
       {/* Hero */}
       <section className="relative flex min-h-[70vh] w-full flex-col items-center justify-center py-20 px-4 isolate">
@@ -86,29 +105,53 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
           className="relative z-10 flex max-w-[960px] flex-col items-center gap-10 text-center"
         >
           <div className="flex flex-col items-center gap-6">
-            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 backdrop-blur-md shadow-[0_0_15px_rgba(244,192,37,0.1)]">
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 backdrop-blur-md shadow-[0_0_15px_rgba(244,192,37,0.1)]"
+            >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
-              <span className="text-xs font-bold uppercase tracking-widest text-primary">Spark Engine v2.0 Live</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-primary">
+                Spark Engine v2.0 Live
+              </span>
             </motion.div>
 
-            <motion.h1 variants={itemVariants} className="text-white text-5xl md:text-8xl font-light font-display tracking-tight leading-[1]">
+            <motion.h1
+              data-testid="main-title"
+              variants={itemVariants}
+              className="text-white text-5xl md:text-8xl font-light font-display tracking-tight leading-[1]"
+            >
               Ancient Wisdom <br className="hidden md:block" />
-              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-br from-white via-primary to-amber-200/50 drop-shadow-[0_0_20px_rgba(244,192,37,0.3)]">Artificial Intelligence</span>
+              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-br from-white via-primary to-amber-200/50 drop-shadow-[0_0_20px_rgba(244,192,37,0.3)]">
+                Artificial Intelligence
+              </span>
             </motion.h1>
 
-            <motion.p variants={itemVariants} className="max-w-[600px] text-text-muted text-lg md:text-xl font-light leading-relaxed">
-              Enter the Spark Engine. Decode your stars instantly with our AI-powered astrological interpreter that bridges the gap between mysticism and technology.
+            <motion.p
+              variants={itemVariants}
+              className="max-w-[600px] text-text-muted text-lg md:text-xl font-light leading-relaxed"
+            >
+              Enter the Spark Engine. Decode your stars instantly with our
+              AI-powered astrological interpreter that bridges the gap between
+              mysticism and technology.
             </motion.p>
           </div>
 
-          <motion.div variants={itemVariants} className="w-full max-w-[520px] p-2 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] hover:border-white/20 transition-all duration-300">
+          <motion.div
+            variants={itemVariants}
+            className="w-full max-w-[520px] p-2 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] hover:border-white/20 transition-all duration-300"
+          >
             <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-1 group" onClick={() => setShowForm(true)}>
+              <div
+                className="relative flex-1 group"
+                onClick={() => setShowForm(true)}
+              >
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-muted group-hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">calendar_month</span>
+                  <span className="material-symbols-outlined">
+                    calendar_month
+                  </span>
                 </div>
                 <input
                   type="text"
@@ -120,15 +163,23 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => isBirthDataComplete ? setScreen(Screen.BIRTH_CHART) : setShowForm(true)}
+                onClick={() =>
+                  isBirthDataComplete
+                    ? setScreen(Screen.BIRTH_CHART)
+                    : setShowForm(true)
+                }
                 className="bg-primary hover:bg-primary-hover text-background-dark font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2 whitespace-nowrap"
               >
-                <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  auto_awesome
+                </span>
                 {isBirthDataComplete ? "View My Chart" : "Reveal My Chart"}
               </motion.button>
             </div>
             <p className="mt-3 text-[10px] text-white/30 text-center flex items-center justify-center gap-1 uppercase tracking-widest">
-              <span className="material-symbols-outlined text-[12px]">lock</span>
+              <span className="material-symbols-outlined text-[12px]">
+                lock
+              </span>
               Encrypted & Private
             </p>
           </motion.div>
@@ -170,19 +221,57 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
         <div className="max-w-[1280px] mx-auto flex flex-col gap-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="max-w-xl">
-              <span className="text-primary font-bold tracking-widest uppercase text-xs mb-3 block">The Silk Collection</span>
-              <h2 className="text-white text-3xl md:text-5xl font-light font-display tracking-tight">Artifacts for your journey</h2>
+              <span className="text-primary font-bold tracking-widest uppercase text-xs mb-3 block">
+                The Silk Collection
+              </span>
+              <h2 className="text-white text-3xl md:text-5xl font-light font-display tracking-tight">
+                Artifacts for your journey
+              </h2>
             </div>
-            <button onClick={() => setScreen(Screen.SHOP_LIST)} className="text-white hover:text-primary transition-colors flex items-center gap-2 text-sm font-bold group">
-              View all products <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            <button
+              onClick={() => setScreen(Screen.SHOP_LIST)}
+              className="text-white hover:text-primary transition-colors flex items-center gap-2 text-sm font-bold group"
+            >
+              View all products{" "}
+              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
+                arrow_forward
+              </span>
             </button>
           </div>
 
           <div className="flex overflow-x-auto gap-8 pb-12 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden mask-image-gradient">
-            <ProductCard title="Amethyst Cluster" price="$45.00" desc="Spiritual Clarity & Protection" image="https://lh3.googleusercontent.com/aida-public/AB6AXuDP_bOhhc4Qhi372N4ioSuuVYgGCi6TW47C5lsipQPgu03yvsFASSxchHfbCkDmGCLoiu47AnTebH1rd07SeZodgMZ95G-MCC98JvDG6bfqv8P7_wdBgl69J6uoLEe9Iu5N3CfEck0yH_5z7qJDoiG0LxKpUdT04CuIXJxzOIWaMP0jX8F3MYq6uetECncxUOI3qmruDpTcuQYyacZWCct9xUq89A_N6YubdHPiEEe0Q7jElnj1O3YXVeT2tOsB3qGi2H4hvvJ-EWat" onClick={() => setScreen(Screen.PRODUCT_DETAIL)} index={0} />
-            <ProductCard title="Golden Tarot Deck" price="$32.00" desc="Divination Tool, Limited Ed." image="https://lh3.googleusercontent.com/aida-public/AB6AXuCjitvq9kRFe5CuRifKd6XQXh1LXQRr1fXoy_IKJveYKScvcD9_AniPcIvWpjno-w6JeQCpEryUuQpR_37v-bRA1hbg3YaUEz0PhOnw4zRrDMFcJzdeTDsvHWQWHRP1youUaRsJySNHBdlTYNUId5J99pskk7aoezdWY927fJ8zuJX_UPwjONUocANU29YLZGcr8QLx6fTJN8t66UTLNjMc7tcokl_WVh0Zi5CNS9w7ENRBTxJnefOf7_b7TXJL4PP3JhuOn1VaZApA" onClick={() => setScreen(Screen.PRODUCT_DETAIL)} index={1} />
-            <ProductCard title="Sage Bundle" price="$12.00" desc="Cleansing & Purification" image="https://lh3.googleusercontent.com/aida-public/AB6AXuBk3poV6quSXOoNErUgmqhtfis7nYaRN_n2urnfm51EGatpRyUph1c9O-semyeWwN_zV3RSmfoWPee_WhODcfQPMXJ6_wunKWjRteFm8kd-5pzmrtB9dhjHDzoTguzysDjEYcf6_SqRqF7UG7QgEn8ZeU06HRRMccexpzMqJgwUlIQ5DMK0TkYEwU6jRPTW9vVuvqg" onClick={() => setScreen(Screen.PRODUCT_DETAIL)} index={2} />
-            <ProductCard title="Moonstone Pendant" price="$55.00" desc="Intuition & Dreams" image="https://lh3.googleusercontent.com/aida-public/AB6AXuAzd5B9TSFjJHvoO2Ugw-WTMlOpKYfopG8DNLyqr7Q4EG7ETvB4U2G4mTB12Ym8Ez3UzokdE8NrM1GRyRl7KCLTkoGPDyGUps5fFY13m-73YX2yAlgFUegofFABEZ5UAuLdh-kigNKDvfT0ZUqQ2_RFH6l4M_daBpt2v3QAV47hTroa8GKmzJ4TrFcgzYqVxBVUUWTKQFTruqdmSXHWT_Ii5o0rL6fBAm0Y8DZqc25PqoyipKx66LdfOCaPK0W5G4pl_2e_yqQmWzUY" onClick={() => setScreen(Screen.PRODUCT_DETAIL)} index={3} />
+            <ProductCard
+              title="Amethyst Cluster"
+              price="$45.00"
+              desc="Spiritual Clarity & Protection"
+              image="https://lh3.googleusercontent.com/aida-public/AB6AXuDP_bOhhc4Qhi372N4ioSuuVYgGCi6TW47C5lsipQPgu03yvsFASSxchHfbCkDmGCLoiu47AnTebH1rd07SeZodgMZ95G-MCC98JvDG6bfqv8P7_wdBgl69J6uoLEe9Iu5N3CfEck0yH_5z7qJDoiG0LxKpUdT04CuIXJxzOIWaMP0jX8F3MYq6uetECncxUOI3qmruDpTcuQYyacZWCct9xUq89A_N6YubdHPiEEe0Q7jElnj1O3YXVeT2tOsB3qGi2H4hvvJ-EWat"
+              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
+              index={0}
+            />
+            <ProductCard
+              title="Golden Tarot Deck"
+              price="$32.00"
+              desc="Divination Tool, Limited Ed."
+              image="https://lh3.googleusercontent.com/aida-public/AB6AXuCjitvq9kRFe5CuRifKd6XQXh1LXQRr1fXoy_IKJveYKScvcD9_AniPcIvWpjno-w6JeQCpEryUuQpR_37v-bRA1hbg3YaUEz0PhOnw4zRrDMFcJzdeTDsvHWQWHRP1youUaRsJySNHBdlTYNUId5J99pskk7aoezdWY927fJ8zuJX_UPwjONUocANU29YLZGcr8QLx6fTJN8t66UTLNjMc7tcokl_WVh0Zi5CNS9w7ENRBTxJnefOf7_b7TXJL4PP3JhuOn1VaZApA"
+              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
+              index={1}
+            />
+            <ProductCard
+              title="Sage Bundle"
+              price="$12.00"
+              desc="Cleansing & Purification"
+              image="https://lh3.googleusercontent.com/aida-public/AB6AXuBk3poV6quSXOoNErUgmqhtfis7nYaRN_n2urnfm51EGatpRyUph1c9O-semyeWwN_zV3RSmfoWPee_WhODcfQPMXJ6_wunKWjRteFm8kd-5pzmrtB9dhjHDzoTguzysDjEYcf6_SqRqF7UG7QgEn8ZeU06HRRMccexpzMqJgwUlIQ5DMK0TkYEwU6jRPTW9vVuvqg"
+              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
+              index={2}
+            />
+            <ProductCard
+              title="Moonstone Pendant"
+              price="$55.00"
+              desc="Intuition & Dreams"
+              image="https://lh3.googleusercontent.com/aida-public/AB6AXuAzd5B9TSFjJHvoO2Ugw-WTMlOpKYfopG8DNLyqr7Q4EG7ETvB4U2G4mTB12Ym8Ez3UzokdE8NrM1GRyRl7KCLTkoGPDyGUps5fFY13m-73YX2yAlgFUegofFABEZ5UAuLdh-kigNKDvfT0ZUqQ2_RFH6l4M_daBpt2v3QAV47hTroa8GKmzJ4TrFcgzYqVxBVUUWTKQFTruqdmSXHWT_Ii5o0rL6fBAm0Y8DZqc25PqoyipKx66LdfOCaPK0W5G4pl_2e_yqQmWzUY"
+              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
+              index={3}
+            />
           </div>
         </div>
       </section>
@@ -196,12 +285,14 @@ const FeatureCard = ({ icon, title, desc, action, onClick, index }: any) => (
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ delay: index * 0.1, duration: 0.5 }}
-    whileHover={{ y: -5, borderColor: 'rgba(244, 192, 37, 0.4)' }}
+    whileHover={{ y: -5, borderColor: "rgba(244, 192, 37, 0.4)" }}
     className="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-8 backdrop-blur-sm transition-colors cursor-pointer"
     onClick={onClick}
   >
     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-700">
-      <span className="material-symbols-outlined text-[80px] text-primary">{icon}</span>
+      <span className="material-symbols-outlined text-[80px] text-primary">
+        {icon}
+      </span>
     </div>
     <div className="flex flex-col gap-6 relative z-10">
       <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
@@ -212,7 +303,10 @@ const FeatureCard = ({ icon, title, desc, action, onClick, index }: any) => (
         <p className="text-text-muted text-base leading-relaxed">{desc}</p>
       </div>
       <div className="mt-2 inline-flex items-center text-sm font-bold text-primary hover:text-white transition-colors">
-        {action} <span className="material-symbols-outlined text-lg ml-2 group-hover:translate-x-1 transition-transform">arrow_right_alt</span>
+        {action}{" "}
+        <span className="material-symbols-outlined text-lg ml-2 group-hover:translate-x-1 transition-transform">
+          arrow_right_alt
+        </span>
       </div>
     </div>
   </motion.div>
@@ -229,10 +323,15 @@ const ProductCard = ({ title, price, desc, image, onClick, index }: any) => (
     whileHover={{ y: -5 }}
   >
     <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-surface-dark border border-white/10">
-      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" style={{ backgroundImage: `url("${image}")` }}></div>
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
+        style={{ backgroundImage: `url("${image}")` }}
+      ></div>
       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 delay-100">
         <button className="h-10 w-10 rounded-full bg-white/90 text-black flex items-center justify-center hover:bg-primary transition-colors shadow-lg transform hover:scale-105">
-          <span className="material-symbols-outlined text-[20px]">favorite</span>
+          <span className="material-symbols-outlined text-[20px]">
+            favorite
+          </span>
         </button>
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 transition-opacity group-hover:opacity-60"></div>
@@ -247,7 +346,9 @@ const ProductCard = ({ title, price, desc, image, onClick, index }: any) => (
 
     <div className="flex justify-between items-start px-1">
       <div>
-        <h3 className="text-white text-xl font-medium mb-1 group-hover:text-primary transition-colors">{title}</h3>
+        <h3 className="text-white text-xl font-medium mb-1 group-hover:text-primary transition-colors">
+          {title}
+        </h3>
         <p className="text-text-muted text-sm">{desc}</p>
       </div>
     </div>

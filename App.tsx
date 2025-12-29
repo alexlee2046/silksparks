@@ -1,16 +1,16 @@
-import React, { useState, useCallback } from 'react';
-import { Screen } from './types';
-import { Layout } from './components/Layouts';
-import { Home } from './pages/Home';
-import { BirthChart } from './pages/BirthChart';
-import { AstrologyReport, TarotDaily, TarotSpread } from './pages/AppFeatures';
-import { ShopList, ProductDetail } from './pages/Commerce';
-import { Experts, Booking, Intake, Delivery } from './pages/Consultation';
-import { UserDashboard, Archives, Orders } from './pages/UserDashboard';
-import { Payments, Currency, Shipping } from './pages/Admin';
-import { UserProvider, useUser } from './context/UserContext';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Auth } from './components/Auth';
+import React, { useState, useCallback } from "react";
+import { Screen } from "./types";
+import { Layout } from "./components/Layouts";
+import { Home } from "./pages/Home";
+import { BirthChart } from "./pages/BirthChart";
+import { AstrologyReport, TarotDaily, TarotSpread } from "./pages/AppFeatures";
+import { ShopList, ProductDetail } from "./pages/Commerce";
+import { Experts, Booking, Intake, Delivery } from "./pages/Consultation";
+import { UserDashboard, Archives, Orders } from "./pages/UserDashboard";
+import { Payments, Currency, Shipping } from "./pages/Admin";
+import { UserProvider, useUser } from "./context/UserContext";
+import { AnimatePresence, motion } from "framer-motion";
+import { Auth } from "./components/Auth";
 
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.HOME);
@@ -20,7 +20,7 @@ const AppContent: React.FC = () => {
   // 包装 setScreen，在切换页面时自动滚动到顶部
   const setScreen = useCallback((screen: Screen) => {
     setCurrentScreen(screen);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   if (loading) {
@@ -40,13 +40,13 @@ const AppContent: React.FC = () => {
       case Screen.USER_DASHBOARD:
       case Screen.ARCHIVES:
       case Screen.ORDERS:
-        return 'user';
+        return "user";
       case Screen.ADMIN_PAYMENTS:
       case Screen.ADMIN_CURRENCY:
       case Screen.ADMIN_SHIPPING:
-        return 'admin';
+        return "admin";
       default:
-        return 'public';
+        return "public";
     }
   };
 
@@ -55,8 +55,12 @@ const AppContent: React.FC = () => {
 
     // 路由保护逻辑
     const protectedScreens = [
-      Screen.USER_DASHBOARD, Screen.ARCHIVES, Screen.ORDERS,
-      Screen.ADMIN_PAYMENTS, Screen.ADMIN_CURRENCY, Screen.ADMIN_SHIPPING
+      Screen.USER_DASHBOARD,
+      Screen.ARCHIVES,
+      Screen.ORDERS,
+      Screen.ADMIN_PAYMENTS,
+      Screen.ADMIN_CURRENCY,
+      Screen.ADMIN_SHIPPING,
     ];
 
     if (protectedScreens.includes(currentScreen) && !session) {
@@ -65,8 +69,13 @@ const AppContent: React.FC = () => {
           <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
             <span className="material-symbols-outlined text-4xl">lock</span>
           </div>
-          <h2 className="text-3xl font-display font-bold text-white uppercase tracking-wider">Access Restricted</h2>
-          <p className="text-white/40 max-w-sm">This area is reserved for seekers. Please sign in to view your cosmic space.</p>
+          <h2 className="text-3xl font-display font-bold text-white uppercase tracking-wider">
+            Access Restricted
+          </h2>
+          <p className="text-white/40 max-w-sm">
+            This area is reserved for seekers. Please sign in to view your
+            cosmic space.
+          </p>
           <button
             onClick={() => setShowAuth(true)}
             className="px-10 py-4 bg-primary text-background-dark font-bold rounded-xl shadow-2xl hover:bg-white transition-all"
@@ -84,35 +93,57 @@ const AppContent: React.FC = () => {
     }
 
     switch (currentScreen) {
-      case Screen.HOME: return <Home {...props} />;
-      case Screen.BIRTH_CHART: return <BirthChart {...props} />;
-      case Screen.REPORT: return <AstrologyReport {...props} />;
-      case Screen.TAROT_DAILY: return <TarotDaily {...props} />;
-      case Screen.TAROT_SPREAD: return <TarotSpread {...props} />;
-      case Screen.SHOP_LIST: return <ShopList {...props} />;
-      case Screen.PRODUCT_DETAIL: return <ProductDetail {...props} />;
-      case Screen.EXPERTS: return <Experts {...props} />;
-      case Screen.BOOKING: return <Booking {...props} />;
-      case Screen.INTAKE: return <Intake {...props} />;
-      case Screen.DELIVERY: return <Delivery {...props} />;
-      case Screen.USER_DASHBOARD: return <UserDashboard {...props} />;
-      case Screen.ARCHIVES: return <Archives {...props} />;
-      case Screen.ORDERS: return <Orders {...props} />;
-      case Screen.ADMIN_PAYMENTS: return <Payments {...props} />;
-      case Screen.ADMIN_CURRENCY: return <Currency {...props} />;
-      case Screen.ADMIN_SHIPPING: return <Shipping {...props} />;
-      default: return <Home {...props} />;
+      case Screen.HOME:
+        return <Home {...props} />;
+      case Screen.BIRTH_CHART:
+        return <BirthChart {...props} />;
+      case Screen.REPORT:
+        return <AstrologyReport {...props} />;
+      case Screen.TAROT_DAILY:
+        return <TarotDaily {...props} />;
+      case Screen.TAROT_SPREAD:
+        return <TarotSpread {...props} />;
+      case Screen.SHOP_LIST:
+        return <ShopList {...props} />;
+      case Screen.PRODUCT_DETAIL:
+        return <ProductDetail {...props} />;
+      case Screen.EXPERTS:
+        return <Experts {...props} />;
+      case Screen.BOOKING:
+        return <Booking {...props} />;
+      case Screen.INTAKE:
+        return <Intake {...props} />;
+      case Screen.DELIVERY:
+        return <Delivery {...props} />;
+      case Screen.USER_DASHBOARD:
+        return <UserDashboard {...props} />;
+      case Screen.ARCHIVES:
+        return <Archives {...props} />;
+      case Screen.ORDERS:
+        return <Orders {...props} />;
+      case Screen.ADMIN_PAYMENTS:
+        return <Payments {...props} />;
+      case Screen.ADMIN_CURRENCY:
+        return <Currency {...props} />;
+      case Screen.ADMIN_SHIPPING:
+        return <Shipping {...props} />;
+      default:
+        return <Home {...props} />;
     }
   };
 
   return (
-    <Layout setScreen={setScreen} type={getLayoutType()} onAuthClick={() => setShowAuth(true)}>
+    <Layout
+      setScreen={setScreen}
+      type={getLayoutType()}
+      onAuthClick={() => setShowAuth(true)}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={currentScreen}
-          initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
+          initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="w-full h-full"
         >
@@ -124,14 +155,19 @@ const AppContent: React.FC = () => {
         {showAuth && <Auth onClose={() => setShowAuth(false)} />}
       </AnimatePresence>
     </Layout>
-
   );
 };
+
+import { Routes, Route } from "react-router-dom";
+import { AdminApp } from "./admin/App";
 
 const App: React.FC = () => {
   return (
     <UserProvider>
-      <AppContent />
+      <Routes>
+        <Route path="/admin/*" element={<AdminApp />} />
+        <Route path="/*" element={<AppContent />} />
+      </Routes>
     </UserProvider>
   );
 };
