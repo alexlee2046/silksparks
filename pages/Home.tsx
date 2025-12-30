@@ -9,6 +9,8 @@ import {
   Product,
 } from "../services/RecommendationEngine";
 import { motion } from "framer-motion";
+import { SEO } from "../components/SEO";
+import { JsonLd } from "../components/JsonLd";
 
 export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   const [dailySpark, setDailySpark] = useState<string>(
@@ -74,6 +76,22 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Home"
+        description="Enter the Spark Engine. Decode your stars instantly with our AI-powered astrological interpreter."
+        keywords={["astrology", "AI", "tarot", "horoscope", "Silk & Spark"]}
+      />
+      <JsonLd data={{
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Silk & Spark",
+        "url": "https://silksparks.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://silksparks.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }} />
       {/* Daily Ticker */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

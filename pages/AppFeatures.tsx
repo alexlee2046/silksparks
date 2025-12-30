@@ -12,6 +12,61 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CosmicBackground } from "../components/CosmicBackground";
 import tarotData from "../src/data/tarot_cards.json";
 
+const getRomanNumeral = (n: number): string => {
+  const roman: { [key: number]: string } = {
+    0: "0",
+    1: "I",
+    2: "II",
+    3: "III",
+    4: "IV",
+    5: "V",
+    6: "VI",
+    7: "VII",
+    8: "VIII",
+    9: "IX",
+    10: "X",
+    11: "XI",
+    12: "XII",
+    13: "XIII",
+    14: "XIV",
+    15: "XV",
+    16: "XVI",
+    17: "XVII",
+    18: "XVIII",
+    19: "XIX",
+    20: "XX",
+    21: "XXI",
+  };
+  return roman[n] || n.toString();
+};
+
+const getCardNumberDisplay = (card: any) => {
+  if (card.arcana === "Major") {
+    // Extract number from ID (id is like 'm01' or 'm12')
+    const num = parseInt(card.id.replace("m", ""), 10);
+    return getRomanNumeral(num);
+  }
+  // Minor Arcana
+  if (card.name.startsWith("Ace")) return "I";
+  if (card.name.startsWith("Two")) return "II";
+  if (card.name.startsWith("Three")) return "III";
+  if (card.name.startsWith("Four")) return "IV";
+  if (card.name.startsWith("Five")) return "V";
+  if (card.name.startsWith("Six")) return "VI";
+  if (card.name.startsWith("Seven")) return "VII";
+  if (card.name.startsWith("Eight")) return "VIII";
+  if (card.name.startsWith("Nine")) return "IX";
+  if (card.name.startsWith("Ten")) return "X";
+
+  return "";
+};
+
+// Updated Filter to better match the sharp gold-on-black aesthetic
+const GOLD_FOIL_FILTER =
+  "grayscale(100%) contrast(200%) brightness(0.7) invert(100%) sepia(100%) saturate(400%) hue-rotate(5deg)";
+const GOLD_BORDER_STYLE =
+  "border-[#F4C025]/50 shadow-[0_0_15px_rgba(244,192,37,0.3)]";
+
 export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
   const { user, isBirthDataComplete, addArchive } = useUser();
   const [analysis, setAnalysis] = React.useState<string | null>(null);
@@ -386,22 +441,24 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
             {readingState === "idle" && (
               <motion.div
                 key="idle"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: -50 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
                 onClick={handleDraw}
-                className="cursor-pointer group relative w-56 h-80 perspective-1000"
+                className="cursor-pointer group relative w-64 h-[400px] perspective-1000"
               >
-                <div className="absolute inset-0 bg-surface-dark border-2 border-primary/30 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(244,192,37,0.1)] group-hover:shadow-[0_0_60px_rgba(244,192,37,0.3)] transition-all transform group-hover:-translate-y-2 duration-500 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
-                  <div className="absolute inset-3 border border-primary/20 rounded-xl flex items-center justify-center">
-                    <span className="material-symbols-outlined text-6xl text-primary/50 group-hover:text-primary transition-colors">
-                      touch_app
-                    </span>
-                  </div>
+                <div className="absolute inset-0 w-full h-full preserve-3d group-hover:rotate-y-12 transition-transform duration-700 ease-out">
+                  {/* Floating Glow */}
+                  <div className="absolute -inset-4 bg-primary/20 rounded-[30px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+
+                  <TarotCardBack />
                 </div>
-                <div className="absolute -bottom-16 left-0 right-0 text-center">
-                  <p className="text-primary font-bold tracking-[0.3em] text-xs uppercase opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-                    Draw Card
+
+                {/* External CTA to avoid cluttering the card art */}
+                <div className="absolute -bottom-16 w-full text-center">
+                  <p className="text-[#F4C025] font-serif tracking-[0.2em] text-xs font-bold uppercase opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse-slow">
+                    Tap to Reveal
                   </p>
                 </div>
               </motion.div>
@@ -413,47 +470,60 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="relative w-56 h-80"
+                className="relative w-64 h-[400px]"
               >
-                {[0, 1, 2].map((i) => (
+                {/* 3D Fan Shuffling Effect */}
+                {[0, 1, 2, 3, 4].map((i) => (
                   <motion.div
                     key={i}
-                    className="absolute inset-0 bg-surface-dark border border-white/20 rounded-2xl shadow-xl"
+                    className="absolute inset-0"
+                    initial={{ x: 0, y: 0, rotate: 0, scale: 1 }}
                     animate={{
-                      x: [0, 20, -20, 0],
-                      y: [0, -10, 5, 0],
-                      rotate: [0, 5, -5, 0],
-                      zIndex: [i, 0, i],
+                      x: [0, (i - 2) * 40, 0],
+                      y: [0, Math.abs(i - 2) * -10, 0],
+                      rotate: [0, (i - 2) * 10, 0],
+                      scale: [1, 1.05, 1],
+                      zIndex: i === 2 ? 10 : 0
                     }}
                     transition={{
-                      duration: 0.5,
+                      duration: 0.8,
                       repeat: Infinity,
-                      delay: i * 0.1,
+                      repeatType: "mirror",
+                      ease: "easeInOut",
+                      delay: i * 0.05,
                     }}
-                  />
+                  >
+                    <TarotCardBack showPattern={false} />
+                  </motion.div>
                 ))}
-                <p className="absolute -bottom-16 w-full text-center text-primary font-bold tracking-widest text-xs animate-pulse">
-                  SHUFFLING...
-                </p>
+
+                <div className="absolute -bottom-24 w-full text-center space-y-2">
+                  <p className="text-[#F4C025] font-serif font-bold tracking-[0.2em] text-sm animate-pulse">
+                    ACCESSING AKASHIC RECORDS...
+                  </p>
+                  <p className="text-white/30 text-[10px] uppercase tracking-widest">
+                    Verifying Cosmic alignment
+                  </p>
+                </div>
               </motion.div>
             )}
 
             {readingState === "drawing" && (
               <motion.div
                 key="drawing"
-                className="relative w-56 h-80 bg-surface-dark border border-primary rounded-2xl shadow-[0_0_50px_rgba(244,192,37,0.5)]"
-                initial={{ rotateY: 0 }}
-                animate={{ rotateY: 180 }}
+                className="relative w-64 h-[400px] perspective-1000"
+                initial={{ rotateY: 0, scale: 0.9 }}
+                animate={{ rotateY: 180, scale: 1.1 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 style={{ transformStyle: "preserve-3d" }}
               >
-                <div className="absolute inset-0 backface-hidden bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] rounded-2xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-4xl text-white/20">
-                    auto_awesome
-                  </span>
+                <div className="absolute inset-0 backface-hidden">
+                  <TarotCardBack />
                 </div>
-                <div className="absolute inset-0 backface-hidden bg-primary rounded-2xl rotate-y-180 flex items-center justify-center">
-                  <div className="w-full h-full bg-white animate-pulse"></div>
+
+                {/* Front of Card (Placeholder for transition) */}
+                <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl bg-[#141414] border-2 border-[#F4C025] flex items-center justify-center shadow-[0_0_100px_rgba(244,192,37,0.5)]">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#F4C025]/20 to-transparent opacity-50"></div>
                 </div>
               </motion.div>
             )}
@@ -470,21 +540,41 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                     initial={{ rotateY: 90 }}
                     animate={{ rotateY: 0 }}
                     transition={{ type: "spring", stiffness: 50 }}
-                    className="relative w-[300px] md:w-[360px] aspect-[2/3] rounded-3xl group cursor-pointer perspective-1000"
+                    className="relative w-[300px] md:w-[360px] aspect-[4/7] rounded-2xl group cursor-pointer perspective-1000"
                   >
                     <div
-                      className="absolute inset-0 w-full h-full bg-cover bg-center rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-[1.02]"
-                      style={{
-                        backgroundImage: `url("${card.image}")`,
-                        filter:
-                          "grayscale(100%) brightness(0.6) contrast(1.2) invert(100%) sepia(100%) saturate(600%) hue-rotate(10deg)",
-                      }}
-                    ></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-3xl"></div>
-                    <div className="absolute bottom-8 left-0 right-0 text-center">
-                      <span className="inline-block px-4 py-1.5 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-bold tracking-[0.2em] text-primary uppercase border border-primary/30 shadow-lg">
-                        {card.arcana}
-                      </span>
+                      className={`absolute inset-0 w-full h-full rounded-2xl bg-[#141414] border-2 border-[#F4C025] transition-transform duration-500 group-hover:scale-[1.02] flex flex-col p-[6%] shadow-[0_0_50px_rgba(244,192,37,0.2)]`}
+                    >
+                      {/* Inner Border */}
+                      <div className="absolute inset-3 border border-[#F4C025] rounded-xl opacity-80 pointer-events-none z-20"></div>
+
+                      {/* Top Numeral */}
+                      <div className="h-[10%] flex items-center justify-center pt-4">
+                        <span className="text-[#F4C025] font-serif font-bold text-3xl tracking-widest z-20">
+                          {getCardNumberDisplay(card)}
+                        </span>
+                      </div>
+
+                      {/* Image */}
+                      <div className="flex-1 relative overflow-hidden my-4 mx-2">
+                        <div
+                          className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110 opacity-90"
+                          style={{
+                            backgroundImage: `url("${card.image}")`,
+                            backgroundSize: "contain",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                            filter: GOLD_FOIL_FILTER,
+                          }}
+                        ></div>
+                      </div>
+
+                      {/* Bottom Title */}
+                      <div className="h-[12%] flex flex-col items-center justify-center pb-4 z-20">
+                        <h3 className="text-[#F4C025] font-serif font-bold text-xl uppercase tracking-[0.1em] text-center leading-tight">
+                          {card.name}
+                        </h3>
+                      </div>
                     </div>
                   </motion.div>
                 </div>
@@ -496,12 +586,12 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                         {card.name}
                       </h2>
                       <div className="flex gap-2">
-                        <button className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-primary transition-colors">
+                        <button className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-[#F4C025] transition-colors">
                           <span className="material-symbols-outlined text-lg">
                             share
                           </span>
                         </button>
-                        <button className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-primary transition-colors">
+                        <button className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-[#F4C025] transition-colors">
                           <span className="material-symbols-outlined text-lg">
                             favorite
                           </span>
@@ -529,7 +619,7 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                       </span>
                     </div>
                     <h3 className="text-white font-bold mb-4 text-lg flex items-center gap-2">
-                      <span className="text-primary">✦</span> AI Interpretation
+                      <span className="text-[#F4C025]">✦</span> AI Interpretation
                     </h3>
                     <p className="text-gray-300 leading-relaxed text-lg font-light">
                       {interpretation || "Interpreting the stars..."}
@@ -698,47 +788,102 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
 
         <div className="w-full max-w-[1100px] mx-auto min-h-[400px]">
           {readingState === "idle" && (
-            <div className="flex justify-center mt-10">
-              <GlowButton
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center gap-8 mt-8"
+            >
+              <div
                 onClick={handleStartSession}
-                className="px-12 py-6 text-xl"
-                icon="playing_cards"
+                className="relative cursor-pointer group w-64 h-[400px] perspective-1000"
               >
-                Begin Reading
-              </GlowButton>
-            </div>
+                {/* Stack Effect */}
+                <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-4 translate-y-4 -z-20"></div>
+                <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-2 translate-y-2 -z-10"></div>
+
+                {/* Main Deck */}
+                <div className="relative w-full h-full transform transition-transform duration-500 group-hover:-translate-y-2">
+                  <TarotCardBack />
+
+                  {/* Pulse Overlay */}
+                  <div className="absolute inset-0 rounded-2xl bg-[#F4C025]/10 animate-pulse-slow pointer-events-none"></div>
+                </div>
+
+                <div className="absolute -bottom-16 w-full text-center">
+                  <span className="inline-flex items-center gap-2 text-[#F4C025] font-serif tracking-[0.2em] text-xs font-bold uppercase border-b border-[#F4C025]/30 pb-1 group-hover:border-[#F4C025] transition-colors">
+                    Tap Deck to Shuffle
+                  </span>
+                </div>
+              </div>
+            </motion.div>
           )}
 
           {readingState === "shuffling" && (
-            <div className="flex justify-center items-center h-64">
-              <div className="text-primary tracking-[0.3em] font-bold animate-pulse text-xl">
-                SHUFFLING THE COSMOS...
+            <div className="flex flex-col items-center justify-center h-[500px] relative">
+              {/* 3 Card Shuffling Animation */}
+              <div className="relative w-64 h-[400px]">
+                {[0, 1, 2].map(i => (
+                  <motion.div
+                    key={i}
+                    className="absolute inset-0"
+                    animate={{
+                      x: [0, (i - 1) * 120, 0],
+                      y: [0, -20, 0],
+                      rotate: [0, (i - 1) * 10, 0],
+                      scale: [1, 1.05, 1],
+                      zIndex: [0, 10, 0]
+                    }}
+                    transition={{
+                      duration: 2, // Longer shuffle for 3 cards
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: i * 0.2
+                    }}
+                  >
+                    <TarotCardBack showPattern={i === 1} />
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="absolute bottom-0 text-center space-y-2">
+                <p className="text-[#F4C025] font-serif font-bold tracking-[0.2em] text-sm animate-pulse">
+                  ALIGNING TRINITY...
+                </p>
+                <p className="text-white/30 text-[10px] uppercase tracking-widest">
+                  Past • Present • Future
+                </p>
               </div>
             </div>
           )}
 
           {(readingState === "drawing" || readingState === "revealed") && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative mb-16 px-4">
               {/* Connecting Line */}
-              <div className="hidden md:block absolute top-1/2 left-10 right-10 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent -translate-y-1/2 z-0"></div>
+              <div className="hidden md:block absolute top-1/2 left-10 right-10 h-px bg-gradient-to-r from-transparent via-[#F4C025]/20 to-transparent -translate-y-1/2 z-0"></div>
 
               {cards.map((card, i) => (
-                <TarotCard
+                <motion.div
                   key={i}
-                  title={card.name}
-                  position={i === 0 ? "I" : i === 1 ? "II" : "III"}
-                  context={
-                    i === 0
-                      ? "The Past"
-                      : i === 1
-                        ? "The Present"
-                        : "The Future"
-                  }
-                  subtitle={card.isReversed ? "Reversed" : "Upright"}
-                  image={card.image}
-                  delay={i * 0.2}
-                  active={i === 1} // Highlight center
-                />
+                  initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: i * 0.3, duration: 0.6 }}
+                >
+                  <TarotCard
+                    title={card.name}
+                    position={i === 0 ? "I" : i === 1 ? "II" : "III"}
+                    context={
+                      i === 0
+                        ? "The Past"
+                        : i === 1
+                          ? "The Present"
+                          : "The Future"
+                    }
+                    subtitle={card.isReversed ? "Reversed" : "Upright"}
+                    image={card.image}
+                    delay={i * 0.2}
+                    active={i === 1} // Highlight center
+                  />
+                </motion.div>
               ))}
             </div>
           )}
@@ -836,47 +981,125 @@ const TarotCard = ({
   icon,
   active,
   delay = 0,
-}: any) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    transition={{ delay, duration: 0.5 }}
-    viewport={{ once: true }}
-    className={`relative z-10 flex flex-col items-center gap-6 group ${active ? "md:-mt-8" : ""}`}
-  >
-    <div className="text-center transition-opacity">
-      <span className="text-xs font-bold text-text-muted uppercase tracking-[0.2em] mb-1 block">
-        Position {position}
-      </span>
-      <span className={`font-medium ${active ? "text-primary" : "text-white"}`}>
-        {context}
-      </span>
-    </div>
-    <div
-      className={`relative w-full max-w-[260px] aspect-[2/3] rounded-xl border border-surface-border bg-surface-dark/80 backdrop-blur-sm transition-all duration-700 transform group-hover:-translate-y-4 group-hover:scale-105 overflow-hidden cursor-pointer ${active ? "shadow-[0_0_40px_rgba(244,192,37,0.2)] border-primary/50" : "shadow-lg"}`}
+  cardData // Pass full card data if available to get number
+}: any) => {
+  // Try to find the card object from title if cardData not passed directly (lazy match)
+  const foundCard = tarotData.find(t => t.name === title);
+  const displayNumber = foundCard ? getCardNumberDisplay(foundCard) : "";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      transition={{ delay, duration: 0.5 }}
+      viewport={{ once: true }}
+      className={`relative z-10 flex flex-col items-center gap-6 group ${active ? "md:-mt-8" : ""}`}
     >
-      <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 opacity-90"
-        style={{
-          backgroundImage: `url('${image}')`,
-          filter:
-            "grayscale(100%) brightness(0.6) contrast(1.2) invert(100%) sepia(100%) saturate(600%) hue-rotate(10deg)",
-        }}
-      ></div>
-      <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent"></div>
-      <div className="absolute bottom-0 left-0 w-full p-6 text-center">
-        <span
-          className={`inline-block p-2 rounded-full bg-surface-dark/80 text-primary mb-2 border border-surface-border/50 ${active ? "border-primary/50 shadow-lg shadow-primary/20" : ""}`}
-        >
-          <span className="material-symbols-outlined text-xl">{icon}</span>
+      <div className="text-center transition-opacity">
+        <span className="text-xs font-bold text-text-muted uppercase tracking-[0.2em] mb-1 block">
+          Position {position}
         </span>
-        <h3 className="text-2xl font-display font-bold text-white mb-1">
-          {title}
-        </h3>
-        <p className="text-xs text-text-muted uppercase tracking-wider">
-          {subtitle}
-        </p>
+        <span
+          className={`font-medium ${active ? "text-[#F4C025]" : "text-white"}`}
+        >
+          {context}
+        </span>
       </div>
+
+      {/* Card Container mimicking the physical card */}
+      <div
+        className={`relative w-full max-w-[260px] aspect-[4/7] rounded-xl bg-[#141414] transition-all duration-700 transform group-hover:-translate-y-4 group-hover:scale-105 overflow-hidden cursor-pointer flex flex-col p-[6%]
+          ${active
+            ? "shadow-[0_0_30px_rgba(244,192,37,0.2)] border border-[#F4C025]"
+            : "shadow-2xl border border-white/20 hover:border-[#F4C025]"
+          }`}
+      >
+        {/* Inner Gold Border */}
+        <div className="absolute inset-2 border border-[#F4C025] rounded-lg opacity-80 pointer-events-none z-20"></div>
+
+        {/* Top Number */}
+        <div className="h-[10%] flex items-center justify-center pt-2">
+          <span className="text-[#F4C025] font-serif font-bold text-xl tracking-widest z-20">
+            {displayNumber}
+          </span>
+        </div>
+
+        {/* Image Area */}
+        <div className="flex-1 relative overflow-hidden my-2 mx-2">
+          <div
+            className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110 opacity-90"
+            style={{
+              backgroundImage: `url('${image}')`,
+              backgroundSize: "contain",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              filter: GOLD_FOIL_FILTER,
+            }}
+          ></div>
+        </div>
+
+        {/* Bottom Title */}
+        <div className="h-[12%] flex flex-col items-center justify-center pb-2 z-20">
+          <h3 className="text-[#F4C025] font-serif font-bold text-sm uppercase tracking-[0.1em] text-center leading-tight">
+            {title}
+          </h3>
+          {/* Add subtitle if needed, e.g. reversed */}
+          {subtitle === "Reversed" && (
+            <span className="text-[8px] text-[#F4C025]/60 uppercase tracking-widest mt-0.5">
+              Reversed
+            </span>
+          )}
+        </div>
+
+        {/* Shine Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
+      </div>
+    </motion.div>
+  );
+};
+
+const TarotCardBack = ({ showPattern = true }: { showPattern?: boolean }) => (
+  <div className="relative w-full h-full rounded-2xl bg-[#0a0a0a] border border-[#F4C025]/30 overflow-hidden shadow-2xl flex items-center justify-center">
+    {/* Geometric Background Pattern */}
+    <div className="absolute inset-0 opacity-10"
+      style={{ backgroundImage: "radial-gradient(circle at 50% 50%, #F4C025 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
     </div>
-  </motion.div>
+
+    {/* Inner Frame */}
+    <div className="absolute inset-3 border-2 border-[#F4C025]/60 rounded-xl flex items-center justify-center">
+      <div className="absolute inset-1 border border-[#F4C025]/30 rounded-lg"></div>
+
+      {/* Corner Ornaments */}
+      {[0, 90, 180, 270].map((rot) => (
+        <div key={rot} className="absolute w-8 h-8 pointer-events-none" style={{ transform: `rotate(${rot}deg)`, top: rot === 180 || rot === 270 ? 'auto' : 2, left: rot === 90 || rot === 180 ? 'auto' : 2, bottom: rot === 180 || rot === 270 ? 2 : 'auto', right: rot === 90 || rot === 180 ? 2 : 'auto' }}>
+          <svg viewBox="0 0 100 100" className="w-full h-full fill-[#F4C025]">
+            <path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z" opacity="0.8" />
+          </svg>
+        </div>
+      ))}
+    </div>
+
+    {/* Central Medallion - The "Keyhole" */}
+    <div className="relative z-10 w-24 h-24 rounded-full border-2 border-[#F4C025] flex items-center justify-center bg-[#141414] shadow-[0_0_30px_rgba(244,192,37,0.15)] group-hover:shadow-[0_0_50px_rgba(244,192,37,0.4)] transition-shadow duration-500">
+      <div className="absolute inset-0 rounded-full border border-[#F4C025]/30 scale-125 opacity-50"></div>
+      <div className="absolute inset-0 rounded-full border border-[#F4C025]/20 scale-150 opacity-30"></div>
+
+      {/* Keyhole Symbol */}
+      <div className="relative flex flex-col items-center opacity-80 group-hover:opacity-100 transition-opacity">
+        <div className="w-6 h-6 rounded-full border-2 border-[#F4C025] bg-transparent mb-1"></div>
+        <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[20px] border-b-[#F4C025]"></div>
+      </div>
+
+      {/* Subtle Shine */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-[#F4C025]/10 to-transparent rotate-45 pointer-events-none"></div>
+    </div>
+
+    {/* Top/Bottom Text */}
+    <div className="absolute top-8 text-[#F4C025]/40 text-[8px] font-serif tracking-[0.3em] uppercase">
+      Destiny
+    </div>
+    <div className="absolute bottom-8 text-[#F4C025]/40 text-[8px] font-serif tracking-[0.3em] uppercase">
+      Unlock
+    </div>
+  </div>
 );
