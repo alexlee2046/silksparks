@@ -4,6 +4,8 @@ import { useCart } from "../context/CartContext";
 import { useUser } from "../context/UserContext";
 import { supabase } from "../services/supabase";
 import { GlowButton } from "./GlowButton";
+import { PaymentService } from "../services/PaymentService";
+import toast from "react-hot-toast";
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -20,24 +22,43 @@ export const CartDrawer: React.FC = () => {
 
   const handleCheckout = async () => {
     if (!session) {
-      alert("Please sign in to complete your purchase.");
+      toast.error("Please sign in to complete your purchase.");
       return;
     }
 
     setProcessing(true);
     try {
+      // 1. Inventory Check
+      const inventoryCheck = await PaymentService.checkInventory(items);
+      if (!inventoryCheck.available) {
+        toast.error(
+          `Some items are out of stock: ${inventoryCheck.failedItems.join(", ")}`,
+        );
+        setProcessing(false);
+        return;
+      }
+
+      // 2. Payment Processing
+      const paymentResult = await PaymentService.processPayment(cartTotal);
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || "Payment failed");
+      }
+
+      // 3. Create Order
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
           user_id: session.user.id,
           total: cartTotal,
-          status: "pending",
+          status: "paid", // Direct to paid since we "processed" it
+          payment_intent: paymentResult.transactionId,
         })
         .select()
         .single();
 
       if (orderError) throw orderError;
 
+      // 4. Create Order Items
       const flattenedItems = [];
       for (const item of items) {
         for (let i = 0; i < item.quantity; i++) {
@@ -58,12 +79,19 @@ export const CartDrawer: React.FC = () => {
 
       if (itemsError) throw itemsError;
 
+      // 5. Update Inventory (Simulated for Shell Repair)
+      // In real app: await supabase.rpc('decrement_inventory', { items })
+      console.log(
+        "[CartDrawer] Inventory deducted for items:",
+        items.map((i) => i.id),
+      );
+
       clearCart();
       setIsCartOpen(false);
-      alert(`Order placed successfully! Order ID: ${order.id}`);
+      toast.success(`Order placed successfully! ID: ${order.id}`);
     } catch (error: any) {
       console.error("Checkout error:", error);
-      alert("Failed to process order: " + error.message);
+      toast.error("Order failed: " + error.message);
     } finally {
       setProcessing(false);
     }

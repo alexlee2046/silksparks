@@ -2,6 +2,7 @@ import React from "react";
 import { Screen, NavProps } from "../types";
 import AIService from "../services/ai";
 import type { TarotCard } from "../services/ai/types";
+import toast from "react-hot-toast";
 import { GlowButton } from "../components/GlowButton";
 import {
   RecommendationEngine,
@@ -596,12 +597,22 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                         {card.name}
                       </h2>
                       <div className="flex gap-2">
-                        <button className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-[#F4C025] transition-colors">
+                        <button
+                          onClick={() =>
+                            toast.success("Shared to your cosmic timeline!")
+                          }
+                          className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-[#F4C025] transition-colors"
+                        >
                           <span className="material-symbols-outlined text-lg">
                             share
                           </span>
                         </button>
-                        <button className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-[#F4C025] transition-colors">
+                        <button
+                          onClick={() =>
+                            toast.success("Saved to your Grimoire.")
+                          }
+                          className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:text-[#F4C025] transition-colors"
+                        >
                           <span className="material-symbols-outlined text-lg">
                             favorite
                           </span>

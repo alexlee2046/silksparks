@@ -25,25 +25,25 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
-      let query = supabase.from("products").select("*");
+      let query = supabase.from("products").select(`
+        *,
+        product_tags (
+          tags (
+            name
+          )
+        )
+      `);
 
-      // Apply Filters (Mock logic for now as 'element' is single value, but UI has multiple categories)
-      // In a real app, we'd map UI filters to DB columns carefully.
-      // Here we assume filters are values for 'element' or 'category'.
-      if (filters.length > 0) {
-        // Simple OR logic for simplicity: if filter matches element OR category
-        // Supabase .or() syntax: .or('element.in.("Fire","Water"),category.in.("Crystals")')
-        // But simpler: just client side filter if list is small, OR just support one type of filter.
-        // Let's try to map filters to specific columns if possible.
-        // For now, let's assume filters are just Elements for simplicity of Phase 1.
-        const elements = ["Fire", "Water", "Air", "Earth", "Spirit"];
-        const selectedElements = filters.filter((f) => elements.includes(f));
-        if (selectedElements.length > 0) {
-          query = query.in("element", selectedElements);
-        }
+      // 1. DB Level Filtering for Elements (if robust schema exists)
+      const elements = ["Fire", "Water", "Air", "Earth", "Spirit"];
+      // Split filters into categories
+      const selectedElements = filters.filter((f) => elements.includes(f));
+
+      if (selectedElements.length > 0) {
+        query = query.in("element", selectedElements);
       }
 
-      // Apply Sort
+      // Apply Sort at DB level (efficient)
       if (sortOrder === "newest") {
         query = query.order("created_at", { ascending: false });
       } else if (sortOrder === "price_asc") {
@@ -55,7 +55,50 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
       const { data, error } = await query;
 
       if (!error && data) {
-        setProducts(data);
+        // 2. Client Side Filtering for Complex Tags (Intent, Zodiac)
+        // Map UI filter text to tag keywords
+        const complexFilters = filters.filter((f) => !elements.includes(f));
+
+        let filteredData = data;
+
+        if (complexFilters.length > 0) {
+          filteredData = data.filter((product: any) => {
+            // Flatten tags for this product
+            // product.product_tags structure depends on the join, typically array of objects
+            const productTags =
+              product.product_tags?.map((pt: any) =>
+                pt.tags?.name?.toLowerCase(),
+              ) || [];
+
+            // Check if product matches ANY of the selected complex filters
+            // We'll do a loose match since UI text "Love & Relationships" might map to tag "love"
+            return complexFilters.some((filterText) => {
+              const lowerFilter = filterText.toLowerCase();
+
+              // Simple mapping logic
+              let keywords = [lowerFilter];
+              if (lowerFilter.includes("love"))
+                keywords = ["love", "romance", "relationship"];
+              if (lowerFilter.includes("wealth"))
+                keywords = ["wealth", "money", "career", "abundance"];
+              if (lowerFilter.includes("healing"))
+                keywords = ["healing", "health"];
+              if (lowerFilter.includes("protection"))
+                keywords = ["protection", "shield"];
+
+              // Also support Zodiac direct match
+              // If filter is "Aries", tag might be "aries"
+
+              return keywords.some((k) =>
+                productTags.some((t: string) => t.includes(k) || k.includes(t)),
+              );
+            });
+          });
+        }
+
+        setProducts(filteredData);
+      } else {
+        console.error("Error loading products:", error);
       }
 
       // Fetch Recommendations
@@ -181,6 +224,8 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
               "Protection",
               "Healing",
             ]}
+            selectedItems={filters}
+            onToggle={toggleFilter}
           />
           <div className="h-px bg-white/5 w-full"></div>
           <FilterSection
@@ -195,6 +240,8 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
             title="Zodiac"
             icon="star"
             items={["Aries", "Taurus", "Gemini", "Cancer"]}
+            selectedItems={filters}
+            onToggle={toggleFilter}
           />
         </motion.aside>
 

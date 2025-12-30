@@ -181,7 +181,7 @@ class SupabaseAIProviderImpl implements IAIService {
   }
 
   clearCache(): void {
-    console.log("[SupabaseAIProvider] 无本地缓存需要清除");
+    // 无本地缓存需要清除
   }
 
   // ============ 辅助方法 ============

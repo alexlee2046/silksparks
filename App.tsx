@@ -5,7 +5,13 @@ import { Home } from "./pages/Home";
 import { BirthChart } from "./pages/BirthChart";
 import { AstrologyReport, TarotDaily, TarotSpread } from "./pages/AppFeatures";
 import { ShopList, ProductDetail } from "./pages/Commerce";
-import { Experts, Booking, Intake, Delivery } from "./pages/Consultation";
+import {
+  Experts,
+  ExpertProfile,
+  Booking,
+  Intake,
+  Delivery,
+} from "./pages/Consultation";
 import {
   UserDashboard,
   Archives,
@@ -19,6 +25,7 @@ import { CartProvider } from "./context/CartContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { Auth } from "./components/Auth";
 import { CartDrawer } from "./components/CartDrawer";
+import { Toaster } from "react-hot-toast";
 
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.HOME);
@@ -166,6 +173,8 @@ const AppContent: React.FC = () => {
         return <ProductDetail {...props} />;
       case Screen.EXPERTS:
         return <Experts {...props} />;
+      case Screen.EXPERT_PROFILE:
+        return <ExpertProfile {...props} />;
       case Screen.BOOKING:
         return <Booking {...props} />;
       case Screen.INTAKE:
@@ -233,6 +242,30 @@ const App: React.FC = () => {
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/*" element={<AppContent />} />
         </Routes>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: "rgba(30, 20, 50, 0.95)",
+              color: "#fff",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(10px)",
+            },
+            success: {
+              iconTheme: {
+                primary: "#a855f7",
+                secondary: "#fff",
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: "#ef4444",
+                secondary: "#fff",
+              },
+            },
+          }}
+        />
       </CartProvider>
     </UserProvider>
   );

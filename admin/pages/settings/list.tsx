@@ -3,6 +3,7 @@ import { useList } from "@refinedev/core";
 import { supabase } from "../../../services/supabase";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
+import toast from "react-hot-toast";
 
 import { Authenticated } from "@refinedev/core";
 
@@ -110,13 +111,13 @@ const SystemSettingsContent: React.FC<{
 
       if (error) {
         console.error("Save error:", error);
-        alert(`Failed to save: ${error.message}`);
+        toast.error(`Failed to save: ${error.message}`);
       } else {
-        alert("AI Engine settings updated successfully!");
+        toast.success("AI Engine settings updated successfully!");
         refetch();
       }
     } catch (e: any) {
-      alert(`Error: ${e.message}`);
+      toast.error(`Error: ${e.message}`);
     } finally {
       setIsUpdating(false);
     }
@@ -147,13 +148,14 @@ const SystemSettingsContent: React.FC<{
       );
 
       if (error) {
-        alert(`Failed to save: ${error.message}`);
+        toast.error(`Failed to save: ${error.message}`);
       } else {
+        toast.success("Settings saved successfully!");
         setEditingKey(null);
         refetch();
       }
     } catch (e) {
-      alert("Invalid JSON format.");
+      toast.error("Invalid JSON format.");
     } finally {
       setIsUpdating(false);
     }

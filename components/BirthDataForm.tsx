@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useUser, UserLocation } from "../context/UserContext";
+import toast from "react-hot-toast";
 
 interface Props {
   onComplete?: () => void;
@@ -27,7 +28,7 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
 
   const handleFinish = () => {
     if (!user.preferences.marketingConsent) {
-      alert("Please accept the privacy terms to continue.");
+      toast.error("Please accept the privacy terms to continue.");
       return;
     }
     // Finalize date

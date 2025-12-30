@@ -72,7 +72,7 @@ export function setAIProvider(provider: AIProvider): void {
     return;
   }
   currentProvider = provider;
-  console.log(`[AIService] 已切换到 ${provider}`);
+  currentProvider = provider;
 }
 
 /**

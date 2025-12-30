@@ -5,10 +5,19 @@ import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
 import { supabase } from "../services/supabase";
+import toast from "react-hot-toast";
+import { ProductCard } from "./Home";
+import { useCart } from "../context/CartContext";
 
 export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
-  const { user } = useUser();
+  const { user, signOut } = useUser();
   const userName = user.name || "Seeker";
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Successfully signed out");
+    setScreen(Screen.HOME);
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-row bg-background-light dark:bg-background-dark">
@@ -79,6 +88,11 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
               onClick={() => setScreen(Screen.ORDERS)}
             />
             <NavBtn
+              icon="favorite"
+              label="Favorites"
+              onClick={() => setScreen(Screen.FAVORITES)}
+            />
+            <NavBtn
               icon="calendar_month"
               label="Consultations"
               onClick={() => setScreen(Screen.CONSULTATIONS)}
@@ -91,11 +105,7 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
           </nav>
         </div>
         <div className="flex flex-col gap-2">
-          <NavBtn
-            icon="logout"
-            label="Sign Out"
-            onClick={() => setScreen(Screen.HOME)}
-          />
+          <NavBtn icon="logout" label="Sign Out" onClick={handleSignOut} />
         </div>
       </motion.aside>
 
@@ -134,30 +144,55 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
               <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[100px] -mr-20 -mt-20 pointer-events-none"></div>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative z-10 h-full">
                 <div className="flex flex-col gap-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-white/60">
-                    Current Tier: Star Walker
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl sm:text-6xl font-light font-display text-white tracking-tight">
-                      1,250
+                  <div className="flex flex-col">
+                    <span className="text-white/60 text-xs uppercase tracking-widest font-medium mb-1">
+                      Current Tier
                     </span>
-                    <span className="text-primary font-bold text-lg uppercase tracking-wide">
-                      Points
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-xl">
+                        verified
+                      </span>
+                      <span className="text-2xl text-white font-bold font-display">
+                        {user.tier || "Star Walker"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-white/60 text-xs uppercase tracking-widest font-medium mb-1">
+                      Spark Points
+                    </span>
+                    <span className="text-3xl text-primary font-bold font-display">
+                      {user.points?.toLocaleString() || 0}
                     </span>
                   </div>
                   <p className="text-white/60 text-sm max-w-sm">
                     You are{" "}
-                    <span className="text-white font-bold">250 points</span>{" "}
-                    away from ascending to the "Moon Dancer" tier.
+                    <span className="text-white font-bold">
+                      {1000 - (user.points || 0)} points
+                    </span>{" "}
+                    away from ascending to the "Nebula Navigator" tier.
                   </p>
+                  <div className="w-full bg-white/10 rounded-full h-2 mt-4">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-full transition-all duration-1000"
+                      style={{
+                        width: `${Math.min(((user.points || 0) / 1000) * 100, 100)}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-white/40 mt-2 font-medium">
+                    <span>{user.points || 0} / 1000 to next tier</span>
+                    <span>Nebula Navigator</span>
+                  </div>
                 </div>
                 <GlowButton
                   variant="cosmic"
                   icon="diamond"
                   className="mt-4 sm:mt-0"
                   onClick={() =>
-                    alert(
+                    toast(
                       "Rewards redemption coming soon! Stay tuned for exciting rewards.",
+                      { icon: "✨" },
                     )
                   }
                 >
@@ -209,6 +244,22 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
               </div>
             </GlassCard>
           </motion.div>
+          <DashboardCard
+            title="Archives"
+            icon="history_edu"
+            value={user.archives?.length || 0}
+            label="Reports"
+            color="from-blue-500 to-indigo-500"
+            onClick={() => setScreen(Screen.ARCHIVES)}
+          />
+          <DashboardCard
+            title="Favorites"
+            icon="favorite"
+            value={user.favorites?.length || 0}
+            label="Saved Items"
+            color="from-red-400 to-pink-600"
+            onClick={() => setScreen(Screen.FAVORITES)}
+          />
         </div>
       </main>
     </div>
@@ -259,15 +310,17 @@ export const Orders: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-const NavBtn = ({ icon, label, active, onClick }: any) => (
-  <button
-    onClick={onClick}
-    className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300 ${active ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(244,192,37,0.1)]" : "text-text-muted hover:bg-white/5 hover:text-white border border-transparent"}`}
-  >
-    <span className="material-symbols-outlined text-[20px]">{icon}</span>
-    <span className="text-sm font-bold">{label}</span>
-  </button>
-);
+function NavBtn({ icon, label, active, onClick }: any) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300 ${active ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(244,192,37,0.1)]" : "text-text-muted hover:bg-white/5 hover:text-white border border-transparent"}`}
+    >
+      <span className="material-symbols-outlined text-[20px]">{icon}</span>
+      <span className="text-sm font-bold">{label}</span>
+    </button>
+  );
+}
 
 export const Archives: React.FC<NavProps> = ({ setScreen }) => {
   const { user } = useUser();
@@ -352,7 +405,7 @@ const ArchiveCard = ({ item }: { item: any; key?: any }) => {
     item.image ||
     (item.type === "Astrology"
       ? "https://lh3.googleusercontent.com/aida-public/AB6AXuCuy6mtv7iJE3VcfRhDjshoTaD7dUQNqLN1FRvSfpDZf4kZ2S8h90DxDlmIBG7ZTSRaaL66gwwIKpSvJPx81j6QYk0trYBVRmtqIlQfvIDotCaERWFsoUXcjb1aOtCIN2kkaZ-TNzojTtqHs19J8HAbICH7sbBKRr2hANVGOpM2wbqSbDSxhawtuH41k4j2yUVlqEdXGEA8lOaDSa5G7wrDW_hfKT-ZtmZVviS_B6qcElXYkZo6w3CDAxguO77b3SihJkXmj1mxOYv1"
-      : "https://lh3.googleusercontent.com/aida-public/AB6AXuDnPk-u1Prw-XJq1l5IJ9mPRdwMJ-CMC9GP4ODzhvwtTQcvRL2Wa_7yo29WR419eE5D3XTACDr4fgRmNbbw9JLocAoItNkw0Iu_M5goh5OTlX-ZTuQ-aWMzpKOIv2HppNVRx8k6Yd3tVfI6FpNrl8FofeyamwOc7yW_OZRQLhLqhl5x8ke_TGUMSlT3ZXwmo3vOZMEHZuoxSHarMJk7uDMq0fwNnL2NhpTJdEEyRkNax5nyU_ElrNXDzunABIue0uMya1q7-ZEt8bHC");
+      : "https://lh3.googleusercontent.com/aida-public/AB6AXuDnPk-u1Prw-XJ1l5IJ9mPRdwMJ-CMC9GP4ODzh2wtTQcvRL2Wa_7yo29WR419eE5D3XTACDr4fgRmNbbw9JLocAoItNkw0Iu_M5goh5OTlX-ZTuQ-aWMzpKOIv2HppNVRx8k6Yd3tVfI6FpNrl8FofeyamwOc7yW_OZRQLhLqhl5x8ke_TGUMSlT3ZXWmo3vOZMEHZuoxSHarMJk7uDMq0fwNnL2NhpTJdEEyRkNax5nyU_ElrNXDzunABIue0uMya1q7-ZEt8bHC");
 
   return (
     <motion.div
@@ -420,7 +473,7 @@ export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
       preferences: { ...user.preferences, marketingConsent: marketing },
     });
     setLoading(false);
-    alert("Settings saved!");
+    toast.success("Settings saved!");
   };
 
   return (
@@ -488,23 +541,24 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
 
   React.useEffect(() => {
     const fetchConsultations = async () => {
-      // Join with experts table to get names
-      // Since supabase-js join syntax is tricky with foreign keys if not explicitly named,
-      // we might need a view or just fetch separately.
-      // Or: .select(`*, experts(name, image_url)`)
+      // Fetch from appointments table which holds the actual bookings
       const { data, error } = await supabase
-        .from("consultations")
+        .from("appointments")
         .select(
           `
           *,
           experts (
             name,
             image_url
+          ),
+          consultations (
+            name,
+            duration
           )
         `,
         )
         .eq("user_id", user.id)
-        .order("scheduled_at", { ascending: false });
+        .order("booked_at", { ascending: false });
 
       if (!error && data) {
         setConsultations(data);
@@ -567,13 +621,14 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
               ></div>
               <div className="flex-1">
                 <h3 className="text-white font-bold text-lg">
-                  {c.delivery_method || "Consultation"} with {c.experts?.name}
+                  {c.consultations?.name || "Consultation"} with{" "}
+                  {c.experts?.name}
                 </h3>
                 <p className="text-text-muted text-sm flex items-center gap-2 mt-1">
                   <span className="material-symbols-outlined text-xs">
                     event
                   </span>
-                  {new Date(c.scheduled_at).toLocaleString()}
+                  {new Date(c.booked_at).toLocaleString()}
                 </p>
                 {c.meeting_link && (
                   <a
@@ -596,3 +651,145 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
     </div>
   );
 };
+
+const Favorites: React.FC<NavProps> = ({ setScreen }) => {
+  const { user, toggleFavorite } = useUser();
+  const { addToCart } = useCart();
+  const [products, setProducts] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!user.favorites || user.favorites.length === 0) {
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+
+      const ids = user.favorites.map((f) => f.product_id);
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .in("id", ids);
+
+      if (!error && data) {
+        setProducts(data);
+      }
+      setLoading(false);
+    };
+
+    fetchFavorites();
+  }, [user.favorites]);
+
+  return (
+    <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
+      <button
+        onClick={() => setScreen(Screen.USER_DASHBOARD)}
+        className="text-white/50 hover:text-white mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
+      >
+        <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
+          arrow_back
+        </span>{" "}
+        Back to Dashboard
+      </button>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col gap-2 mb-10"
+      >
+        <h1 className="text-3xl md:text-4xl font-light font-display text-white">
+          My <span className="font-bold text-primary">Favorites</span>
+        </h1>
+        <p className="text-text-muted font-light">Saved artifacts and tools.</p>
+      </motion.div>
+
+      {products.length === 0 && !loading ? (
+        <GlassCard className="text-center py-20 border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center">
+          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center text-white/20 mb-4">
+            <span className="material-symbols-outlined text-3xl">favorite</span>
+          </div>
+          <p className="text-text-muted">No favorites yet.</p>
+          <button
+            onClick={() => setScreen(Screen.SHOP_LIST)}
+            className="text-primary mt-4 hover:text-white font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-white transition-all"
+          >
+            Browse Shop
+          </button>
+        </GlassCard>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {products.map((product, index) => (
+            <ProductCard
+              key={product.id}
+              {...product}
+              index={index}
+              isFavorited={true}
+              onToggleFavorite={() => toggleFavorite(product.id)}
+              onClick={() => {
+                // Navigation to detail not fully established here passed props,
+                // simplifying to just toast for now or basic view
+              }}
+              onAddToCart={() => {
+                addToCart({ ...product, type: "product" });
+                toast.success(`Added ${product.title} to cart`);
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+function DashboardCard({
+  title,
+  icon,
+  value,
+  label,
+  color,
+  onClick,
+}: {
+  title: string;
+  icon: string;
+  value: number | string;
+  label: string;
+  color: string;
+  onClick?: () => void;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -5 }}
+      className="md:col-span-6 lg:col-span-4 cursor-pointer"
+      onClick={onClick}
+    >
+      <GlassCard className="p-6 h-full flex flex-col justify-between border-white/5 hover:border-primary/30 transition-colors group">
+        <div className="flex justify-between items-start mb-4">
+          <div
+            className={`p-3 rounded-xl bg-gradient-to-br ${color} bg-opacity-10`}
+          >
+            <span className="material-symbols-outlined text-white text-xl">
+              {icon}
+            </span>
+          </div>
+          <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors">
+            <span className="material-symbols-outlined text-sm">
+              arrow_forward
+            </span>
+          </div>
+        </div>
+        <div>
+          <h3 className="text-text-muted text-sm font-medium uppercase tracking-wider mb-1">
+            {title}
+          </h3>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-white font-display">
+              {value}
+            </span>
+            <span className="text-xs text-white/40">{label}</span>
+          </div>
+        </div>
+      </GlassCard>
+    </motion.div>
+  );
+}

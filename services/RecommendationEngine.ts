@@ -69,24 +69,78 @@ export const RecommendationEngine = {
       .sort((a: any, b: any) => b.score - a.score)
       .slice(0, limit);
 
-    // Fallback if no matches: return highly rated or random
-    if (sorted.length === 0) {
-      // Just return top 3 products by rating/default
-      return scoredProducts.slice(0, limit);
+    // Fallback logic: Ensure we always return 'limit' items if possible
+    let finalRecs = [...sorted];
+
+    if (finalRecs.length < limit) {
+      // Find items not already in the list
+      const existingIds = new Set(finalRecs.map((p) => p.id));
+      const remaining = scoredProducts.filter(
+        (p: any) => !existingIds.has(p.id),
+      );
+
+      // Shuffle remaining items to keep it dynamic
+      for (let i = remaining.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+      }
+
+      finalRecs = [
+        ...finalRecs,
+        ...remaining.slice(0, limit - finalRecs.length),
+      ];
     }
 
-    return sorted;
+    return finalRecs;
   },
 
-  // Personalized recommendations based on User Profile (e.g. birth chart element)
+  // Personalized recommendations based on User Profile
   async getPersonalizedRecs(
     userProfile: any,
     limit: number = 3,
   ): Promise<Product[]> {
-    // Logic: Map zodiac sign/element to tags
-    // This is a placeholder for Phase 5 logic
-    // For now, return generic recommendations
-    return this.getRecommendations("spirituality", limit);
+    let searchTerm = "protection"; // Default fallback
+
+    // Try to derive search term from Astrlogical Element if available
+    if (userProfile?.birthData?.date) {
+      const date = new Date(userProfile.birthData.date);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+
+      // Simple Zodiac Element Mapping
+      // Fire: Aries, Leo, Sagittarius
+      // Earth: Taurus, Virgo, Capricorn
+      // Air: Gemini, Libra, Aquarius
+      // Water: Cancer, Scorpio, Pisces
+
+      // Very rough check (could use shared AstrologyEngine but keeping it simple/decoupled)
+      if ((month === 3 && day >= 21) || (month === 4 && day <= 19))
+        searchTerm = "fire"; // Aries
+      else if ((month === 4 && day >= 20) || (month === 5 && day <= 20))
+        searchTerm = "earth"; // Taurus
+      else if ((month === 5 && day >= 21) || (month === 6 && day <= 20))
+        searchTerm = "air"; // Gemini
+      else if ((month === 6 && day >= 21) || (month === 7 && day <= 22))
+        searchTerm = "water"; // Cancer
+      else if ((month === 7 && day >= 23) || (month === 8 && day <= 22))
+        searchTerm = "fire"; // Leo
+      else if ((month === 8 && day >= 23) || (month === 9 && day <= 22))
+        searchTerm = "earth"; // Virgo
+      else if ((month === 9 && day >= 23) || (month === 10 && day <= 22))
+        searchTerm = "air"; // Libra
+      else if ((month === 10 && day >= 23) || (month === 11 && day <= 21))
+        searchTerm = "water"; // Scorpio
+      else if ((month === 11 && day >= 22) || (month === 12 && day <= 21))
+        searchTerm = "fire"; // Sagittarius
+      else if ((month === 12 && day >= 22) || (month === 1 && day <= 19))
+        searchTerm = "earth"; // Capricorn
+      else if ((month === 1 && day >= 20) || (month === 2 && day <= 18))
+        searchTerm = "air"; // Aquarius
+      else if ((month === 2 && day >= 19) || (month === 3 && day <= 20))
+        searchTerm = "water"; // Pisces
+    }
+
+    return this.getRecommendations(searchTerm, limit);
   },
 
   // Get featured products for homepage

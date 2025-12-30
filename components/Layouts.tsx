@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
 import { supabase } from "../services/supabase";
+import toast from "react-hot-toast";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -413,15 +414,26 @@ export const Footer: React.FC<{ setScreen?: (s: Screen) => void }> = ({
           © 2025 Silk & Spark. Transcending the physical.
         </p>
         <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-          <a href="#" className="hover:text-white transition-colors">
+          <button
+            onClick={() => toast("Privacy policy coming soon", { icon: "📋" })}
+            className="hover:text-white transition-colors"
+          >
             Privacy
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
+          </button>
+          <button
+            onClick={() =>
+              toast("Terms of service coming soon", { icon: "📋" })
+            }
+            className="hover:text-white transition-colors"
+          >
             Terms
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
+          </button>
+          <button
+            onClick={() => toast("Cookie policy coming soon", { icon: "🍪" })}
+            className="hover:text-white transition-colors"
+          >
             Cookies
-          </a>
+          </button>
           <button
             onClick={() => setScreen?.(Screen.ADMIN_PAYMENTS)}
             className="hover:text-primary transition-colors flex items-center gap-1"
@@ -438,12 +450,12 @@ export const Footer: React.FC<{ setScreen?: (s: Screen) => void }> = ({
 );
 
 const SocialIcon = ({ icon }: { icon: string }) => (
-  <a
-    href="#"
+  <button
+    onClick={() => toast("Social links coming soon!", { icon: "🔗" })}
     className="size-10 rounded-xl border border-white/5 bg-white/5 flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/30 transition-all hover:-translate-y-1"
   >
     <span className="material-symbols-outlined text-[20px]">{icon}</span>
-  </a>
+  </button>
 );
 
 const FooterLink = ({

@@ -4,12 +4,15 @@ import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
 import { supabase } from "../services/supabase";
+import toast from "react-hot-toast";
 
 const AdminLayout: React.FC<{
   title: string;
   children: React.ReactNode;
   setScreen: (s: Screen) => void;
-}> = ({ title, children, setScreen }) => (
+  onSave?: () => void;
+  loading?: boolean;
+}> = ({ title, children, setScreen, onSave, loading }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -51,8 +54,14 @@ const AdminLayout: React.FC<{
           >
             Exit Admin
           </GlowButton>
-          <GlowButton variant="primary" icon="save">
-            Save Changes
+          <GlowButton
+            variant="primary"
+            icon="save"
+            onClick={onSave}
+            disabled={!onSave || loading}
+            className={!onSave ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            {loading ? "Saving..." : "Save Changes"}
           </GlowButton>
         </div>
       </div>
@@ -546,10 +555,10 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
       });
 
       if (error) throw error;
-      alert("AI Configuration saved successfully!");
+      toast.success("AI Configuration saved successfully!");
     } catch (err: any) {
       console.error("Error saving settings:", err);
-      alert("Failed to save settings: " + err.message);
+      toast.error("Failed to save settings: " + err.message);
     }
   };
 
@@ -558,7 +567,12 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
   };
 
   return (
-    <AdminLayout title="System Intelligence" setScreen={setScreen}>
+    <AdminLayout
+      title="System Intelligence"
+      setScreen={setScreen}
+      onSave={handleSave}
+      loading={loading}
+    >
       <GlassCard className="p-8 border-white/5">
         <h2 className="text-xl font-bold text-white mb-6 font-display flex items-center gap-2">
           <span className="text-primary">✦</span> AI Provider Configuration
@@ -662,16 +676,14 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end border-t border-white/5 pt-6">
-          <GlowButton
+        {/* <GlowButton
             onClick={handleSave}
             icon="save"
             className="px-8"
             disabled={loading}
           >
             {loading ? "Loading..." : "Update Configuration"}
-          </GlowButton>
-        </div>
+          </GlowButton> */}
       </GlassCard>
     </AdminLayout>
   );

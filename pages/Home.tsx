@@ -11,6 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { SEO } from "../components/SEO";
 import { JsonLd } from "../components/JsonLd";
+import toast from "react-hot-toast";
 
 export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   const [dailySpark, setDailySpark] = useState<string>(
@@ -18,8 +19,11 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   );
   const [showForm, setShowForm] = useState(false);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const { isBirthDataComplete } = useUser();
-  const { addItem } = useCart();
+  const { isBirthDataComplete, user, toggleFavorite } = useUser();
+  const { addItem, addToCart } = useCart();
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch featured products
   useEffect(() => {
@@ -289,18 +293,20 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
               featuredProducts.map((product, index) => (
                 <ProductCard
                   key={product.id}
-                  title={product.title}
-                  price={`$${product.price.toFixed(2)}`}
-                  desc={product.description || "Sacred Artifact"}
-                  image={product.image_url}
-                  onClick={() => {
-                    if (setProductId) setProductId(product.id);
-                    setScreen(Screen.PRODUCT_DETAIL);
-                  }}
-                  onAddToCart={(e: React.MouseEvent) =>
-                    handleAddToCart(e, product)
-                  }
+                  {...product}
                   index={index}
+                  isFavorited={user.favorites.some(
+                    (f) => f.product_id === product.id,
+                  )}
+                  onToggleFavorite={() => toggleFavorite(product.id)}
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setIsModalOpen(true);
+                  }}
+                  onAddToCart={() => {
+                    addToCart({ ...product, type: "product" });
+                    toast.success(`Added ${product.title} to cart`);
+                  }}
                 />
               ))
             ) : (
@@ -349,13 +355,15 @@ const FeatureCard = ({ icon, title, desc, action, onClick, index }: any) => (
   </motion.div>
 );
 
-const ProductCard = ({
+export const ProductCard = ({
   title,
   price,
   desc,
   image,
   onClick,
   onAddToCart,
+  onToggleFavorite,
+  isFavorited,
   index,
 }: any) => (
   <motion.div
@@ -376,11 +384,22 @@ const ProductCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            // TODO: Implement Favorite Logic
+            onToggleFavorite();
+            if (!isFavorited) {
+              toast.success("Added to favorites", { icon: "❤️" });
+            } else {
+              toast("Removed from favorites", { icon: "💔" });
+            }
           }}
-          className="h-10 w-10 rounded-full bg-white/90 text-black flex items-center justify-center hover:bg-primary transition-colors shadow-lg transform hover:scale-105"
+          className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors shadow-lg transform hover:scale-105 ${
+            isFavorited
+              ? "bg-primary text-white"
+              : "bg-white/90 text-black hover:bg-primary"
+          }`}
         >
-          <span className="material-symbols-outlined text-[20px]">
+          <span
+            className={`material-symbols-outlined text-[20px] ${isFavorited ? "fill-current" : ""}`}
+          >
             favorite
           </span>
         </button>

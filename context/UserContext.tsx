@@ -20,9 +20,10 @@ export interface Order {
   items: {
     name: string;
     price: number;
-    type: "product" | "service";
+    type: "product" | "service" | "consultation";
     status: string;
     image?: string;
+    metadata?: any;
   }[];
   total: number;
   status: "pending" | "completed" | "delivered";
@@ -39,6 +40,12 @@ export interface ArchiveItem {
   image?: string;
 }
 
+export interface FavoriteItem {
+  id: string; // Supabase ID
+  product_id: number;
+  created_at: Date;
+}
+
 export interface UserProfile {
   id?: string;
   name: string;
@@ -52,6 +59,7 @@ export interface UserProfile {
   points: number;
   tier: string;
   isAdmin: boolean; // Added field
+  favorites: FavoriteItem[];
 }
 
 interface UserContextType {
@@ -62,6 +70,7 @@ interface UserContextType {
   updateBirthData: (data: Partial<UserBirthData>) => Promise<void>;
   addOrder: (order: Order) => Promise<void>;
   addArchive: (item: ArchiveItem) => Promise<void>;
+  toggleFavorite: (productId: number) => Promise<void>;
   signOut: () => Promise<void>;
   isBirthDataComplete: boolean;
   isAdmin: boolean; // Direct access helper
@@ -83,6 +92,7 @@ const defaultUser: UserProfile = {
   points: 0,
   tier: "Star Walker",
   isAdmin: false, // Default
+  favorites: [],
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -177,6 +187,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         .select("*, order_items(*)")
         .eq("user_id", userId);
 
+      // 获取 favorites
+      const { data: favorites } = await supabase
+        .from("favorites")
+        .select("*")
+        .eq("user_id", userId);
+
       setUser({
         id: userId,
         name: profile?.full_name || "",
@@ -216,6 +232,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         points: profile?.points || 0,
         tier: profile?.tier || "Star Walker",
         isAdmin: !!profile?.is_admin, // Populate
+        favorites:
+          favorites?.map((f) => ({
+            id: f.id,
+            product_id: f.product_id,
+            created_at: new Date(f.created_at),
+          })) || [],
       });
     } catch (error) {
       console.error("Error fetching user profile:", error);
@@ -290,6 +312,40 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
 
     await supabase.from("order_items").insert(items);
+
+    // Check for consultations to create appointments
+    for (const item of order.items) {
+      if (item.type === "consultation" && item.metadata) {
+        const { date, time, expertId, expertName } = item.metadata;
+        if (date && time && expertId) {
+          // Parse date and time to create timestamp
+          // date is likely an ISO string or Date object
+          // time is "HH:00 AM/PM"
+          try {
+            const baseDate = new Date(date);
+            const [timePart, modifier] = time.split(" ");
+            let [hours, minutes] = timePart.split(":").map(Number);
+
+            if (modifier === "PM" && hours < 12) hours += 12;
+            if (modifier === "AM" && hours === 12) hours = 0;
+
+            baseDate.setHours(hours, minutes, 0, 0);
+
+            // Insert appointment
+            await supabase.from("appointments").insert({
+              user_id: session.user.id,
+              expert_id: expertId,
+              booked_at: baseDate.toISOString(),
+              duration_minutes: 60, // Default or from metadata
+              status: "confirmed", // Auto-confirm for Paid orders? Or pending
+              notes: `Booked via Order #${oData.id}`,
+            });
+          } catch (e) {
+            console.error("Error creating appointment:", e);
+          }
+        }
+      }
+    }
     fetchUserProfile(session.user.id); // 刷新
   };
 
@@ -305,6 +361,51 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     if (!error) fetchUserProfile(session.user.id);
+  };
+
+  const toggleFavorite = async (productId: number) => {
+    if (!session) return;
+
+    const existing = user.favorites.find((f) => f.product_id === productId);
+
+    if (existing) {
+      // Remove
+      const { error } = await supabase
+        .from("favorites")
+        .delete()
+        .eq("id", existing.id);
+
+      if (!error) {
+        setUser((prev) => ({
+          ...prev,
+          favorites: prev.favorites.filter((f) => f.id !== existing.id),
+        }));
+      }
+    } else {
+      // Add
+      const { data, error } = await supabase
+        .from("favorites")
+        .insert({
+          user_id: session.user.id,
+          product_id: productId,
+        })
+        .select()
+        .single();
+
+      if (!error && data) {
+        setUser((prev) => ({
+          ...prev,
+          favorites: [
+            ...prev.favorites,
+            {
+              id: data.id,
+              product_id: data.product_id,
+              created_at: new Date(data.created_at),
+            },
+          ],
+        }));
+      }
+    }
   };
 
   const signOut = async () => {
@@ -328,6 +429,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         updateBirthData,
         addOrder,
         addArchive,
+        toggleFavorite,
         signOut,
         isBirthDataComplete,
         isAdmin: user.isAdmin,
