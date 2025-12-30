@@ -6,7 +6,7 @@ import { BirthChart } from "./pages/BirthChart";
 import { AstrologyReport, TarotDaily, TarotSpread } from "./pages/AppFeatures";
 import { ShopList, ProductDetail } from "./pages/Commerce";
 import { Experts, Booking, Intake, Delivery } from "./pages/Consultation";
-import { UserDashboard, Archives, Orders } from "./pages/UserDashboard";
+import { UserDashboard, Archives, Orders, Consultations, UserSettings } from "./pages/UserDashboard";
 import { Payments, Currency, Shipping, SystemSettings } from "./pages/Admin";
 import { UserProvider, useUser } from "./context/UserContext";
 import { CartProvider } from "./context/CartContext";
@@ -44,6 +44,8 @@ const AppContent: React.FC = () => {
       case Screen.USER_DASHBOARD:
       case Screen.ARCHIVES:
       case Screen.ORDERS:
+      case Screen.CONSULTATIONS:
+      case Screen.SETTINGS:
         return "user";
       case Screen.ADMIN_PAYMENTS:
       case Screen.ADMIN_CURRENCY:
@@ -70,6 +72,8 @@ const AppContent: React.FC = () => {
       Screen.USER_DASHBOARD,
       Screen.ARCHIVES,
       Screen.ORDERS,
+      Screen.CONSULTATIONS,
+      Screen.SETTINGS,
       Screen.ADMIN_PAYMENTS,
       Screen.ADMIN_CURRENCY,
       Screen.ADMIN_SHIPPING,
@@ -134,6 +138,10 @@ const AppContent: React.FC = () => {
         return <Archives {...props} />;
       case Screen.ORDERS:
         return <Orders {...props} />;
+      case Screen.CONSULTATIONS:
+        return <Consultations {...props} />;
+      case Screen.SETTINGS:
+        return <UserSettings {...props} />;
       case Screen.ADMIN_PAYMENTS:
         return <Payments {...props} />;
       case Screen.ADMIN_CURRENCY:

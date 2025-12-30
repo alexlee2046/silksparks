@@ -1,0 +1,10 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin areas
+Disallow: /admin
+Disallow: /admin/*
+
+# Sitemap
+Sitemap: https://silksparks.com/sitemap.xml

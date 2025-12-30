@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c4a84d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0e68c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Spark/Star shape -->
+  <path d="M50 5 L55 40 L90 50 L55 60 L50 95 L45 60 L10 50 L45 40 Z" 
+        fill="url(#gradient)" 
+        stroke="#c4a84d" 
+        stroke-width="1"/>
+  <!-- Small inner spark -->
+  <circle cx="50" cy="50" r="8" fill="#0a0a0f"/>
+  <circle cx="50" cy="50" r="5" fill="url(#gradient)"/>
+</svg>

@@ -48,7 +48,10 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
                 </span>
               </div>
             </div>
-            <button className="flex items-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 px-3 py-2 transition-colors group w-full border border-white/5">
+            <button
+              onClick={() => setScreen(Screen.BIRTH_CHART)}
+              className="flex items-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 px-3 py-2 transition-colors group w-full border border-white/5"
+            >
               <span className="material-symbols-outlined text-[18px] text-primary group-hover:rotate-45 transition-transform">
                 star
               </span>
@@ -78,9 +81,13 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
             <NavBtn
               icon="calendar_month"
               label="Consultations"
-              onClick={() => {}}
+              onClick={() => setScreen(Screen.CONSULTATIONS)}
             />
-            <NavBtn icon="settings" label="Settings" onClick={() => {}} />
+            <NavBtn
+              icon="settings"
+              label="Settings"
+              onClick={() => setScreen(Screen.SETTINGS)}
+            />
           </nav>
         </div>
         <div className="flex flex-col gap-2">
@@ -148,6 +155,7 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
                   variant="cosmic"
                   icon="diamond"
                   className="mt-4 sm:mt-0"
+                  onClick={() => alert('Rewards redemption coming soon! Stay tuned for exciting rewards.')}
                 >
                   Redeem Rewards
                 </GlowButton>
@@ -185,7 +193,10 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
                 <span className="text-xs text-white/40 font-bold uppercase tracking-widest">
                   TODAY
                 </span>
-                <button className="text-primary text-sm font-bold hover:text-white flex items-center gap-1 transition-colors">
+                <button
+                  onClick={() => setScreen(Screen.REPORT)}
+                  className="text-primary text-sm font-bold hover:text-white flex items-center gap-1 transition-colors"
+                >
                   Read Full{" "}
                   <span className="material-symbols-outlined text-[16px]">
                     arrow_forward
