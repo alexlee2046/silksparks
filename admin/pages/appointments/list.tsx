@@ -18,7 +18,7 @@ export const AppointmentList: React.FC = () => {
     if (confirm("Delete this appointment?")) {
       deleteItem(
         { resource: "appointments", id },
-        { onSuccess: () => query.refetch() }
+        { onSuccess: () => query.refetch() },
       );
     }
   };

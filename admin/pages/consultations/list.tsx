@@ -18,7 +18,7 @@ export const ConsultationList: React.FC = () => {
     if (confirm(`Delete "${name}"?`)) {
       deleteItem(
         { resource: "consultations", id },
-        { onSuccess: () => query.refetch() }
+        { onSuccess: () => query.refetch() },
       );
     }
   };

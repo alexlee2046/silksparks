@@ -283,174 +283,176 @@ export const Footer: React.FC<{ setScreen?: (s: Screen) => void }> = ({
   const navigate = useNavigate();
 
   return (
-  <footer className="bg-background-dark border-t border-white/5 pt-20 pb-10 text-white/40 relative z-10 overflow-hidden">
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
+    <footer className="bg-background-dark border-t border-white/5 pt-20 pb-10 text-white/40 relative z-10 overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
 
-    <div className="max-w-[1440px] mx-auto px-6 md:px-10">
-      <div className="grid grid-cols-2 md:grid-cols-12 gap-10 md:gap-16 mb-20">
-        {/* Brand Section */}
-        <div className="col-span-2 md:col-span-4 space-y-8">
-          <button
-            onClick={() => setScreen?.(Screen.HOME)}
-            className="flex items-center gap-3 text-white group"
-          >
-            <span className="material-symbols-outlined text-primary !text-[28px] group-hover:scale-110 transition-transform">
-              auto_awesome
-            </span>
-            <span className="font-bold text-2xl font-display tracking-tight group-hover:text-primary transition-colors">
-              Silk & Spark
-            </span>
-          </button>
-          <p className="text-sm leading-relaxed max-w-sm font-light">
-            Merging ancient celestial wisdom with cutting-edge intelligence to
-            illuminate your path through the digital age.
-          </p>
-          <div className="flex gap-4">
-            <SocialIcon icon="hub" />
-            <SocialIcon icon="auto_fix" />
-            <SocialIcon icon="public" />
+      <div className="max-w-[1440px] mx-auto px-6 md:px-10">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-10 md:gap-16 mb-20">
+          {/* Brand Section */}
+          <div className="col-span-2 md:col-span-4 space-y-8">
+            <button
+              onClick={() => setScreen?.(Screen.HOME)}
+              className="flex items-center gap-3 text-white group"
+            >
+              <span className="material-symbols-outlined text-primary !text-[28px] group-hover:scale-110 transition-transform">
+                auto_awesome
+              </span>
+              <span className="font-bold text-2xl font-display tracking-tight group-hover:text-primary transition-colors">
+                Silk & Spark
+              </span>
+            </button>
+            <p className="text-sm leading-relaxed max-w-sm font-light">
+              Merging ancient celestial wisdom with cutting-edge intelligence to
+              illuminate your path through the digital age.
+            </p>
+            <div className="flex gap-4">
+              <SocialIcon icon="hub" />
+              <SocialIcon icon="auto_fix" />
+              <SocialIcon icon="public" />
+            </div>
+          </div>
+
+          {/* The Spark - 占星/塔罗功能 */}
+          <div className="md:col-span-2 space-y-5">
+            <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[14px]">
+                auto_awesome
+              </span>{" "}
+              The Spark
+            </h4>
+            <ul className="flex flex-col gap-3 text-xs font-medium">
+              <FooterLink onClick={() => setScreen?.(Screen.BIRTH_CHART)}>
+                Birth Chart
+              </FooterLink>
+              <FooterLink onClick={() => setScreen?.(Screen.REPORT)}>
+                Astrology Report
+              </FooterLink>
+              <FooterLink onClick={() => setScreen?.(Screen.TAROT_DAILY)}>
+                Daily Tarot
+              </FooterLink>
+              <FooterLink onClick={() => setScreen?.(Screen.TAROT_SPREAD)}>
+                Tarot Spread
+              </FooterLink>
+            </ul>
+          </div>
+
+          {/* The Silk - 商店/咨询 */}
+          <div className="md:col-span-2 space-y-5">
+            <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[14px]">
+                diamond
+              </span>{" "}
+              The Silk
+            </h4>
+            <ul className="flex flex-col gap-3 text-xs font-medium">
+              <FooterLink onClick={() => setScreen?.(Screen.SHOP_LIST)}>
+                Shop Artifacts
+              </FooterLink>
+              <FooterLink onClick={() => setScreen?.(Screen.EXPERTS)}>
+                Expert Guides
+              </FooterLink>
+              <FooterLink onClick={() => setScreen?.(Screen.BOOKING)}>
+                Book Session
+              </FooterLink>
+            </ul>
+          </div>
+
+          {/* My Space - 用户中心 */}
+          <div className="md:col-span-2 space-y-5">
+            <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[14px]">
+                person
+              </span>{" "}
+              My Space
+            </h4>
+            <ul className="flex flex-col gap-3 text-xs font-medium">
+              <FooterLink onClick={() => setScreen?.(Screen.USER_DASHBOARD)}>
+                Dashboard
+              </FooterLink>
+              <FooterLink onClick={() => setScreen?.(Screen.ARCHIVES)}>
+                Archives
+              </FooterLink>
+              <FooterLink onClick={() => setScreen?.(Screen.ORDERS)}>
+                Order History
+              </FooterLink>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div className="col-span-2 md:col-span-2 space-y-5">
+            <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[14px]">
+                mail
+              </span>{" "}
+              Newsletter
+            </h4>
+            <p className="text-xs leading-relaxed">
+              Lunar updates & exclusive drops.
+            </p>
+            <form
+              className="flex flex-col gap-3"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-primary/50 outline-none text-xs transition-all pr-11"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 bg-primary text-background-dark rounded-lg flex items-center justify-center hover:bg-white transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    arrow_forward
+                  </span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 
-        {/* The Spark - 占星/塔罗功能 */}
-        <div className="md:col-span-2 space-y-5">
-          <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[14px]">
-              auto_awesome
-            </span>{" "}
-            The Spark
-          </h4>
-          <ul className="flex flex-col gap-3 text-xs font-medium">
-            <FooterLink onClick={() => setScreen?.(Screen.BIRTH_CHART)}>
-              Birth Chart
-            </FooterLink>
-            <FooterLink onClick={() => setScreen?.(Screen.REPORT)}>
-              Astrology Report
-            </FooterLink>
-            <FooterLink onClick={() => setScreen?.(Screen.TAROT_DAILY)}>
-              Daily Tarot
-            </FooterLink>
-            <FooterLink onClick={() => setScreen?.(Screen.TAROT_SPREAD)}>
-              Tarot Spread
-            </FooterLink>
-          </ul>
-        </div>
-
-        {/* The Silk - 商店/咨询 */}
-        <div className="md:col-span-2 space-y-5">
-          <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[14px]">
-              diamond
-            </span>{" "}
-            The Silk
-          </h4>
-          <ul className="flex flex-col gap-3 text-xs font-medium">
-            <FooterLink onClick={() => setScreen?.(Screen.SHOP_LIST)}>
-              Shop Artifacts
-            </FooterLink>
-            <FooterLink onClick={() => setScreen?.(Screen.EXPERTS)}>
-              Expert Guides
-            </FooterLink>
-            <FooterLink onClick={() => setScreen?.(Screen.BOOKING)}>
-              Book Session
-            </FooterLink>
-          </ul>
-        </div>
-
-        {/* My Space - 用户中心 */}
-        <div className="md:col-span-2 space-y-5">
-          <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[14px]">
-              person
-            </span>{" "}
-            My Space
-          </h4>
-          <ul className="flex flex-col gap-3 text-xs font-medium">
-            <FooterLink onClick={() => setScreen?.(Screen.USER_DASHBOARD)}>
-              Dashboard
-            </FooterLink>
-            <FooterLink onClick={() => setScreen?.(Screen.ARCHIVES)}>
-              Archives
-            </FooterLink>
-            <FooterLink onClick={() => setScreen?.(Screen.ORDERS)}>
-              Order History
-            </FooterLink>
-          </ul>
-        </div>
-
-        {/* Newsletter */}
-        <div className="col-span-2 md:col-span-2 space-y-5">
-          <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[14px]">
-              mail
-            </span>{" "}
-            Newsletter
-          </h4>
-          <p className="text-xs leading-relaxed">
-            Lunar updates & exclusive drops.
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-widest">
+          <p className="text-white/20 italic">
+            © 2025 Silk & Spark. Transcending the physical.
           </p>
-          <form
-            className="flex flex-col gap-3"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-primary/50 outline-none text-xs transition-all pr-11"
-              />
-              <button
-                type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 bg-primary text-background-dark rounded-lg flex items-center justify-center hover:bg-white transition-colors"
-              >
-                <span className="material-symbols-outlined text-[16px]">
-                  arrow_forward
-                </span>
-              </button>
-            </div>
-          </form>
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+            <button
+              onClick={() =>
+                toast("Privacy policy coming soon", { icon: "📋" })
+              }
+              className="hover:text-white transition-colors"
+            >
+              Privacy
+            </button>
+            <button
+              onClick={() =>
+                toast("Terms of service coming soon", { icon: "📋" })
+              }
+              className="hover:text-white transition-colors"
+            >
+              Terms
+            </button>
+            <button
+              onClick={() => toast("Cookie policy coming soon", { icon: "🍪" })}
+              className="hover:text-white transition-colors"
+            >
+              Cookies
+            </button>
+            <button
+              onClick={() => navigate("/admin")}
+              className="hover:text-primary transition-colors flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[10px]">
+                shield_person
+              </span>{" "}
+              Admin
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* Bottom Bar */}
-      <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-widest">
-        <p className="text-white/20 italic">
-          © 2025 Silk & Spark. Transcending the physical.
-        </p>
-        <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-          <button
-            onClick={() => toast("Privacy policy coming soon", { icon: "📋" })}
-            className="hover:text-white transition-colors"
-          >
-            Privacy
-          </button>
-          <button
-            onClick={() =>
-              toast("Terms of service coming soon", { icon: "📋" })
-            }
-            className="hover:text-white transition-colors"
-          >
-            Terms
-          </button>
-          <button
-            onClick={() => toast("Cookie policy coming soon", { icon: "🍪" })}
-            className="hover:text-white transition-colors"
-          >
-            Cookies
-          </button>
-          <button
-            onClick={() => navigate("/admin")}
-            className="hover:text-primary transition-colors flex items-center gap-1"
-          >
-            <span className="material-symbols-outlined text-[10px]">
-              shield_person
-            </span>{" "}
-            Admin
-          </button>
-        </div>
-      </div>
-    </div>
-  </footer>
+    </footer>
   );
 };
 

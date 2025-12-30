@@ -20,7 +20,7 @@ export const ProductList: React.FC = () => {
         onDelete={(id: string) =>
           deleteProduct(
             { resource: "products", id },
-            { onSuccess: () => query.refetch() }
+            { onSuccess: () => query.refetch() },
           )
         }
       />

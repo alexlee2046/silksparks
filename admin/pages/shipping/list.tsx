@@ -15,7 +15,7 @@ export const ShippingList: React.FC = () => {
     if (confirm(`Delete shipping zone "${name}"?`)) {
       deleteZone(
         { resource: "shipping_zones", id },
-        { onSuccess: () => query.refetch() }
+        { onSuccess: () => query.refetch() },
       );
     }
   };

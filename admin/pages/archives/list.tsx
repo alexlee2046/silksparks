@@ -18,7 +18,7 @@ export const ArchiveList: React.FC = () => {
     if (confirm(`Delete "${title}"?`)) {
       deleteItem(
         { resource: "archives", id },
-        { onSuccess: () => query.refetch() }
+        { onSuccess: () => query.refetch() },
       );
     }
   };

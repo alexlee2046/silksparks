@@ -20,7 +20,7 @@ export const ExpertList: React.FC = () => {
         onDelete={(id: string) =>
           deleteExpert(
             { resource: "experts", id },
-            { onSuccess: () => query.refetch() }
+            { onSuccess: () => query.refetch() },
           )
         }
       />

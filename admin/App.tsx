@@ -250,7 +250,7 @@ export const AdminApp: React.FC = () => {
       <Routes>
         <Route
           element={
-            <Authenticated key="admin-auth" fallback={null}>
+            <Authenticated key="admin-auth" redirectOnFail="/">
               <AdminLayout />
             </Authenticated>
           }

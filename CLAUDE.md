@@ -22,6 +22,7 @@ npm run test:e2e:headed  # E2E with visible browser
 ## Architecture Overview
 
 ### Stack
+
 - **Frontend**: React 19 + TypeScript + Vite
 - **Styling**: Tailwind CSS 4 with custom dark theme
 - **Backend**: Supabase (PostgreSQL + Auth + Edge Functions)
@@ -29,6 +30,7 @@ npm run test:e2e:headed  # E2E with visible browser
 - **3D/Animation**: Three.js (React Three Fiber) + Framer Motion
 
 ### Application Structure
+
 ```
 App.tsx              # Main router - splits /admin/* vs user app
 ├── /admin/*         # Refine admin dashboard (admin/App.tsx)
@@ -36,9 +38,11 @@ App.tsx              # Main router - splits /admin/* vs user app
 ```
 
 ### Screen-Based Navigation
+
 Routes are controlled by `Screen` enum in `types.ts`. The `App.tsx` renders different page components based on `currentScreen` state rather than URL paths.
 
 Key screen groups:
+
 - **Public**: HOME, BIRTH_CHART, REPORT, TAROT_DAILY, TAROT_SPREAD
 - **Commerce**: SHOP_LIST, PRODUCT_DETAIL
 - **Consultation**: EXPERTS, EXPERT_PROFILE, BOOKING, INTAKE, DELIVERY
@@ -46,33 +50,38 @@ Key screen groups:
 - **Admin**: ADMIN_PAYMENTS, ADMIN_CURRENCY, ADMIN_SHIPPING, ADMIN_SETTINGS
 
 ### State Management
+
 Context API (no Redux):
+
 - `context/UserContext.tsx` - Auth session, user profile, orders, archives, favorites
 - `context/CartContext.tsx` - Shopping cart with localStorage persistence
 
 ### Authentication
+
 Supabase Auth with RLS (Row Level Security):
+
 - Session managed via `UserContext`
 - Admin routes require `isAdmin` flag from profile
 - Protected screens check session before rendering
 
 ## Key Files
 
-| Path | Purpose |
-|------|---------|
-| `types.ts` | Screen enum & NavProps interface |
-| `services/supabase.ts` | Supabase client initialization |
-| `services/ai/` | AI provider abstraction (Gemini vs Edge Function) |
-| `services/AstrologyEngine.ts` | Planetary calculations (astronomy-engine) |
-| `components/Layouts.tsx` | Header/Footer, notifications, layout wrapper |
-| `pages/` | One file per major screen/feature |
-| `admin/` | Separate Refine-based admin app |
-| `supabase/functions/` | Edge Functions (ai-generate) |
-| `supabase/migrations/` | Database schema migrations |
+| Path                          | Purpose                                           |
+| ----------------------------- | ------------------------------------------------- |
+| `types.ts`                    | Screen enum & NavProps interface                  |
+| `services/supabase.ts`        | Supabase client initialization                    |
+| `services/ai/`                | AI provider abstraction (Gemini vs Edge Function) |
+| `services/AstrologyEngine.ts` | Planetary calculations (astronomy-engine)         |
+| `components/Layouts.tsx`      | Header/Footer, notifications, layout wrapper      |
+| `pages/`                      | One file per major screen/feature                 |
+| `admin/`                      | Separate Refine-based admin app                   |
+| `supabase/functions/`         | Edge Functions (ai-generate)                      |
+| `supabase/migrations/`        | Database schema migrations                        |
 
 ## Database Schema
 
 Core tables (all have RLS policies):
+
 - `profiles` - User accounts with birth data, tier, points
 - `archives` - AI-generated reports (astrology, tarot)
 - `products` + `product_tags` - Shop catalog
@@ -84,6 +93,7 @@ Core tables (all have RLS policies):
 ## AI Provider Configuration
 
 Set via `VITE_AI_PROVIDER` in `.env.local`:
+
 - `gemini` - Direct Gemini API (dev only, key exposed in frontend)
 - `supabase` - Edge Function proxy (production, key server-side)
 
@@ -92,6 +102,7 @@ For production: deploy Edge Function and set `GEMINI_API_KEY` via `supabase secr
 ## Environment Setup
 
 Copy `.env.example` to `.env.local`:
+
 ```bash
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
@@ -102,6 +113,7 @@ VITE_GEMINI_API_KEY=your-key  # only for dev with gemini provider
 ## Testing
 
 Tests in `tests/` directory:
+
 - `db.test.cjs` - Supabase connection, table existence
 - `api.test.cjs` - API endpoint responses
 - `security.test.cjs` - RLS policy enforcement

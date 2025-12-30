@@ -18,7 +18,7 @@ export const TagList: React.FC = () => {
     if (confirm(`Delete tag "${name}"?`)) {
       deleteItem(
         { resource: "tags", id },
-        { onSuccess: () => query.refetch() }
+        { onSuccess: () => query.refetch() },
       );
     }
   };
