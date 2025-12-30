@@ -1,174 +1,66 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { supabase } from "./supabase";
+/**
+ * GeminiService - 兼容层
+ *
+ * @deprecated 请迁移到 services/ai 模块
+ * 此文件保留以确保向后兼容，内部已重定向到新的 AIService
+ */
 
-/// <reference types="vite/client" />
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+import {
+  legacyGenerateBirthChartAnalysis,
+  legacyGenerateTarotInterpretation,
+  legacyGenerateDailySpark,
+  clearAICache,
+} from "./ai";
 
-// Mock fallback for development if API key is missing
-const MOCK_MODE = !API_KEY;
-
-if (MOCK_MODE) {
-  console.warn("Gemini API Key is missing. Using MOCK AI responses.");
-}
-
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
-
-// Cache for settings to avoid fetching on every call
-let aiConfigCache: {
-  model: string;
-  temperature: number;
-  max_tokens: number;
-} | null = null;
-let aiPromptsCache: {
-  daily_spark: string;
-  tarot_interpretation: string;
-  birth_chart_analysis: string;
-} | null = null;
-let lastFetchTime = 0;
-const CACHE_TTL = 60 * 1000; // 1 minute cache
-
-async function getAISettings() {
-  const now = Date.now();
-  if (aiConfigCache && aiPromptsCache && now - lastFetchTime < CACHE_TTL) {
-    return { config: aiConfigCache, prompts: aiPromptsCache };
-  }
-
-  try {
-    const { data: configData } = await supabase
-      .from("system_settings")
-      .select("value")
-      .eq("key", "ai_config")
-      .single();
-
-    const { data: promptsData } = await supabase
-      .from("system_settings")
-      .select("value")
-      .eq("key", "ai_prompts")
-      .single();
-
-    if (configData) aiConfigCache = configData.value;
-    if (promptsData) aiPromptsCache = promptsData.value;
-    lastFetchTime = now;
-
-    return { config: aiConfigCache, prompts: aiPromptsCache };
-  } catch (error) {
-    console.warn("Failed to fetch AI settings, using defaults:", error);
-    // Return defaults if fetch fails
-    return {
-      config: { model: "gemini-pro", temperature: 0.7, max_tokens: 2048 },
-      prompts: {
-        daily_spark:
-          "Act as a mystical astrology expert. Give me a short, one-sentence daily spark for {{sign}}. Max 20 words.",
-        tarot_interpretation:
-          "You are an expert Tarot reader. Question: {{question}}. Card: {{cardName}}. Provide 3-sentence interpretation.",
-        birth_chart_analysis:
-          "Analyze the birth chart for {{name}}. Planets: {{planets}}. Elements: {{elements}}. Provide 2-paragraph insight.",
-      },
-    };
-  }
-}
-
-function interpolate(template: string, values: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => values[key] || "");
-}
-
+/**
+ * @deprecated 使用 `import { AIService } from './ai'` 替代
+ */
 export const GeminiService = {
+  /**
+   * 生成每日灵感
+   * @deprecated 使用 AIService.generateDailySpark() 替代
+   */
   async generateDailySpark(sign: string = "General"): Promise<string> {
-    if (MOCK_MODE) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return `[MOCK] The stars align for ${sign} today. Trust your intuition and embrace new beginnings.`;
-    }
-
-    try {
-      const { config, prompts } = await getAISettings();
-      const model = genAI!.getGenerativeModel({
-        model: config?.model || "gemini-pro",
-      });
-
-      const prompt = interpolate(
-        prompts?.daily_spark || "Give a daily spark for {{sign}}.",
-        { sign },
-      );
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
-    } catch (error) {
-      console.error("Error generating daily spark:", error);
-      return "The stars are silent today. Look within for your answer.";
-    }
+    console.warn(
+      "[GeminiService] generateDailySpark 已弃用，请迁移到 AIService.generateDailySpark()",
+    );
+    return legacyGenerateDailySpark(sign);
   },
 
+  /**
+   * 生成塔罗解读
+   * @deprecated 使用 AIService.generateTarotReading() 替代
+   */
   async generateTarotInterpretation(
     cardName: string,
     question: string,
   ): Promise<string> {
-    if (MOCK_MODE) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      return `[MOCK] The ${cardName} suggests that regarding "${question}", you should focus on inner balance. This card symbolizes clarity and new perspectives.`;
-    }
-
-    try {
-      const { config, prompts } = await getAISettings();
-      const model = genAI!.getGenerativeModel({
-        model: config?.model || "gemini-pro",
-      });
-
-      const prompt = interpolate(
-        prompts?.tarot_interpretation ||
-          "Card: {{cardName}}, Question: {{question}}",
-        { cardName, question },
-      );
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
-    } catch (error) {
-      console.error("Error generating tarot reading:", error);
-      return "The cards are clouded. Meditate and try again later.";
-    }
+    console.warn(
+      "[GeminiService] generateTarotInterpretation 已弃用，请迁移到 AIService.generateTarotReading()",
+    );
+    return legacyGenerateTarotInterpretation(cardName, question);
   },
 
+  /**
+   * 生成星盘分析
+   * @deprecated 使用 AIService.generateBirthChartAnalysis() 替代
+   */
   async generateBirthChartAnalysis(
     name: string,
     planets: any,
     elements: any,
   ): Promise<string> {
-    if (MOCK_MODE) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      return `[MOCK] ${name}, your chart shows strong ${Object.keys(elements)[0]} energy. With ${Object.keys(planets)[0]} in ${Object.values(planets)[0]}, you possess a unique drive for success. Embrace your cosmic potential.`;
-    }
-
-    try {
-      const { config, prompts } = await getAISettings();
-      const model = genAI!.getGenerativeModel({
-        model: config?.model || "gemini-pro",
-      });
-
-      const planetSummary = Object.entries(planets)
-        .map(([k, v]) => `${k} in ${v}`)
-        .join(", ");
-      const elementSummary = Object.entries(elements)
-        .map(([k, v]) => `${k}: ${v}%`)
-        .join(", ");
-
-      const prompt = interpolate(
-        prompts?.birth_chart_analysis ||
-          "Analyze {{name}}'s chart. Planets: {{planets}}. Elements: {{elements}}.",
-        { name, planets: planetSummary, elements: elementSummary },
-      );
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
-    } catch (error) {
-      console.error("Error generating report:", error);
-      return "The stars are aligning... please try again later to reveal your full cosmic blueprint.";
-    }
+    console.warn(
+      "[GeminiService] generateBirthChartAnalysis 已弃用，请迁移到 AIService.generateBirthChartAnalysis()",
+    );
+    return legacyGenerateBirthChartAnalysis(name, planets, elements);
   },
 
-  // Utility to clear cache (useful after admin updates settings)
-  clearCache() {
-    aiConfigCache = null;
-    aiPromptsCache = null;
-    lastFetchTime = 0;
+  /**
+   * 清除缓存
+   * @deprecated 使用 AIService.clearCache() 替代
+   */
+  clearCache(): void {
+    clearAICache();
   },
 };

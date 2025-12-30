@@ -6,7 +6,7 @@ import {
   PlanetaryPositions,
   FiveElementsDistribution,
 } from "../services/AstrologyEngine";
-import { GeminiService } from "../services/GeminiService";
+import AIService from "../services/ai";
 import { motion } from "framer-motion";
 
 export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
@@ -38,12 +38,13 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
 
       setLoadingAI(true);
       try {
-        const text = await GeminiService.generateBirthChartAnalysis(
-          user.name || "Seeker",
+        const response = await AIService.generateBirthChartAnalysis({
+          name: user.name || "Seeker",
+          birthDate: user.birthData.date || new Date(),
           planets,
           elements,
-        );
-        setAiAnalysis(text);
+        });
+        setAiAnalysis(response.analysis);
       } finally {
         setLoadingAI(false);
       }

@@ -51,6 +51,7 @@ export interface UserProfile {
   archives: ArchiveItem[];
   points: number;
   tier: string;
+  isAdmin: boolean; // Added field
 }
 
 interface UserContextType {
@@ -63,6 +64,7 @@ interface UserContextType {
   addArchive: (item: ArchiveItem) => Promise<void>;
   signOut: () => Promise<void>;
   isBirthDataComplete: boolean;
+  isAdmin: boolean; // Direct access helper
 }
 
 const defaultUser: UserProfile = {
@@ -80,6 +82,7 @@ const defaultUser: UserProfile = {
   archives: [],
   points: 0,
   tier: "Star Walker",
+  isAdmin: false, // Default
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -96,7 +99,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchUserProfile(session.user.id);
-      setLoading(false);
+      else setLoading(false); // Ensure loading stops even if no session
     });
 
     const {
@@ -107,6 +110,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         fetchUserProfile(session.user.id);
       } else {
         setUser(defaultUser);
+        setLoading(false);
       }
     });
 
@@ -116,7 +120,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   // 2. 从数据库获取用户资料
   const fetchUserProfile = async (userId: string) => {
     try {
-      // 获取 profiles - 使用 maybeSingle 避免 406 错误
+      setLoading(true);
       // 获取 profiles - 使用 maybeSingle 避免 406 错误
       const { data: initialProfile, error: pError } = await supabase
         .from("profiles")
@@ -152,6 +156,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
             email: email,
             name: email.split("@")[0] || "User",
           });
+          setLoading(false);
           return;
         }
         profile = newProfile;
@@ -210,9 +215,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
           })) || [],
         points: profile?.points || 0,
         tier: profile?.tier || "Star Walker",
+        isAdmin: !!profile?.is_admin, // Populate
       });
     } catch (error) {
       console.error("Error fetching user profile:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -322,6 +330,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         addArchive,
         signOut,
         isBirthDataComplete,
+        isAdmin: user.isAdmin,
       }}
     >
       {children}

@@ -86,6 +86,16 @@ const AppContent: React.FC = () => {
       Screen.ADMIN_SETTINGS,
     ];
 
+    const adminScreens = [
+      Screen.ADMIN_PAYMENTS,
+      Screen.ADMIN_CURRENCY,
+      Screen.ADMIN_SHIPPING,
+      Screen.ADMIN_SETTINGS,
+    ];
+
+    const { user } = useUser(); // Ensure we access user here
+    // Note: session is already available from useUser(), but we need 'user' object for isAdmin check
+
     if (protectedScreens.includes(currentScreen) && !session) {
       return (
         <div className="min-h-screen bg-background-dark flex flex-col items-center justify-center gap-6 p-10 text-center">
@@ -110,6 +120,30 @@ const AppContent: React.FC = () => {
             className="text-white/40 text-sm hover:text-white transition-colors"
           >
             Return Home
+          </button>
+        </div>
+      );
+    }
+
+    // Additional Check for Admin Screens
+    if (adminScreens.includes(currentScreen) && session && !user.isAdmin) {
+      return (
+        <div className="min-h-screen bg-background-dark flex flex-col items-center justify-center gap-6 p-10 text-center">
+          <div className="h-20 w-20 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+            <span className="material-symbols-outlined text-4xl">security</span>
+          </div>
+          <h2 className="text-3xl font-display font-bold text-white uppercase tracking-wider">
+            Unauthorized
+          </h2>
+          <p className="text-white/40 max-w-sm">
+            You do not have sufficient permissions to access the Cosmic Control
+            Center.
+          </p>
+          <button
+            onClick={() => setScreen(Screen.HOME)}
+            className="px-10 py-4 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all"
+          >
+            Return to Safety
           </button>
         </div>
       );

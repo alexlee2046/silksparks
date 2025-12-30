@@ -1,6 +1,7 @@
 import React from "react";
 import { Screen, NavProps } from "../types";
-import { GeminiService } from "../services/GeminiService";
+import AIService from "../services/ai";
+import type { TarotCard } from "../services/ai/types";
 import { GlowButton } from "../components/GlowButton";
 import {
   RecommendationEngine,
@@ -97,11 +98,13 @@ export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
           setAnalysis(cached);
           setLoading(false);
         } else {
-          const text = await GeminiService.generateBirthChartAnalysis(
-            user.name,
-            p,
-            e,
-          );
+          const response = await AIService.generateBirthChartAnalysis({
+            name: user.name,
+            birthDate: user.birthData.date || new Date(),
+            planets,
+            elements,
+          });
+          const text = response.analysis;
           setAnalysis(text);
           const recs = await RecommendationEngine.getRecommendations(text, 3);
           setRecommendations(recs);
@@ -359,13 +362,20 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
       setTimeout(async () => {
         const randomCard =
           tarotData[Math.floor(Math.random() * tarotData.length)];
-        setCard(randomCard);
+        const cardWithOrientation: TarotCard = {
+          ...randomCard,
+          arcana: randomCard.arcana as "Major" | "Minor",
+          isReversed: Math.random() > 0.5,
+        };
+        setCard(cardWithOrientation);
 
         try {
-          const interpret = await GeminiService.generateTarotInterpretation(
-            randomCard.name,
-            "General daily advice",
-          );
+          const response = await AIService.generateTarotReading({
+            cards: [cardWithOrientation],
+            question: "General daily advice",
+            spreadType: "single",
+          });
+          const interpret = response.interpretation;
           setInterpretation(interpret);
           const recs = await RecommendationEngine.getRecommendations(interpret);
           setRecommendations(recs);
@@ -721,13 +731,18 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
       // Generate Reading
       setTimeout(async () => {
         try {
-          const prompt = `Spread: Past (${drawn[0].name}), Present (${drawn[1].name}), Future (${drawn[2].name}). Synthesize a cohesive narrative.`;
-          // Logic to call Gemini (mocking for speed/safety if API not ready, but using Service if available)
-          // For now, let's use the service but fallback if it fails or if we want to save tokens in dev
-          const text = await GeminiService.generateTarotInterpretation(
-            "3-Card Spread",
-            prompt,
-          );
+          // Use AIService for 3-card spread
+          const response = await AIService.generateTarotReading({
+            cards: [
+              { ...drawn[0], position: "past" },
+              { ...drawn[1], position: "present" },
+              { ...drawn[2], position: "future" },
+            ],
+            question:
+              "Synthesize a cohesive narrative for Past, Present, and Future.",
+            spreadType: "three-card",
+          });
+          const text = response.interpretation;
           setInterpretation(text);
 
           const recs = await RecommendationEngine.getRecommendations(text, 3);
@@ -1061,65 +1076,194 @@ const TarotCard = ({
 };
 
 const TarotCardBack = ({ showPattern = true }: { showPattern?: boolean }) => (
-  <div className="relative w-full h-full rounded-2xl bg-[#0a0a0a] border border-[#F4C025]/30 overflow-hidden shadow-2xl flex items-center justify-center">
-    {/* Geometric Background Pattern */}
+  <div className="relative w-full h-full rounded-2xl bg-gradient-to-b from-[#0d0d0d] via-[#0a0a0a] to-[#0d0d0d] border border-[#F4C025]/40 overflow-hidden shadow-2xl flex flex-col items-center justify-center">
+    {/* Subtle Background Gradient */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#F4C025]/5 via-transparent to-[#F4C025]/3"></div>
+
+    {/* Geometric Dot Pattern */}
     <div
-      className="absolute inset-0 opacity-10"
+      className="absolute inset-0 opacity-[0.08]"
       style={{
         backgroundImage:
           "radial-gradient(circle at 50% 50%, #F4C025 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
+        backgroundSize: "16px 16px",
       }}
     ></div>
 
-    {/* Inner Frame */}
-    <div className="absolute inset-3 border-2 border-[#F4C025]/60 rounded-xl flex items-center justify-center">
-      <div className="absolute inset-1 border border-[#F4C025]/30 rounded-lg"></div>
+    {/* Outer Decorative Border */}
+    <div className="absolute inset-2 border border-[#F4C025]/20 rounded-xl pointer-events-none"></div>
 
-      {/* Corner Ornaments */}
+    {/* Inner Frame with dual borders */}
+    <div className="absolute inset-4 border-2 border-[#F4C025]/50 rounded-lg flex items-center justify-center">
+      <div className="absolute inset-1.5 border border-[#F4C025]/25 rounded-md"></div>
+
+      {/* Corner Ornaments - More elegant L-shaped */}
       {[0, 90, 180, 270].map((rot) => (
         <div
           key={rot}
-          className="absolute w-8 h-8 pointer-events-none"
+          className="absolute w-6 h-6 pointer-events-none"
           style={{
             transform: `rotate(${rot}deg)`,
-            top: rot === 180 || rot === 270 ? "auto" : 2,
-            left: rot === 90 || rot === 180 ? "auto" : 2,
-            bottom: rot === 180 || rot === 270 ? 2 : "auto",
-            right: rot === 90 || rot === 180 ? 2 : "auto",
+            top: rot === 180 || rot === 270 ? "auto" : -1,
+            left: rot === 90 || rot === 180 ? "auto" : -1,
+            bottom: rot === 180 || rot === 270 ? -1 : "auto",
+            right: rot === 90 || rot === 180 ? -1 : "auto",
           }}
         >
           <svg viewBox="0 0 100 100" className="w-full h-full fill-[#F4C025]">
             <path
-              d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"
-              opacity="0.8"
+              d="M0,0 L100,0 L100,15 L15,15 L15,100 L0,100 Z"
+              opacity="0.9"
             />
+            <circle cx="25" cy="25" r="4" opacity="0.7" />
           </svg>
         </div>
       ))}
     </div>
 
-    {/* Central Medallion - The "Keyhole" */}
-    <div className="relative z-10 w-24 h-24 rounded-full border-2 border-[#F4C025] flex items-center justify-center bg-[#141414] shadow-[0_0_30px_rgba(244,192,37,0.15)] group-hover:shadow-[0_0_50px_rgba(244,192,37,0.4)] transition-shadow duration-500">
-      <div className="absolute inset-0 rounded-full border border-[#F4C025]/30 scale-125 opacity-50"></div>
-      <div className="absolute inset-0 rounded-full border border-[#F4C025]/20 scale-150 opacity-30"></div>
+    {/* Flower of Life - SVG Sacred Geometry */}
+    <div className="relative z-10 w-44 h-44 flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
+      {/* Glow Effect */}
+      <div className="absolute inset-0 rounded-full bg-[#F4C025]/15 blur-2xl opacity-50 group-hover:opacity-80 transition-opacity duration-500"></div>
 
-      {/* Keyhole Symbol */}
-      <div className="relative flex flex-col items-center opacity-80 group-hover:opacity-100 transition-opacity">
-        <div className="w-6 h-6 rounded-full border-2 border-[#F4C025] bg-transparent mb-1"></div>
-        <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[20px] border-b-[#F4C025]"></div>
+      {/* Flower of Life SVG - 19 circles pattern */}
+      <svg
+        viewBox="0 0 200 200"
+        className="w-40 h-40"
+        style={{ opacity: showPattern ? 0.9 : 0.35 }}
+      >
+        <defs>
+          <radialGradient id="flowerGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#F4C025" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#F4C025" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Background glow */}
+        <circle cx="100" cy="100" r="85" fill="url(#flowerGlow)" />
+
+        {/* Flower of Life Pattern - 生命之花的标准构造 */}
+        {/* 中心圆 */}
+        <circle
+          cx="100"
+          cy="100"
+          r="30"
+          fill="none"
+          stroke="#F4C025"
+          strokeWidth="1"
+          opacity="0.8"
+        />
+
+        {/* 第一圈：6个圆，圆心在中心圆边上 */}
+        {[0, 60, 120, 180, 240, 300].map((angle) => {
+          const rad = (angle * Math.PI) / 180;
+          const cx = 100 + 30 * Math.cos(rad);
+          const cy = 100 + 30 * Math.sin(rad);
+          return (
+            <circle
+              key={angle}
+              cx={cx}
+              cy={cy}
+              r="30"
+              fill="none"
+              stroke="#F4C025"
+              strokeWidth="1"
+              opacity="0.8"
+            />
+          );
+        })}
+
+        {/* 第二圈：6个圆，圆心在两个相邻圆的交点 */}
+        {[30, 90, 150, 210, 270, 330].map((angle) => {
+          const rad = (angle * Math.PI) / 180;
+          const cx = 100 + 52 * Math.cos(rad);
+          const cy = 100 + 52 * Math.sin(rad);
+          return (
+            <circle
+              key={`outer-${angle}`}
+              cx={cx}
+              cy={cy}
+              r="30"
+              fill="none"
+              stroke="#F4C025"
+              strokeWidth="1"
+              opacity="0.7"
+            />
+          );
+        })}
+
+        {/* 最外圈：6个圆 */}
+        {[0, 60, 120, 180, 240, 300].map((angle) => {
+          const rad = (angle * Math.PI) / 180;
+          const cx = 100 + 60 * Math.cos(rad);
+          const cy = 100 + 60 * Math.sin(rad);
+          return (
+            <circle
+              key={`outer2-${angle}`}
+              cx={cx}
+              cy={cy}
+              r="30"
+              fill="none"
+              stroke="#F4C025"
+              strokeWidth="1"
+              opacity="0.6"
+            />
+          );
+        })}
+
+        {/* 外围边界圆 */}
+        <circle
+          cx="100"
+          cy="100"
+          r="90"
+          fill="none"
+          stroke="#F4C025"
+          strokeWidth="1.5"
+          opacity="0.5"
+        />
+        <circle
+          cx="100"
+          cy="100"
+          r="92"
+          fill="none"
+          stroke="#F4C025"
+          strokeWidth="0.5"
+          opacity="0.3"
+        />
+      </svg>
+    </div>
+
+    {/* Top Decorative Element */}
+    <div className="absolute top-6 flex flex-col items-center gap-1">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#F4C025]/50 to-transparent"></div>
+        <svg className="w-3 h-3 fill-[#F4C025]/60" viewBox="0 0 24 24">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+        </svg>
+        <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#F4C025]/50 to-transparent"></div>
       </div>
-
-      {/* Subtle Shine */}
-      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-[#F4C025]/10 to-transparent rotate-45 pointer-events-none"></div>
+      <span className="text-[#F4C025]/50 text-[7px] font-serif tracking-[0.4em] uppercase">
+        Divine Guidance
+      </span>
     </div>
 
-    {/* Top/Bottom Text */}
-    <div className="absolute top-8 text-[#F4C025]/40 text-[8px] font-serif tracking-[0.3em] uppercase">
-      Destiny
+    {/* Bottom Logo - Silk&Sparks */}
+    <div className="absolute bottom-5 flex flex-col items-center gap-1.5">
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-px bg-gradient-to-r from-transparent to-[#F4C025]/40"></div>
+        <svg className="w-2.5 h-2.5 fill-[#F4C025]/50" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="6" />
+        </svg>
+        <div className="w-6 h-px bg-gradient-to-r from-[#F4C025]/40 to-transparent"></div>
+      </div>
+      <div className="text-center">
+        <span className="text-[#F4C025]/80 text-[9px] font-serif tracking-[0.2em] uppercase font-medium">
+          Silk<span className="text-[#F4C025]/50">&</span>Sparks
+        </span>
+      </div>
     </div>
-    <div className="absolute bottom-8 text-[#F4C025]/40 text-[8px] font-serif tracking-[0.3em] uppercase">
-      Unlock
-    </div>
+
+    {/* Ambient Shine Effect */}
+    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
   </div>
 );

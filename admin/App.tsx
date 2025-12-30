@@ -37,6 +37,7 @@ import { AppointmentCreate } from "./pages/appointments/create";
 import { AppointmentEdit } from "./pages/appointments/edit";
 
 // Custom Auth Provider to use existing Supabase session
+// Custom Auth Provider to use existing Supabase session
 const authProvider = {
   login: async () => {
     return {
@@ -76,13 +77,40 @@ const authProvider = {
       };
     }
 
+    // Strict Admin Check
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", session.user.id)
+      .single();
+
+    if (error || !profile?.is_admin) {
+      return {
+        authenticated: false,
+        redirectTo: "/",
+        error: {
+          message: "Access Denied: Administrator privileges required.",
+          name: "Unauthorized",
+        },
+      };
+    }
+
     return {
       authenticated: true,
     };
   },
   getPermissions: async () => {
-    const { data } = await supabase.auth.getSession();
-    return data.session?.user?.role;
+    const { data } = await supabase.auth.getUser();
+    if (!data?.user) return null;
+
+    // Always fetch latest role from DB
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", data.user.id)
+      .single();
+
+    return profile?.is_admin ? "admin" : "user";
   },
   getIdentity: async () => {
     const { data } = await supabase.auth.getUser();
@@ -90,6 +118,7 @@ const authProvider = {
       return {
         ...data.user,
         name: data.user.email,
+        avatar: data.user.user_metadata?.avatar_url,
       };
     }
     return null;

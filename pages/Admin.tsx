@@ -503,29 +503,139 @@ const ShippingZone = ({ name, rates }: any) => (
 );
 
 export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
-  const [systemPrompt, setSystemPrompt] = React.useState(
-    "You are SilkSpark AI, a mystical and empathetic guide. Your tone is warm, cosmic, and insightful. Use astrology and tarot metaphors where appropriate.",
-  );
-  const [modelTemp, setModelTemp] = React.useState(0.7);
+  const [loading, setLoading] = React.useState(true);
+  const [config, setConfig] = React.useState({
+    systemPrompt:
+      "You are SilkSpark AI, a mystical and empathetic guide. Your tone is warm, cosmic, and insightful. Use astrology and tarot metaphors where appropriate.",
+    temperature: 0.7,
+    openrouter_key: "",
+    gemini_key: "",
+    model: "google/gemini-2.0-flash-exp:free",
+  });
+
+  React.useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("system_settings")
+        .select("value")
+        .eq("key", "ai_config")
+        .single();
+
+      if (data?.value) {
+        setConfig((prev) => ({ ...prev, ...data.value }));
+      }
+    } catch (err) {
+      console.error("Error fetching AI settings:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      // Clean up sensitive keys if empty to avoid overwriting with empty string if desired,
+      // but here we just save what's in the state.
+      const { error } = await supabase.from("system_settings").upsert({
+        key: "ai_config",
+        value: config,
+        updated_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+      alert("AI Configuration saved successfully!");
+    } catch (err: any) {
+      console.error("Error saving settings:", err);
+      alert("Failed to save settings: " + err.message);
+    }
+  };
+
+  const handleChange = (field: string, value: any) => {
+    setConfig((prev) => ({ ...prev, [field]: value }));
+  };
 
   return (
     <AdminLayout title="System Intelligence" setScreen={setScreen}>
       <GlassCard className="p-8 border-white/5">
+        <h2 className="text-xl font-bold text-white mb-6 font-display flex items-center gap-2">
+          <span className="text-primary">✦</span> AI Provider Configuration
+        </h2>
+
+        {/* API Keys Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 bg-black/20 rounded-xl border border-white/5">
+          <div className="space-y-2">
+            <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">
+              OpenRouter API Key (Primary)
+            </label>
+            <div className="relative">
+              <input
+                type="password"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors font-mono text-sm tracking-widest placeholder:text-white/10"
+                placeholder="sk-or-..."
+                value={config.openrouter_key}
+                onChange={(e) => handleChange("openrouter_key", e.target.value)}
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/20">
+                key
+              </span>
+            </div>
+            <p className="text-[10px] text-white/30">
+              Required for reliable generation & model switching.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">
+              Gemini Direct API Key (Backup)
+            </label>
+            <div className="relative">
+              <input
+                type="password"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors font-mono text-sm tracking-widest placeholder:text-white/10"
+                placeholder="AIzaSy..."
+                value={config.gemini_key}
+                onChange={(e) => handleChange("gemini_key", e.target.value)}
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/20">
+                lock
+              </span>
+            </div>
+            <p className="text-[10px] text-white/30">
+              Fallback if OpenRouter is rate-limited (429).
+            </p>
+          </div>
+        </div>
+
         <h2 className="text-xl font-bold text-white mb-6 font-display flex items-center gap-2">
           <span className="text-primary">✦</span> Core Personality
         </h2>
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">
+              Target Model
+            </label>
+            <input
+              type="text"
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors font-mono text-sm"
+              value={config.model}
+              onChange={(e) => handleChange("model", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">
               System Prompt (Persona)
             </label>
             <textarea
               className="w-full h-48 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors resize-none font-mono text-xs leading-relaxed"
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
+              value={config.systemPrompt}
+              onChange={(e) => handleChange("systemPrompt", e.target.value)}
             />
             <p className="text-[10px] text-white/30 text-right">
-              {systemPrompt.length} characters
+              {config.systemPrompt.length} characters
             </p>
           </div>
 
@@ -535,7 +645,7 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
                 Creativity Temperature
               </label>
               <span className="text-primary font-bold text-sm">
-                {modelTemp}
+                {config.temperature}
               </span>
             </div>
             <input
@@ -543,8 +653,10 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
               min="0"
               max="1"
               step="0.1"
-              value={modelTemp}
-              onChange={(e) => setModelTemp(parseFloat(e.target.value))}
+              value={config.temperature}
+              onChange={(e) =>
+                handleChange("temperature", parseFloat(e.target.value))
+              }
               className="w-full accent-primary h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
             />
           </div>
@@ -552,11 +664,12 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
 
         <div className="mt-8 flex justify-end border-t border-white/5 pt-6">
           <GlowButton
-            onClick={() => alert("Model settings updated!")}
+            onClick={handleSave}
             icon="save"
             className="px-8"
+            disabled={loading}
           >
-            Update Model
+            {loading ? "Loading..." : "Update Configuration"}
           </GlowButton>
         </div>
       </GlassCard>

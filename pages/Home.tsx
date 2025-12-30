@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Screen, NavProps } from "../types";
-import { GeminiService } from "../services/GeminiService";
+import AIService from "../services/ai";
 import { BirthDataForm } from "../components/BirthDataForm";
 import { useUser } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
@@ -45,7 +45,10 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
       if (cached && cachedDate === today) {
         setDailySpark(cached);
       } else {
-        const spark = await GeminiService.generateDailySpark("Scorpio");
+        const response = await AIService.generateDailySpark({
+          sign: "Scorpio",
+        });
+        const spark = response.message;
         setDailySpark(spark);
         localStorage.setItem("daily_spark", spark);
         localStorage.setItem("daily_spark_date", today);
