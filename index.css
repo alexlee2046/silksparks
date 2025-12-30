@@ -40,6 +40,10 @@
     -moz-osx-font-smoothing: grayscale;
     /* Support for IE. */
     font-feature-settings: "liga";
+    /* Prevent FOUT: hide text until font loads */
+    overflow: hidden;
+    width: 1em;
+    height: 1em;
   }
 
   /* Material Symbols fill variants */
