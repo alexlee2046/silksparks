@@ -16,9 +16,14 @@ export enum Screen {
   ADMIN_PAYMENTS = "ADMIN_PAYMENTS",
   ADMIN_CURRENCY = "ADMIN_CURRENCY",
   ADMIN_SHIPPING = "ADMIN_SHIPPING",
+  ADMIN_SETTINGS = "ADMIN_SETTINGS",
 }
 
 export interface NavProps {
   currentScreen: Screen;
   setScreen: (screen: Screen) => void;
+  productId?: string;
+  setProductId?: (id: string) => void;
+  expertId?: string;
+  setExpertId?: (id: string) => void;
 }

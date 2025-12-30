@@ -6,10 +6,14 @@ import {
   PlanetaryPositions,
   FiveElementsDistribution,
 } from "../services/AstrologyEngine";
+import { GeminiService } from "../services/GeminiService";
 import { motion } from "framer-motion";
 
 export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
   const { user, isBirthDataComplete } = useUser();
+  const [aiAnalysis, setAiAnalysis] = useState<string>("");
+  const [loadingAI, setLoadingAI] = useState(false);
+
   const planets = React.useMemo(() => {
     if (user.birthData.date && user.birthData.location) {
       return AstrologyEngine.calculatePlanetaryPositions(
@@ -27,6 +31,26 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
     }
     return null;
   }, [user.birthData.date]);
+
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      if (!planets || !elements || aiAnalysis || loadingAI) return;
+
+      setLoadingAI(true);
+      try {
+        const text = await GeminiService.generateBirthChartAnalysis(
+          user.name || "Seeker",
+          planets,
+          elements,
+        );
+        setAiAnalysis(text);
+      } finally {
+        setLoadingAI(false);
+      }
+    };
+
+    fetchAnalysis();
+  }, [planets, elements, aiAnalysis, loadingAI, user.name]);
 
   if (!isBirthDataComplete) {
     return (
@@ -189,7 +213,8 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                   >
                     <div className="flex items-center gap-4 w-1/3">
                       <span
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-background-dark font-bold text-xs shadow-lg ${body === "Sun"
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-background-dark font-bold text-xs shadow-lg ${
+                          body === "Sun"
                             ? "bg-amber-400 shadow-amber-400/50"
                             : body === "Moon"
                               ? "bg-gray-200 shadow-gray-200/50"
@@ -198,7 +223,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                                 : body === "Venus"
                                   ? "bg-pink-400 shadow-pink-400/50"
                                   : "bg-blue-400 shadow-blue-400/50"
-                          }`}
+                        }`}
                       >
                         {body.substring(0, 2)}
                       </span>
@@ -285,9 +310,10 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                 <div className="mt-4 p-5 rounded-xl bg-primary/5 border border-primary/20 backdrop-blur-sm">
                   <p className="text-sm text-primary/80 leading-relaxed font-medium">
                     <span className="mr-2">💡</span>
-                    Your dominant element represents your core strength. A
-                    balanced chart allows for smooth energy flow, while peaks
-                    indicate specialized talents.
+                    {loadingAI
+                      ? "Consulting the stars..."
+                      : aiAnalysis ||
+                        "Your dominant element represents your core strength. A balanced chart allows for smooth energy flow, while peaks indicate specialized talents."}
                   </p>
                 </div>
               </div>

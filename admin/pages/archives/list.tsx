@@ -70,10 +70,11 @@ export const ArchiveList: React.FC = () => {
                 </td>
                 <td className="px-6 py-4">
                   <span
-                    className={`px-2 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${item.type === "Astrology"
+                    className={`px-2 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${
+                      item.type === "Astrology"
                         ? "bg-purple-500/10 border-purple-500/20 text-purple-400"
                         : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                      }`}
+                    }`}
                   >
                     {item.type}
                   </span>

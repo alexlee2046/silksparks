@@ -117,11 +117,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchUserProfile = async (userId: string) => {
     try {
       // 获取 profiles - 使用 maybeSingle 避免 406 错误
-      let { data: profile, error: pError } = await supabase
+      // 获取 profiles - 使用 maybeSingle 避免 406 错误
+      const { data: initialProfile, error: pError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .maybeSingle();
+
+      let profile = initialProfile;
 
       // 如果 profile 不存在，创建一个新的
       if (!profile && !pError) {
@@ -175,12 +178,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         email: profile?.email || "",
         birthData: {
           date: profile?.birth_date ? new Date(profile.birth_date) : null,
-          time: "", // 如果有的话可以扩充
+          time: profile?.birth_time || "",
           location: profile?.lat
             ? { name: profile.birth_place, lat: profile.lat, lng: profile.lng }
             : null,
         },
-        preferences: { marketingConsent: false },
+        preferences: profile?.preferences || { marketingConsent: false },
         archives:
           archives?.map((a) => ({
             id: a.id,
@@ -215,13 +218,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateUser = async (updates: Partial<UserProfile>) => {
     if (!session) return;
+    const dbUpdates: any = {};
+    if (updates.name !== undefined) dbUpdates.full_name = updates.name;
+    if (updates.points !== undefined) dbUpdates.points = updates.points;
+    if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
+    if (updates.preferences !== undefined)
+      dbUpdates.preferences = updates.preferences;
+
     const { error } = await supabase
       .from("profiles")
-      .update({
-        full_name: updates.name,
-        points: updates.points,
-        tier: updates.tier,
-      })
+      .update(dbUpdates)
       .eq("id", session.user.id);
 
     if (!error) setUser((prev) => ({ ...prev, ...updates }));
@@ -231,6 +237,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!session) return;
     const updates: any = {};
     if (data.date) updates.birth_date = data.date.toISOString();
+    if (data.time) updates.birth_time = data.time;
     if (data.location) {
       updates.birth_place = data.location.name;
       updates.lat = data.location.lat;

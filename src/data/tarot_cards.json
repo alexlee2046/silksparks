@@ -1,0 +1,938 @@
+[
+    {
+        "id": "m00",
+        "name": "The Fool",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-0-42043244c79fc1b1.jpg",
+        "keywords": [
+            "New beginnings",
+            "Optimism",
+            "Faith"
+        ]
+    },
+    {
+        "id": "m01",
+        "name": "The Magician",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-1-6476367511504b5f.jpg",
+        "keywords": [
+            "Action",
+            "Manifestation",
+            "Power"
+        ]
+    },
+    {
+        "id": "m02",
+        "name": "The High Priestess",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-2-a6def1e2445cdf9f.jpg",
+        "keywords": [
+            "Intuition",
+            "Mystery",
+            "Wisdom"
+        ]
+    },
+    {
+        "id": "m03",
+        "name": "The Empress",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-3-85cd590a7e0e6ec7.jpg",
+        "keywords": [
+            "Abundance",
+            "Nurturing",
+            "Creativity"
+        ]
+    },
+    {
+        "id": "m04",
+        "name": "The Emperor",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-4-7380b1904f48ffd0.jpg",
+        "keywords": [
+            "Structure",
+            "Authority",
+            "Stability"
+        ]
+    },
+    {
+        "id": "m05",
+        "name": "The Hierophant",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-5-98e0942b64b895b5.jpg",
+        "keywords": [
+            "Tradition",
+            "Guidance",
+            "Wisdom"
+        ]
+    },
+    {
+        "id": "m06",
+        "name": "The Lovers",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-6-3baa3420cca38224.jpg",
+        "keywords": [
+            "Love",
+            "Harmony",
+            "Choices"
+        ]
+    },
+    {
+        "id": "m07",
+        "name": "The Chariot",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-7-6731bdd32ad34906.jpg",
+        "keywords": [
+            "Victory",
+            "Willpower",
+            "Direction"
+        ]
+    },
+    {
+        "id": "m08",
+        "name": "Strength",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-8-7cf26f5fbe905cd4.jpg",
+        "keywords": [
+            "Courage",
+            "Inner Strength",
+            "Compassion"
+        ]
+    },
+    {
+        "id": "m09",
+        "name": "The Hermit",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-9-6f1f533055ff354a.jpg",
+        "keywords": [
+            "Wisdom",
+            "Solitude",
+            "Introspection"
+        ]
+    },
+    {
+        "id": "m10",
+        "name": "Wheel of Fortune",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-10-6600306b7ecf8a76.jpg",
+        "keywords": [
+            "Cycles",
+            "Luck",
+            "Change"
+        ]
+    },
+    {
+        "id": "m11",
+        "name": "Justice",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-11-4fc0a82e38a5972a.jpg",
+        "keywords": [
+            "Fairness",
+            "Truth",
+            "Balance"
+        ]
+    },
+    {
+        "id": "m12",
+        "name": "The Hanged Man",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-12-3a8ccf98db7d04a8.jpg",
+        "keywords": [
+            "Surrender",
+            "New Perspective",
+            "Patience"
+        ]
+    },
+    {
+        "id": "m13",
+        "name": "Death",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-13-23b8be15633f8945.jpg",
+        "keywords": [
+            "Transformation",
+            "Endings",
+            "Rebirth"
+        ]
+    },
+    {
+        "id": "m14",
+        "name": "Temperance",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-14-0aed89c9e8b7108d.jpg",
+        "keywords": [
+            "Balance",
+            "Moderation",
+            "Harmony"
+        ]
+    },
+    {
+        "id": "m15",
+        "name": "The Devil",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-15-b311203f411df750.jpg",
+        "keywords": [
+            "Addiction",
+            "Shadow Self",
+            "Materialism"
+        ]
+    },
+    {
+        "id": "m16",
+        "name": "The Tower",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-16-826d59a7b1468820.jpg",
+        "keywords": [
+            "Upheaval",
+            "Revelation",
+            "Collapse"
+        ]
+    },
+    {
+        "id": "m17",
+        "name": "The Star",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-17-5fb78a5f37a972db.jpg",
+        "keywords": [
+            "Hope",
+            "Inspiration",
+            "Healing"
+        ]
+    },
+    {
+        "id": "m18",
+        "name": "The Moon",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-18-2364d8ac56751bf1.jpg",
+        "keywords": [
+            "Illusion",
+            "Dreams",
+            "Mystery"
+        ]
+    },
+    {
+        "id": "m19",
+        "name": "The Sun",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-19-d40d8ea7f0c0c263.jpg",
+        "keywords": [
+            "Success",
+            "Happiness",
+            "Vitality"
+        ]
+    },
+    {
+        "id": "m20",
+        "name": "Judgement",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-20-db753a49ab7633ea.jpg",
+        "keywords": [
+            "Awakening",
+            "Judgment",
+            "Renewal"
+        ]
+    },
+    {
+        "id": "m21",
+        "name": "The World",
+        "arcana": "Major",
+        "suit": null,
+        "image": "/assets/tarot/tarot-major-21-734e52338d055159.jpg",
+        "keywords": [
+            "Completion",
+            "Achievement",
+            "Travel"
+        ]
+    },
+    {
+        "id": "w01",
+        "name": "Ace of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-1-e65bc5ba30713d17.jpg",
+        "keywords": [
+            "Creativity",
+            "Inspiration",
+            "Spark"
+        ]
+    },
+    {
+        "id": "w02",
+        "name": "Two of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-2-c53d8db32b75d99f.jpg",
+        "keywords": [
+            "Planning",
+            "Future",
+            "Discovery"
+        ]
+    },
+    {
+        "id": "w03",
+        "name": "Three of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-3-263680b54479fb61.jpg",
+        "keywords": [
+            "Expansion",
+            "Growth",
+            "Achievement"
+        ]
+    },
+    {
+        "id": "w04",
+        "name": "Four of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-4-7b6f3c47d0bd91a4.jpg",
+        "keywords": [
+            "Celebration",
+            "Stability",
+            "Harmony"
+        ]
+    },
+    {
+        "id": "w05",
+        "name": "Five of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-5-be3e44530c03e68e.jpg",
+        "keywords": [
+            "Competition",
+            "Conflict",
+            "Struggle"
+        ]
+    },
+    {
+        "id": "w06",
+        "name": "Six of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-6-6f0f6951c033eadd.jpg",
+        "keywords": [
+            "Victory",
+            "Success",
+            "Recognition"
+        ]
+    },
+    {
+        "id": "w07",
+        "name": "Seven of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-7-e6e2507530b17dd9.jpg",
+        "keywords": [
+            "Courage",
+            "Persistence",
+            "Defense"
+        ]
+    },
+    {
+        "id": "w08",
+        "name": "Eight of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-8-2705aa8da47e46bc.jpg",
+        "keywords": [
+            "Speed",
+            "Action",
+            "Movement"
+        ]
+    },
+    {
+        "id": "w09",
+        "name": "Nine of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-9-e6658378c0b1a109.jpg",
+        "keywords": [
+            "Resilience",
+            "Persistence",
+            "Strength"
+        ]
+    },
+    {
+        "id": "w10",
+        "name": "Ten of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-10-c8127457564eb842.jpg",
+        "keywords": [
+            "Burden",
+            "Responsibility",
+            "Stress"
+        ]
+    },
+    {
+        "id": "w11",
+        "name": "Page of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-page-f46491339b2fd87f.jpg",
+        "keywords": [
+            "Enthusiasm",
+            "Exploration",
+            "New Ideas"
+        ]
+    },
+    {
+        "id": "w12",
+        "name": "Knight of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-knight-90a605be684f6379.jpg",
+        "keywords": [
+            "Action",
+            "Adventure",
+            "Fearlessness"
+        ]
+    },
+    {
+        "id": "w13",
+        "name": "Queen of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-queen-08b3b5bd681695d5.jpg",
+        "keywords": [
+            "Confidence",
+            "Independence",
+            "Caring"
+        ]
+    },
+    {
+        "id": "w14",
+        "name": "King of Wands",
+        "arcana": "Minor",
+        "suit": "Wands",
+        "image": "/assets/tarot/tarot-wands-king-177d091d45642b29.jpg",
+        "keywords": [
+            "Leadership",
+            "Vision",
+            "Honesty"
+        ]
+    },
+    {
+        "id": "c01",
+        "name": "Ace of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-1-d8e46960f2d01cef.jpg",
+        "keywords": [
+            "Love",
+            "Emotions",
+            "Intuition"
+        ]
+    },
+    {
+        "id": "c02",
+        "name": "Two of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-2-5c16b1eee7be3a85.jpg",
+        "keywords": [
+            "Partnership",
+            "Unity",
+            "Connection"
+        ]
+    },
+    {
+        "id": "c03",
+        "name": "Three of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-3-b45bfaf88420f08d.jpg",
+        "keywords": [
+            "Friendship",
+            "Community",
+            "Joy"
+        ]
+    },
+    {
+        "id": "c04",
+        "name": "Four of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-4-0b3423ddf359d29a.jpg",
+        "keywords": [
+            "Apathy",
+            "Introspection",
+            "Reevaluation"
+        ]
+    },
+    {
+        "id": "c05",
+        "name": "Five of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-5-d63660523a5bcc14.jpg",
+        "keywords": [
+            "Loss",
+            "Grief",
+            "Regret"
+        ]
+    },
+    {
+        "id": "c06",
+        "name": "Six of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-6-35074e29b815389e.jpg",
+        "keywords": [
+            "Nostalgia",
+            "Childhood",
+            "Innocence"
+        ]
+    },
+    {
+        "id": "c07",
+        "name": "Seven of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-7-cd1a33ccd50675a0.jpg",
+        "keywords": [
+            "Choices",
+            "Illusion",
+            "Fantasy"
+        ]
+    },
+    {
+        "id": "c08",
+        "name": "Eight of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-8-7ffb70edf13aea94.jpg",
+        "keywords": [
+            "Abandonment",
+            "Seeking Truth",
+            "Withdrawal"
+        ]
+    },
+    {
+        "id": "c09",
+        "name": "Nine of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-9-13550c8d73cf9316.jpg",
+        "keywords": [
+            "Contentment",
+            "Satisfaction",
+            "Wishes"
+        ]
+    },
+    {
+        "id": "c10",
+        "name": "Ten of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-10-916a3c6dc2dc65a5.jpg",
+        "keywords": [
+            "Happiness",
+            "Peace",
+            "Family"
+        ]
+    },
+    {
+        "id": "c11",
+        "name": "Page of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-page-4bb3c5ed72a7237b.jpg",
+        "keywords": [
+            "Creativity",
+            "Intuition",
+            "Idealism"
+        ]
+    },
+    {
+        "id": "c12",
+        "name": "Knight of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-knight-d07f26d2681a7e25.jpg",
+        "keywords": [
+            "Romance",
+            "Charm",
+            "Imagination"
+        ]
+    },
+    {
+        "id": "c13",
+        "name": "Queen of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-queen-5ae87d65330a6302.jpg",
+        "keywords": [
+            "Compassion",
+            "Nurturing",
+            "Calm"
+        ]
+    },
+    {
+        "id": "c14",
+        "name": "King of Cups",
+        "arcana": "Minor",
+        "suit": "Cups",
+        "image": "/assets/tarot/tarot-cups-king-360de400f73f60c9.jpg",
+        "keywords": [
+            "Control",
+            "Balance",
+            "Diplomacy"
+        ]
+    },
+    {
+        "id": "s01",
+        "name": "Ace of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-1-3bebb8eeba6e380e.jpg",
+        "keywords": [
+            "Clarity",
+            "Truth",
+            "Breakthrough"
+        ]
+    },
+    {
+        "id": "s02",
+        "name": "Two of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-2-baada4175898facc.jpg",
+        "keywords": [
+            "Indecision",
+            "Stalemate",
+            "Truce"
+        ]
+    },
+    {
+        "id": "s03",
+        "name": "Three of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-3-7769531aa9f1c61e.jpg",
+        "keywords": [
+            "Heartbreak",
+            "Sorrow",
+            "Pain"
+        ]
+    },
+    {
+        "id": "s04",
+        "name": "Four of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-4-25d9de390a29de87.jpg",
+        "keywords": [
+            "Rest",
+            "Recuperation",
+            "Solitude"
+        ]
+    },
+    {
+        "id": "s05",
+        "name": "Five of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-5-cd19407493650ef3.jpg",
+        "keywords": [
+            "Conflict",
+            "Defeat",
+            "Betrayal"
+        ]
+    },
+    {
+        "id": "s06",
+        "name": "Six of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-6-9b49b2d0df8fd94c.jpg",
+        "keywords": [
+            "Transition",
+            "Change",
+            "Journey"
+        ]
+    },
+    {
+        "id": "s07",
+        "name": "Seven of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-7-0012ca665760cc00.jpg",
+        "keywords": [
+            "Deception",
+            "Strategy",
+            "Theft"
+        ]
+    },
+    {
+        "id": "s08",
+        "name": "Eight of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-8-66463d63544d0b04.jpg",
+        "keywords": [
+            "Restriction",
+            "Powerlessness",
+            "Prison"
+        ]
+    },
+    {
+        "id": "s09",
+        "name": "Nine of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-9-b4641fcbe203aaac.jpg",
+        "keywords": [
+            "Anxiety",
+            "Worry",
+            "Nightmares"
+        ]
+    },
+    {
+        "id": "s10",
+        "name": "Ten of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-10-e3e1dcc9a0cd3831.jpg",
+        "keywords": [
+            "Ruin",
+            "Betrayal",
+            "Hitting Rock Bottom"
+        ]
+    },
+    {
+        "id": "s11",
+        "name": "Page of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-page-3969579bdf9f3487.jpg",
+        "keywords": [
+            "Curiosity",
+            "Truth",
+            "Vigilance"
+        ]
+    },
+    {
+        "id": "s12",
+        "name": "Knight of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-knight-1834928f1e0a2c37.jpg",
+        "keywords": [
+            "Ambition",
+            "Drive",
+            "Impulsive"
+        ]
+    },
+    {
+        "id": "s13",
+        "name": "Queen of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-queen-094d119544105d0e.jpg",
+        "keywords": [
+            "Honesty",
+            "Independence",
+            "Sharp Wit"
+        ]
+    },
+    {
+        "id": "s14",
+        "name": "King of Swords",
+        "arcana": "Minor",
+        "suit": "Swords",
+        "image": "/assets/tarot/tarot-swords-king-4730912676aa261e.jpg",
+        "keywords": [
+            "Intellect",
+            "Authority",
+            "Truth"
+        ]
+    },
+    {
+        "id": "p01",
+        "name": "Ace of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-1-c9717ee444f022c8.jpg",
+        "keywords": [
+            "Opportunity",
+            "Prosperity",
+            "Security"
+        ]
+    },
+    {
+        "id": "p02",
+        "name": "Two of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-2-fecc845d1b47cae3.jpg",
+        "keywords": [
+            "Balance",
+            "Adaptability",
+            "Priorities"
+        ]
+    },
+    {
+        "id": "p03",
+        "name": "Three of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-3-564b52d68b30af6f.jpg",
+        "keywords": [
+            "Teamwork",
+            "Skill",
+            "Collaboration"
+        ]
+    },
+    {
+        "id": "p04",
+        "name": "Four of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-4-4539fa68ac06a0ee.jpg",
+        "keywords": [
+            "Security",
+            "Conservation",
+            "Control"
+        ]
+    },
+    {
+        "id": "p05",
+        "name": "Five of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-5-d71b72fea7ad7ef1.jpg",
+        "keywords": [
+            "Hardship",
+            "Loss",
+            "Isolation"
+        ]
+    },
+    {
+        "id": "p06",
+        "name": "Six of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-6-c9deebe03464bc89.jpg",
+        "keywords": [
+            "Generosity",
+            "Charity",
+            "Sharing"
+        ]
+    },
+    {
+        "id": "p07",
+        "name": "Seven of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-7-7d6a771308e7653c.jpg",
+        "keywords": [
+            "Patience",
+            "Investment",
+            "Harvest"
+        ]
+    },
+    {
+        "id": "p08",
+        "name": "Eight of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-8-b9042623182f81ee.jpg",
+        "keywords": [
+            "Diligence",
+            "Mastery",
+            "Craftsmanship"
+        ]
+    },
+    {
+        "id": "p09",
+        "name": "Nine of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-9-9f7887ee1d7a3d5a.jpg",
+        "keywords": [
+            "Luxury",
+            "Independence",
+            "Abundance"
+        ]
+    },
+    {
+        "id": "p10",
+        "name": "Ten of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-10-3edd405c64ee5ac6.jpg",
+        "keywords": [
+            "Wealth",
+            "Legacy",
+            "Stability"
+        ]
+    },
+    {
+        "id": "p11",
+        "name": "Page of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-page-2bc9a735017ce3a1.jpg",
+        "keywords": [
+            "Opportunity",
+            "Ambition",
+            "Learning"
+        ]
+    },
+    {
+        "id": "p12",
+        "name": "Knight of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-knight-c4402bd564aa8470.jpg",
+        "keywords": [
+            "Hard Work",
+            "Patience",
+            "Reliable"
+        ]
+    },
+    {
+        "id": "p13",
+        "name": "Queen of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-queen-1efbbba3b2e5785a.jpg",
+        "keywords": [
+            "Nurturing",
+            "Practical",
+            "Abundance"
+        ]
+    },
+    {
+        "id": "p14",
+        "name": "King of Pentacles",
+        "arcana": "Minor",
+        "suit": "Pentacles",
+        "image": "/assets/tarot/tarot-pentacles-king-6ca7fff779642736.jpg",
+        "keywords": [
+            "Success",
+            "Security",
+            "Ambitious"
+        ]
+    }
+]

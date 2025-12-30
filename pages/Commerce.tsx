@@ -1,28 +1,96 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Screen, NavProps } from "../types";
 import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
 import { supabase } from "../services/supabase";
+import { useCart } from "../context/CartContext";
+import {
+  RecommendationEngine,
+  Product,
+} from "../services/RecommendationEngine";
+import { useUser } from "../context/UserContext";
 
-export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
-  const [products, setProducts] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
+export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<string[]>([]);
+  const [sortOrder, setSortOrder] = useState<string>("newest");
+  const { addItem, setIsCartOpen } = useCart();
 
-  React.useEffect(() => {
+  // Recommendations state
+  const { user } = useUser();
+  const [recs, setRecs] = useState<Product[]>([]);
+
+  useEffect(() => {
     const fetchProducts = async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
+      setLoading(true);
+      let query = supabase.from("products").select("*");
+
+      // Apply Filters (Mock logic for now as 'element' is single value, but UI has multiple categories)
+      // In a real app, we'd map UI filters to DB columns carefully.
+      // Here we assume filters are values for 'element' or 'category'.
+      if (filters.length > 0) {
+        // Simple OR logic for simplicity: if filter matches element OR category
+        // Supabase .or() syntax: .or('element.in.("Fire","Water"),category.in.("Crystals")')
+        // But simpler: just client side filter if list is small, OR just support one type of filter.
+        // Let's try to map filters to specific columns if possible.
+        // For now, let's assume filters are just Elements for simplicity of Phase 1.
+        const elements = ["Fire", "Water", "Air", "Earth", "Spirit"];
+        const selectedElements = filters.filter((f) => elements.includes(f));
+        if (selectedElements.length > 0) {
+          query = query.in("element", selectedElements);
+        }
+      }
+
+      // Apply Sort
+      if (sortOrder === "newest") {
+        query = query.order("created_at", { ascending: false });
+      } else if (sortOrder === "price_asc") {
+        query = query.order("price", { ascending: true });
+      } else if (sortOrder === "price_desc") {
+        query = query.order("price", { ascending: false });
+      }
+
+      const { data, error } = await query;
 
       if (!error && data) {
         setProducts(data);
       }
+
+      // Fetch Recommendations
+      // Use user's birth element or just a generic term "healing" if not set
+      // In real app, we'd use user.birthData.location (lat/lng -> astrological element)
+      const searchTerm = user?.name ? "love" : "protection"; // Simple personalization mock
+      const recommendations = await RecommendationEngine.getRecommendations(
+        searchTerm,
+        3,
+      );
+      setRecs(recommendations);
+
       setLoading(false);
     };
     fetchProducts();
-  }, []);
+  }, [filters, sortOrder, user]);
+
+  const toggleFilter = (item: string) => {
+    setFilters((prev) =>
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
+    );
+  };
+
+  const handleQuickAdd = (e: React.MouseEvent, product: any) => {
+    e.stopPropagation();
+    addItem({
+      id: product.id,
+      name: product.title,
+      price: product.price,
+      description: product.description,
+      image: product.image_url,
+      tags: [product.element || "General"],
+    });
+    setIsCartOpen(true);
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -119,6 +187,8 @@ export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
             title="Elements"
             icon="local_fire_department"
             items={["Fire", "Water", "Air", "Earth", "Spirit"]}
+            selectedItems={filters}
+            onToggle={toggleFilter}
           />
           <div className="h-px bg-white/5 w-full"></div>
           <FilterSection
@@ -129,6 +199,59 @@ export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
         </motion.aside>
 
         <div className="flex-1 w-full">
+          {/* Recommendations Section */}
+          {recs.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">
+                  auto_awesome
+                </span>
+                Curated For You
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {recs.map((p) => (
+                  <div
+                    key={p.id}
+                    className="group relative bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-primary/30 transition-all cursor-pointer"
+                    onClick={() => {
+                      if (setProductId) setProductId(p.id);
+                      setScreen(Screen.PRODUCT_DETAIL);
+                    }}
+                  >
+                    <div className="aspect-[4/3] bg-black/20 relative overflow-hidden">
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-primary border border-white/10">
+                        RECOMMENDED
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-white font-bold text-sm truncate">
+                        {p.name}
+                      </h3>
+                      <p className="text-white/40 text-xs mt-1 truncate">
+                        {p.description}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-primary font-bold text-sm">
+                          ${p.price}
+                        </span>
+                        <button className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-primary hover:text-background-dark transition-colors">
+                          <span className="material-symbols-outlined text-[14px]">
+                            arrow_forward
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-between items-center mb-6">
             <p className="text-text-muted text-sm">
               <span className="text-white font-bold">{products.length}</span>{" "}
@@ -136,7 +259,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
             </p>
             <div className="flex items-center gap-3">
               <button className="flex items-center gap-2 px-4 py-2 bg-surface-dark/50 border border-white/10 rounded-full text-sm text-white hover:bg-white/5 transition-colors">
-                <span>Sort: Newest</span>
+                <span>Sort: {sortOrder}</span>
                 <span className="material-symbols-outlined text-[18px]">
                   expand_more
                 </span>
@@ -159,7 +282,11 @@ export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
                   element={product.element}
                   image={product.image_url}
                   badge={product.badge}
-                  onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
+                  onClick={() => {
+                    if (setProductId) setProductId(product.id);
+                    setScreen(Screen.PRODUCT_DETAIL);
+                  }}
+                  onQuickAdd={(e: any) => handleQuickAdd(e, product)}
                 />
               ))
             )}
@@ -170,7 +297,13 @@ export const ShopList: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-const FilterSection = ({ title, icon, items }: any) => (
+const FilterSection = ({
+  title,
+  icon,
+  items,
+  selectedItems,
+  onToggle,
+}: any) => (
   <div className="space-y-4">
     <button className="flex items-center justify-between w-full group">
       <div className="flex items-center gap-3 text-white font-medium text-sm">
@@ -196,7 +329,8 @@ const FilterSection = ({ title, icon, items }: any) => (
               <input
                 type="checkbox"
                 className="peer appearance-none h-4 w-4 border border-white/20 rounded bg-white/5 checked:bg-primary checked:border-primary transition-all cursor-pointer"
-                defaultChecked={item.includes("Wealth")}
+                checked={selectedItems?.includes(item)}
+                onChange={() => onToggle && onToggle(item)}
               />
               <span className="absolute inset-0 flex items-center justify-center text-black opacity-0 peer-checked:opacity-100 material-symbols-outlined text-[12px] pointer-events-none">
                 check
@@ -219,6 +353,7 @@ const ShopItem = ({
   image,
   badge,
   onClick,
+  onQuickAdd,
   index,
 }: any) => (
   <div
@@ -246,7 +381,11 @@ const ShopItem = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
 
         <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
-          <GlowButton variant="primary" className="w-full text-xs py-2">
+          <GlowButton
+            variant="primary"
+            className="w-full text-xs py-2"
+            onClick={onQuickAdd}
+          >
             Quick Add
           </GlowButton>
         </div>
@@ -269,13 +408,82 @@ const ShopItem = ({
   </div>
 );
 
-export const ProductDetail: React.FC<NavProps> = ({ setScreen }) => {
+export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
+  const [product, setProduct] = React.useState<any>(null);
   const [selectedImage, setSelectedImage] = React.useState(0);
+  const [isFavorite, setIsFavorite] = React.useState(false);
+  const toggleFavorite = () => setIsFavorite(!isFavorite);
+  const [loading, setLoading] = React.useState(true);
+  const { addItem, setIsCartOpen } = useCart();
 
+  React.useEffect(() => {
+    if (!productId) {
+      // Fallback or returned to list
+      setLoading(false);
+      return;
+    }
+    const fetchProduct = async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
+
+      if (!error && data) {
+        setProduct(data);
+      }
+      setLoading(false);
+    };
+    fetchProduct();
+  }, [productId]);
+
+  const handleAddToCart = () => {
+    if (product) {
+      addItem({
+        id: product.id,
+        name: product.title,
+        price: product.price,
+        description: product.description,
+        image: product.image_url,
+        tags: [product.element || "General"],
+      });
+      setIsCartOpen(true);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-white/40 tracking-widest uppercase text-xs"
+        >
+          Consulting the stars...
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center flex-col gap-4">
+        <p className="text-white/40">Artifact not found in this dimension.</p>
+        <button
+          onClick={() => setScreen(Screen.SHOP_LIST)}
+          className="text-primary hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"
+        >
+          Return to Shop
+        </button>
+      </div>
+    );
+  }
+
+  // Use product images or fallback to the main one repeated (since DB might only have one url)
   const images = [
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuBBVcw7kCDLa8cjlN-Cpv6lAWzfEKIStgYXZZteeoIzSDzdGYs_4qE1K5BMv79WJjraNSNzy5Ve0xJ_6HPtAlsBEaAjFS7U0f6NUTXjKyZVOV665EBdL_YGpoGgqzCCOHOFX3u8lUx8KzrhSVuQ4X0Kz601UNyhTIJH_l0WTUT9ARN0BwH1Mbcyl3_osD7AcvrCABsSERr8ZXfANvM0tGO1Hp_Ko68cqEyz8hdGfmpcbKHyhUbzMBT6rhqhc0Gkem4K148akYmdosJ1",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuBBVcw7kCDLa8cjlN-Cpv6lAWzfEKIStgYXZZteeoIzSDzdGYs_4qE1K5BMv79WJjraNSNzy5Ve0xJ_6HPtAlsBEaAjFS7U0f6NUTXjKyZVOV665EBdL_YGpoGgqzCCOHOFX3u8lUx8KzrhSVuQ4X0Kz601UNyhTIJH_l0WTUT9ARN0BwH1Mbcyl3_osD7AcvrCABsSERr8ZXfANvM0tGO1Hp_Ko68cqEyz8hdGfmpcbKHyhUbzMBT6rhqhc0Gkem4K148akYmdosJ1",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuBBVcw7kCDLa8cjlN-Cpv6lAWzfEKIStgYXZZteeoIzSDzdGYs_4qE1K5BMv79WJjraNSNzy5Ve0xJ_6HPtAlsBEaAjFS7U0f6NUTXjKyZVOV665EBdL_YGpoGgqzCCOHOFX3u8lUx8KzrhSVuQ4X0Kz601UNyhTIJH_l0WTUT9ARN0BwH1Mbcyl3_osD7AcvrCABsSERr8ZXfANvM0tGO1Hp_Ko68cqEyz8hdGfmpcbKHyhUbzMBT6rhqhc0Gkem4K148akYmdosJ1",
+    product.image_url,
+    product.image_url, // Mocking gallery for now
+    product.image_url,
   ];
 
   return (
@@ -305,16 +513,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen }) => {
               Shop
             </span>
             <span className="text-text-muted">/</span>
-            <span
-              onClick={() => setScreen(Screen.SHOP_LIST)}
-              className="text-text-muted hover:text-white cursor-pointer transition-colors"
-            >
-              Candles
-            </span>
-            <span className="text-text-muted">/</span>
-            <span className="text-white font-medium">
-              The Mystic Oud Candle
-            </span>
+            <span className="text-white font-medium">{product.title}</span>
           </motion.div>
 
           <div className="flex flex-col lg:flex-row gap-10 px-4 py-4">
@@ -329,14 +528,6 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen }) => {
                   className="absolute inset-0 bg-cover bg-center transition-all duration-500"
                   style={{ backgroundImage: `url("${images[selectedImage]}")` }}
                 ></div>
-                <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/10 hover:bg-black/60 transition-colors cursor-pointer">
-                  <span className="material-symbols-outlined text-white text-[20px]">
-                    play_circle
-                  </span>
-                  <span className="text-white text-xs font-bold uppercase tracking-wider">
-                    Preview Ritual
-                  </span>
-                </div>
               </motion.div>
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {images.map((img, index) => (
@@ -361,36 +552,31 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen }) => {
               <div className="flex flex-col gap-4 text-left">
                 <div>
                   <h1 className="text-white text-4xl md:text-5xl font-display font-light leading-tight tracking-[-0.02em]">
-                    The Mystic Oud
+                    {product.title}
                   </h1>
                   <p className="text-primary font-bold mt-2 text-lg">
-                    Sacred Grounding Series
+                    {product.badge || "Sacred Artifact"}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-4 border-b border-white/10 pb-6">
-                  <span className="text-white text-3xl font-bold">$45.00</span>
+                  <span className="text-white text-3xl font-bold">
+                    ${product.price.toFixed(2)}
+                  </span>
                   <div className="h-8 w-px bg-white/10"></div>
                   <div className="flex flex-col">
                     <div className="flex text-[#F4C025] text-[16px]">
-                      <span className="material-symbols-outlined fill">
-                        star
-                      </span>
-                      <span className="material-symbols-outlined fill">
-                        star
-                      </span>
-                      <span className="material-symbols-outlined fill">
-                        star
-                      </span>
-                      <span className="material-symbols-outlined fill">
-                        star
-                      </span>
-                      <span className="material-symbols-outlined fill">
-                        star_half
-                      </span>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <span
+                          key={i}
+                          className="material-symbols-outlined fill"
+                        >
+                          star
+                        </span>
+                      ))}
                     </div>
                     <span className="text-text-muted text-xs hover:text-white cursor-pointer transition-colors">
-                      Read 128 Reviews
+                      Verified Reviews
                     </span>
                   </div>
                 </div>
@@ -403,48 +589,40 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen }) => {
                   </div>
                   <div>
                     <h3 className="text-white text-sm font-bold mb-1 uppercase tracking-wider">
-                      Cosmic Match Detected
+                      Cosmic Resonance
                     </h3>
                     <p className="text-white/80 text-sm font-light leading-relaxed">
-                      Based on your birth chart, this artifact harmonizes with
-                      your current <strong>Saturn transit</strong> in the 4th
-                      house, providing necessary grounding energy.
+                      This item aligns with the{" "}
+                      <strong>{product.element || "Ether"}</strong> element,
+                      enhancing your natural energies.
                     </p>
                   </div>
                 </GlassCard>
 
                 <p className="text-white/80 text-lg font-light leading-relaxed mt-2">
-                  Hand-poured soy wax blended with rare Oud wood essence.
-                  Designed to ground wandering energies and establish a sacred
-                  perimeter for your daily practice. Each candle is infused with
-                  Reiki energy under the New Moon.
+                  {product.description}
                 </p>
               </div>
 
               <div className="flex flex-col gap-6 mt-6">
                 <div className="flex gap-4">
-                  <div className="h-14 w-32 bg-white/5 border border-white/10 rounded-full flex items-center justify-between px-2">
-                    <button className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">
-                        remove
-                      </span>
-                    </button>
-                    <span className="text-white font-bold text-lg">1</span>
-                    <button className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">
-                        add
-                      </span>
-                    </button>
-                  </div>
                   <GlowButton
                     variant="primary"
                     icon="shopping_bag"
                     className="flex-1 h-14 text-base"
+                    onClick={handleAddToCart}
                   >
                     Add to Cart
                   </GlowButton>
-                  <button className="h-14 w-14 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:text-primary hover:border-primary/50 transition-colors">
-                    <span className="material-symbols-outlined">favorite</span>
+                  <button
+                    onClick={toggleFavorite}
+                    className={`h-14 w-14 rounded-full border border-white/10 flex items-center justify-center transition-colors ${isFavorite ? "text-primary border-primary/50" : "text-white/50 hover:text-primary hover:border-primary/50"}`}
+                  >
+                    <span
+                      className={`material-symbols-outlined ${isFavorite ? "fill" : ""}`}
+                    >
+                      favorite
+                    </span>
                   </button>
                 </div>
                 <p className="text-center text-xs text-white/40">
@@ -453,46 +631,6 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen }) => {
               </div>
             </motion.div>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex flex-col gap-10 px-4 py-16 border-t border-white/5 mt-16"
-          >
-            <div className="flex flex-col gap-4 text-center items-center">
-              <span className="text-primary font-bold uppercase tracking-[0.2em] text-xs">
-                Deep Dive
-              </span>
-              <h2 className="text-white tracking-tight text-3xl md:text-5xl font-display font-light leading-tight">
-                The Experience
-              </h2>
-              <p className="text-text-muted text-lg font-light max-w-[600px]">
-                Dive deeper into the spiritual significance and practical
-                application of this artifact.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <ExpCard
-                icon="spa"
-                title="The Vibe"
-                desc="Smoky, grounding, and ancient. Reminiscent of temples at dusk."
-                delay={0}
-              />
-              <ExpCard
-                icon="local_fire_department"
-                title="The Ritual"
-                desc="Light during the new moon. Write your intention on the included parchment."
-                delay={0.1}
-              />
-              <ExpCard
-                icon="menu_book"
-                title="The Wisdom"
-                desc="Formulated with Oud, associated with the Root Chakra for grounding energy."
-                delay={0.2}
-              />
-            </div>
-          </motion.div>
         </div>
       </div>
     </div>

@@ -21,7 +21,7 @@ async function navigateViaHeader(page: any, linkText: string) {
 test.describe("首页测试", () => {
   test("应该正确渲染首页", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // 检查标题元素
     await expect(page.getByTestId("main-title")).toBeVisible();
@@ -37,7 +37,7 @@ test.describe("首页测试", () => {
 
   test("应该显示功能卡片", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.getByText("AI Tarot Reader")).toBeVisible();
     await expect(page.getByText("Expert Consultation")).toBeVisible();
@@ -46,7 +46,7 @@ test.describe("首页测试", () => {
 
   test("点击功能卡片应该导航到对应页面", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.getByText("Visit Shop").click();
     await page.waitForTimeout(500);
@@ -57,7 +57,7 @@ test.describe("首页测试", () => {
 test.describe("商城页面测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await navigateViaHeader(page, "Shop");
     await page.waitForTimeout(1000);
   });
@@ -83,7 +83,7 @@ test.describe("商城页面测试", () => {
 test.describe("专家页面测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await navigateViaHeader(page, "Experts");
     await page.waitForTimeout(1000);
   });
@@ -105,7 +105,7 @@ test.describe("专家页面测试", () => {
 test.describe("塔罗页面测试", () => {
   test("应该正确显示塔罗每日页面", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await navigateViaHeader(page, "Tarot");
 
     await expect(page.getByText("Daily Guidance")).toBeVisible();
@@ -113,7 +113,7 @@ test.describe("塔罗页面测试", () => {
 
   test("应该正确显示塔罗牌阵页面", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await navigateViaHeader(page, "AI Chat");
 
     await expect(page.getByText("Past, Present, Future")).toBeVisible();
@@ -123,7 +123,7 @@ test.describe("塔罗页面测试", () => {
 test.describe("星盘页面测试", () => {
   test("应该正确显示星盘页面", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await navigateViaHeader(page, "Horoscope");
 
     // 可能显示星盘内容或设置提示
@@ -136,7 +136,7 @@ test.describe("响应式设计测试", () => {
   test("移动端视图应该正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });
@@ -144,7 +144,7 @@ test.describe("响应式设计测试", () => {
   test("平板视图应该正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });
@@ -152,7 +152,7 @@ test.describe("响应式设计测试", () => {
   test("桌面视图应该正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });
@@ -161,7 +161,7 @@ test.describe("响应式设计测试", () => {
 test.describe("加载状态测试", () => {
   test("商城页面应该显示内容", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await navigateViaHeader(page, "Shop");
 
     const pageContent = await page.content();
@@ -171,7 +171,7 @@ test.describe("加载状态测试", () => {
 
   test("专家页面应该显示内容", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await navigateViaHeader(page, "Experts");
 
     const pageContent = await page.content();
@@ -183,7 +183,7 @@ test.describe("加载状态测试", () => {
 test.describe("UI 组件测试", () => {
   test("产品卡片应该正确渲染", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await navigateViaHeader(page, "Shop");
     await page.waitForTimeout(1000);
 
@@ -193,7 +193,7 @@ test.describe("UI 组件测试", () => {
 
   test("GlowButton 组件应该可点击", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const button = page.getByRole("button", {
       name: /Reveal My Chart|View My Chart/i,
@@ -206,7 +206,7 @@ test.describe("UI 组件测试", () => {
 test.describe("错误处理测试", () => {
   test("首页应该正常加载", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.locator("h1")).toBeVisible();
   });

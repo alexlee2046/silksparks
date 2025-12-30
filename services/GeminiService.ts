@@ -4,11 +4,14 @@ import { supabase } from "./supabase";
 /// <reference types="vite/client" />
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-if (!API_KEY) {
-  console.warn("Gemini API Key is missing. AI features will not work.");
+// Mock fallback for development if API key is missing
+const MOCK_MODE = !API_KEY;
+
+if (MOCK_MODE) {
+  console.warn("Gemini API Key is missing. Using MOCK AI responses.");
 }
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 // Cache for settings to avoid fetching on every call
 let aiConfigCache: {
@@ -71,9 +74,14 @@ function interpolate(template: string, values: Record<string, string>): string {
 
 export const GeminiService = {
   async generateDailySpark(sign: string = "General"): Promise<string> {
+    if (MOCK_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return `[MOCK] The stars align for ${sign} today. Trust your intuition and embrace new beginnings.`;
+    }
+
     try {
       const { config, prompts } = await getAISettings();
-      const model = genAI.getGenerativeModel({
+      const model = genAI!.getGenerativeModel({
         model: config?.model || "gemini-pro",
       });
 
@@ -94,9 +102,14 @@ export const GeminiService = {
     cardName: string,
     question: string,
   ): Promise<string> {
+    if (MOCK_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      return `[MOCK] The ${cardName} suggests that regarding "${question}", you should focus on inner balance. This card symbolizes clarity and new perspectives.`;
+    }
+
     try {
       const { config, prompts } = await getAISettings();
-      const model = genAI.getGenerativeModel({
+      const model = genAI!.getGenerativeModel({
         model: config?.model || "gemini-pro",
       });
 
@@ -119,9 +132,14 @@ export const GeminiService = {
     planets: any,
     elements: any,
   ): Promise<string> {
+    if (MOCK_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return `[MOCK] ${name}, your chart shows strong ${Object.keys(elements)[0]} energy. With ${Object.keys(planets)[0]} in ${Object.values(planets)[0]}, you possess a unique drive for success. Embrace your cosmic potential.`;
+    }
+
     try {
       const { config, prompts } = await getAISettings();
-      const model = genAI.getGenerativeModel({
+      const model = genAI!.getGenerativeModel({
         model: config?.model || "gemini-pro",
       });
 

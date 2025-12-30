@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Screen } from "../types";
 import Lenis from "lenis";
 import { CosmicBackground } from "./CosmicBackground";
 import { GlowButton } from "./GlowButton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../context/UserContext";
+import { useCart } from "../context/CartContext";
+import { supabase } from "../services/supabase";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,12 +15,79 @@ interface LayoutProps {
   onAuthClick?: () => void;
 }
 
+const NotificationsDropdown = ({ userId }: { userId: string }) => {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      setNotifications(data || []);
+      setLoading(false);
+    };
+
+    fetchNotifications();
+
+    const channel = supabase
+      .channel("public:notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          setNotifications((prev) => [payload.new, ...prev]);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      className="absolute top-12 right-0 w-80 bg-background-dark border border-white/10 rounded-xl shadow-2xl p-4 z-50"
+    >
+      <h3 className="text-white font-bold text-sm mb-3">Notifications</h3>
+      <div className="space-y-2 max-h-64 overflow-y-auto">
+        {loading ? (
+          <p className="text-xs text-white/40">Loading...</p>
+        ) : notifications.length === 0 ? (
+          <p className="text-xs text-white/40">No new notifications.</p>
+        ) : (
+          notifications.map((n) => (
+            <div key={n.id} className="p-2 bg-white/5 rounded-lg">
+              <p className="text-xs font-bold text-primary">{n.title}</p>
+              <p className="text-xs text-white/70">{n.message}</p>
+            </div>
+          ))
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
 export const Header: React.FC<{
   setScreen: (s: Screen) => void;
   type?: "public" | "user" | "admin";
   onAuthClick?: () => void;
 }> = ({ setScreen, type = "public", onAuthClick }) => {
   const { session, user, signOut } = useUser();
+  const { itemCount, setIsCartOpen } = useCart();
+  const [showNotifications, setShowNotifications] = useState(false);
   const userName =
     user?.name || session?.user?.email?.split("@")[0] || "Seeker";
 
@@ -112,14 +181,14 @@ export const Header: React.FC<{
                 </button>
                 <div
                   className="relative group cursor-pointer"
-                  onClick={() => setScreen(Screen.ORDERS)}
+                  onClick={() => setIsCartOpen(true)}
                 >
                   <span className="material-symbols-outlined text-white/40 group-hover:text-white transition-colors !text-[22px]">
                     shopping_bag
                   </span>
-                  {user.orders?.length > 0 && (
+                  {itemCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-background-dark shadow-sm">
-                      {user.orders.length}
+                      {itemCount}
                     </span>
                   )}
                 </div>
@@ -151,13 +220,22 @@ export const Header: React.FC<{
               </>
             )}
             {(type === "user" || type === "admin") && (
-              <div className="flex items-center gap-5">
-                <button className="relative text-white/40 hover:text-white transition-colors">
+              <div className="flex items-center gap-5 relative">
+                <button
+                  className="relative text-white/40 hover:text-white transition-colors"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
                   <span className="material-symbols-outlined !text-[22px]">
                     notifications
                   </span>
                   <span className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full border-2 border-background-dark"></span>
                 </button>
+                <AnimatePresence>
+                  {showNotifications && session && (
+                    <NotificationsDropdown userId={session.user.id} />
+                  )}
+                </AnimatePresence>
+
                 <div
                   className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary/20 to-amber-500/20 border border-white/10 flex items-center justify-center text-xs font-bold text-white cursor-pointer hover:border-primary/40 transition-all group overflow-hidden relative"
                   onClick={() => setScreen(Screen.USER_DASHBOARD)}

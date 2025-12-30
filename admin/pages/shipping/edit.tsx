@@ -38,7 +38,11 @@ export const ShippingEdit: React.FC = () => {
       },
     ],
   });
-  const { data: ratesData, isLoading: ratesLoading, refetch: refetchRates } = ratesQuery;
+  const {
+    data: ratesData,
+    isLoading: ratesLoading,
+    refetch: refetchRates,
+  } = ratesQuery;
 
   // 3. Rate Mutations
   const { mutate: createRate } = useCreate();

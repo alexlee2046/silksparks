@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
 import { useUser } from "../context/UserContext";
+import { useCart } from "../context/CartContext";
 import { supabase } from "../services/supabase";
 
-export const Experts: React.FC<NavProps> = ({ setScreen }) => {
+export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
   const [experts, setExperts] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -141,7 +142,10 @@ export const Experts: React.FC<NavProps> = ({ setScreen }) => {
                 tags={expert.tags || []}
                 image={expert.image_url}
                 isOnline={expert.is_online}
-                onBook={() => setScreen(Screen.BOOKING)}
+                onBook={() => {
+                  if (setExpertId) setExpertId(expert.id);
+                  setScreen(Screen.BOOKING);
+                }}
               />
             ))
           )}
@@ -240,7 +244,107 @@ const ExpertCard = ({
   </div>
 );
 
-export const Booking: React.FC<NavProps> = ({ setScreen }) => {
+export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
+  const [expert, setExpert] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
+  const [calendarDays, setCalendarDays] = React.useState<Date[]>([]);
+  const [availableSlots, setAvailableSlots] = React.useState<string[]>([]);
+  const [selectedSlot, setSelectedSlot] = React.useState<string | null>(null);
+
+  // Fetch Expert
+  React.useEffect(() => {
+    const fetchExpert = async () => {
+      if (!expertId) return;
+
+      const { data, error } = await supabase
+        .from("experts")
+        .select("*")
+        .eq("id", expertId)
+        .single();
+
+      if (!error && data) {
+        setExpert(data);
+      }
+      setLoading(false);
+    };
+    fetchExpert();
+  }, [expertId]);
+
+  // Generate Calendar
+  React.useEffect(() => {
+    const days = [];
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      days.push(d);
+    }
+    setCalendarDays(days);
+  }, []);
+
+  // Fetch Slots
+  React.useEffect(() => {
+    const fetchSlots = async () => {
+      if (!expertId) return;
+      const dayOfWeek = selectedDate.getDay();
+
+      // Fetch availability rule
+      const { data: avail } = await supabase
+        .from("expert_availability")
+        .select("*")
+        .eq("expert_id", expertId)
+        .eq("day_of_week", dayOfWeek)
+        .eq("is_available", true);
+
+      if (avail && avail.length > 0) {
+        // Generate slots based on start/end time
+        // Simple logic: hourly slots
+        // In real app: check existing 'consultations' to exclude booked slots
+        const slots = [];
+        // Mock generation for now based on DB rule
+        // e.g. 09:00:00 -> 9, 17:00:00 -> 17
+        const start = parseInt(avail[0].start_time.split(":")[0]);
+        const end = parseInt(avail[0].end_time.split(":")[0]);
+
+        for (let h = start; h < end; h++) {
+          slots.push(`${h}:00 ${h < 12 ? "AM" : "PM"}`);
+        }
+        setAvailableSlots(slots);
+      } else {
+        setAvailableSlots([]);
+      }
+    };
+    fetchSlots();
+    setSelectedSlot(null);
+  }, [selectedDate, expertId]);
+
+  const handleConfirm = () => {
+    // Save draft booking data
+    const bookingData = {
+      expertId,
+      expertName: expert.name,
+      expertImage: expert.image_url,
+      price: expert.price_per_min,
+      date: selectedDate,
+      time: selectedSlot,
+    };
+    localStorage.setItem("booking_draft", JSON.stringify(bookingData));
+    setScreen(Screen.INTAKE);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <div className="text-white/40 tracking-widest uppercase text-xs animate-pulse">
+          Aligning schedules...
+        </div>
+      </div>
+    );
+  }
+
+  if (!expert) return <div>Expert not found</div>;
+
   return (
     <div className="flex-1 bg-silk-pattern relative bg-background-dark min-h-screen">
       <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-12 md:py-16">
@@ -265,14 +369,14 @@ export const Booking: React.FC<NavProps> = ({ setScreen }) => {
               <img
                 alt="Expert Avatar"
                 className="h-full w-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZqThemyIec2Fl5d3Dygwq3Y_pYTTz1Lif8pojUCBG7I44AquGF_jiX3IVXwFAJNWpqZQfe60u1LX9HgMVqhS5IlTMPtJfI7iNVplUWU76_6JMTxgiy04O6Ks1ncFk5mY45SClnc9IHg7elAd9qj_L9Fqs5ipGl1XjiUOmCRIgfJ_etCORnWW8bciDBe--GQKvcJuS1uLa-4cVNwksw1fSfQF681eMJzaYiKT_kyQP6_VoN4kL_hk_opdyZuqRnbXQcn4m5m3uGHtO"
+                src={expert.image_url}
               />
             </div>
           </div>
           <div className="text-center md:text-left flex-1 space-y-2">
             <div className="flex flex-col md:flex-row md:items-center gap-3 justify-center md:justify-start">
               <h1 className="text-4xl md:text-5xl font-light text-white font-display">
-                Elena <span className="font-bold text-primary">Starweaver</span>
+                {expert.name}
               </h1>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest w-fit mx-auto md:mx-0 shadow-[0_0_10px_rgba(244,192,37,0.2)]">
                 <span className="material-symbols-outlined text-[14px]">
@@ -282,8 +386,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen }) => {
               </span>
             </div>
             <p className="text-text-muted text-lg max-w-2xl font-light">
-              Master Vedic Astrologer & Tarot Reader with 15+ years of
-              experience guiding souls to clarity.
+              {expert.title}
             </p>
           </div>
         </motion.div>
@@ -305,20 +408,22 @@ export const Booking: React.FC<NavProps> = ({ setScreen }) => {
               <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-primary/30 transition-all cursor-pointer group">
                 <div className="flex justify-between items-start mb-3">
                   <h4 className="font-bold text-white text-xl group-hover:text-primary transition-colors">
-                    Natal Chart Deep Dive
+                    Standard Consultation
                   </h4>
-                  <span className="text-primary font-bold text-xl">$120</span>
+                  <span className="text-primary font-bold text-xl">
+                    ${(expert.price_per_min * 30).toFixed(2)}
+                  </span>
                 </div>
                 <p className="text-sm text-white/50 mb-6 font-light leading-relaxed truncate-2-lines">
-                  Comprehensive analysis of your birth chart, focusing on karmic
-                  patterns and future potentials.
+                  30-minute deep dive session focusing on your specific
+                  questions and chart analysis.
                 </p>
                 <div className="flex items-center gap-4 text-xs text-white/40 font-bold uppercase tracking-widest">
                   <span className="flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-[16px] text-primary">
                       schedule
                     </span>
-                    60 min
+                    30 min
                   </span>
                 </div>
               </div>
@@ -333,118 +438,102 @@ export const Booking: React.FC<NavProps> = ({ setScreen }) => {
           >
             <GlassCard className="p-0 overflow-hidden h-full">
               <div className="flex flex-col md:flex-row h-full min-h-[500px]">
+                {/* DATE SELECTOR */}
                 <div className="p-8 md:w-1/2 md:border-r border-white/10 flex flex-col bg-surface-dark/30">
                   <div className="flex items-center justify-between mb-8">
                     <h2 className="text-2xl font-bold text-white font-display">
-                      October 2023
+                      Select Date
                     </h2>
-                    <div className="flex gap-1">
-                      <button className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-all">
-                        <span className="material-symbols-outlined text-lg">
-                          chevron_left
-                        </span>
-                      </button>
-                      <button className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-all">
-                        <span className="material-symbols-outlined text-lg">
-                          chevron_right
-                        </span>
-                      </button>
-                    </div>
                   </div>
 
-                  <div className="grid grid-cols-7 mb-6 text-center text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] w-full">
-                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-                      <span key={day}>{day}</span>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-7 gap-1 w-full flex-grow content-start">
-                    <span className="aspect-square"></span>
-                    <span className="aspect-square"></span>
-                    {[...Array(31)].map((_, i) => {
-                      const day = i + 1;
-                      const isSelected = day === 24;
-                      const isToday = day === 24; // Mock today
+                  <div className="grid grid-cols-4 gap-2 w-full flex-grow content-start overflow-y-auto max-h-[400px]">
+                    {calendarDays.map((date, i) => {
+                      const isSelected =
+                        date.getDate() === selectedDate.getDate();
                       return (
                         <button
                           key={i}
+                          onClick={() => setSelectedDate(date)}
                           className={`
-                            aspect-square w-full flex items-center justify-center rounded-xl text-sm transition-all relative group
+                            aspect-square w-full flex flex-col items-center justify-center rounded-xl text-sm transition-all relative group
                             ${
                               isSelected
                                 ? "bg-primary text-background-dark font-bold shadow-[0_0_20px_rgba(244,192,37,0.4)]"
-                                : "text-white/70 hover:bg-white/5 hover:text-white"
+                                : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/5"
                             }
                           `}
                         >
-                          {day}
-                          {isToday && !isSelected && (
-                            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-primary" />
-                          )}
+                          <span className="text-[10px] uppercase opacity-60">
+                            {date.toLocaleDateString("en-US", {
+                              weekday: "short",
+                            })}
+                          </span>
+                          <span className="text-lg">{date.getDate()}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
+                {/* SLOT SELECTOR */}
                 <div className="p-8 md:w-1/2 bg-black/40 flex flex-col">
                   <div className="mb-10">
-                    <h3 className="text-3xl font-bold text-white mb-2 font-display tracking-tight">
-                      Tuesday, Oct 24
+                    <h3 className="text-2xl font-bold text-white mb-2 font-display tracking-tight">
+                      {selectedDate.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </h3>
                     <p className="text-xs text-primary flex items-center gap-2 font-black uppercase tracking-[0.1em]">
                       <span className="material-symbols-outlined text-[16px]">
                         check_circle
                       </span>
-                      3 slots available
+                      {availableSlots.length} available slots
                     </p>
                   </div>
 
-                  <div className="flex-1 space-y-4">
-                    <button className="group relative flex items-center justify-between w-full p-5 rounded-2xl border border-primary/50 bg-primary/10 shadow-[0_0_20px_rgba(244,192,37,0.1)] transition-all duration-300">
-                      <div className="flex flex-col items-start">
-                        <span className="text-lg font-bold text-white">
-                          10:30 AM
-                        </span>
-                        <span className="text-[10px] text-white/40 uppercase font-bold tracking-wider">
-                          Morning Session
-                        </span>
-                      </div>
-                      <span className="material-symbols-outlined text-primary text-[24px]">
-                        check_circle
-                      </span>
-                    </button>
-
-                    <button className="group relative flex items-center justify-between w-full p-5 rounded-2xl border border-white/5 hover:border-primary/50 hover:bg-white/5 transition-all duration-300">
-                      <div className="flex flex-col items-start">
-                        <span className="text-lg font-medium text-white/60 group-hover:text-white">
-                          01:00 PM
-                        </span>
-                        <span className="text-[10px] text-white/20 uppercase font-bold tracking-wider group-hover:text-white/40">
-                          Afternoon Session
-                        </span>
-                      </div>
-                    </button>
-
-                    <button className="group relative flex items-center justify-between w-full p-5 rounded-2xl border border-white/5 hover:border-primary/50 hover:bg-white/5 transition-all duration-300">
-                      <div className="flex flex-col items-start">
-                        <span className="text-lg font-medium text-white/60 group-hover:text-white">
-                          03:30 PM
-                        </span>
-                        <span className="text-[10px] text-white/20 uppercase font-bold tracking-wider group-hover:text-white/40">
-                          Late Afternoon
-                        </span>
-                      </div>
-                    </button>
+                  <div className="flex-1 space-y-4 max-h-[300px] overflow-y-auto">
+                    {availableSlots.length > 0 ? (
+                      availableSlots.map((slot) => (
+                        <button
+                          key={slot}
+                          onClick={() => setSelectedSlot(slot)}
+                          className={`group relative flex items-center justify-between w-full p-4 rounded-xl border transition-all duration-300
+                             ${
+                               selectedSlot === slot
+                                 ? "border-primary/50 bg-primary/10 shadow-[0_0_15px_rgba(244,192,37,0.1)]"
+                                 : "border-white/5 bg-white/5 hover:bg-white/10"
+                             }
+                            `}
+                        >
+                          <span
+                            className={`text-sm font-bold ${selectedSlot === slot ? "text-white" : "text-white/60"}`}
+                          >
+                            {slot}
+                          </span>
+                          {selectedSlot === slot && (
+                            <span className="material-symbols-outlined text-primary text-sm">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="text-white/30 text-sm">
+                        No availability on this day.
+                      </p>
+                    )}
                   </div>
 
                   <div className="mt-8 pt-8 border-t border-white/10">
                     <GlowButton
-                      onClick={() => setScreen(Screen.INTAKE)}
-                      className="w-full h-14 text-base font-bold"
+                      disabled={!selectedSlot}
+                      onClick={handleConfirm}
+                      className="w-full h-14 text-base font-bold disabled:opacity-50 disabled:grayscale"
                       icon="arrow_forward"
                     >
-                      Confirm Appointment
+                      Confirm Time
                     </GlowButton>
                     <p className="text-[10px] text-center text-white/20 mt-4 uppercase font-bold tracking-widest">
                       Step 1 of 3: Selection
@@ -461,6 +550,21 @@ export const Booking: React.FC<NavProps> = ({ setScreen }) => {
 };
 
 export const Intake: React.FC<NavProps> = ({ setScreen }) => {
+  const [focus, setFocus] = React.useState("");
+  const [questions, setQuestions] = React.useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Persist intake data
+    const draft = localStorage.getItem("booking_draft");
+    if (draft) {
+      const data = JSON.parse(draft);
+      const updatedData = { ...data, intake: { focus, questions } };
+      localStorage.setItem("booking_draft", JSON.stringify(updatedData));
+    }
+    setScreen(Screen.DELIVERY);
+  };
+
   return (
     <div className="flex-1 bg-background-dark bg-silk-pattern py-16 min-h-screen">
       <div className="max-w-4xl mx-auto px-6">
@@ -483,8 +587,8 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
             </span>
           </h1>
           <p className="text-white/50 text-xl font-light max-w-2xl mx-auto">
-            Help Elena prepare for your session by sharing your current energy
-            and intent.
+            Help your guide prepare for your session by sharing your current
+            energy and intent.
           </p>
         </motion.div>
 
@@ -494,13 +598,7 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
           transition={{ delay: 0.2 }}
         >
           <GlassCard className="p-0 overflow-hidden border-white/5 shadow-2xl">
-            <form
-              className="relative"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setScreen(Screen.DELIVERY);
-              }}
-            >
+            <form className="relative" onSubmit={handleSubmit}>
               <div className="p-8 md:p-12 space-y-12">
                 <section className="space-y-8">
                   <h2 className="text-2xl font-bold text-white flex items-center gap-3 font-display">
@@ -522,6 +620,9 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
                           type="radio"
                           name="focus"
                           className="peer sr-only"
+                          value={f.l}
+                          onChange={(e) => setFocus(e.target.value)}
+                          required
                         />
                         <div className="h-full rounded-2xl border border-white/5 bg-white/[0.02] p-6 text-center group-hover:border-primary/30 group-hover:bg-white/[0.05] peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary transition-all flex flex-col items-center gap-4 justify-center min-h-[140px] relative overflow-hidden">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 peer-checked:opacity-100 transition-opacity" />
@@ -551,6 +652,8 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
                     <textarea
                       className="block w-full rounded-2xl border border-white/5 bg-white/[0.02] px-6 py-5 text-white placeholder-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none shadow-inner min-h-[160px] text-lg font-light leading-relaxed"
                       placeholder="Share your specific questions or areas where you feel blocked..."
+                      value={questions}
+                      onChange={(e) => setQuestions(e.target.value)}
                     ></textarea>
                     <div className="absolute bottom-4 right-4 text-[10px] text-white/20 uppercase font-bold tracking-widest pointer-events-none group-focus-within:text-primary/40 transition-colors">
                       Max 1000 characters
@@ -586,28 +689,72 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-export const Delivery: React.FC<NavProps> = ({ setScreen }) => {
-  const { addOrder } = useUser();
+export const Delivery: React.FC<NavProps> = ({ setScreen, expertId }) => {
+  const { addItem, setIsCartOpen } = useCart(); // Use Cart Context instead of direct order creation
+  const [expert, setExpert] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    // If expertId is missing, try to recover from draft
+    if (!expertId) {
+      const draft = localStorage.getItem("booking_draft");
+      if (draft) {
+        const data = JSON.parse(draft);
+        if (data.expertId) {
+          // We should ideally setExpertId in parent or handle it here.
+          // For now, let's just fetch by ID from draft.
+          supabase
+            .from("experts")
+            .select("*")
+            .eq("id", data.expertId)
+            .single()
+            .then(({ data }) => setExpert(data));
+        }
+      }
+    } else {
+      supabase
+        .from("experts")
+        .select("*")
+        .eq("id", expertId)
+        .single()
+        .then(({ data }) => setExpert(data));
+    }
+  }, [expertId]);
 
   const handleSelect = async (deliveryType: string) => {
-    const newOrder: any = {
-      date: new Date(),
-      items: [
-        {
-          name: `Natal Chart Deep Dive (${deliveryType})`,
-          price: 120.0,
-          type: "service",
-          status: "Scheduled",
-          image:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuCZqThemyIec2Fl5d3Dygwq3Y_pYTTz1Lif8pojUCBG7I44AquGF_jiX3IVXwFAJNWpqZQfe60u1LX9HgMVqhS5Clnc9IHg7elAd9qj_L9Fqs5ipGl1XjiUOmCRIgfJ_etCORnWW8bciDBe--GQKvcJuS1uLa-4cVNwksw1fSfQF681eMJzaYiKT_kyQP6_VoN4kL_hk_opdyZuqRnbXQcn4m5m3uGHtO",
-        },
-      ],
-      total: 120.0,
-      status: "pending",
-    };
+    const draft = localStorage.getItem("booking_draft");
+    if (!draft) return;
 
-    await addOrder(newOrder);
-    setScreen(Screen.USER_DASHBOARD);
+    const bookingData = JSON.parse(draft);
+    const expertName = expert
+      ? expert.name
+      : bookingData.expertName || "Expert Guide";
+    const price = expert
+      ? expert.price_per_min * 30
+      : bookingData.price * 30 || 120.0; // 30 mins
+
+    // Add to Cart
+    addItem({
+      id: `consultation-${Date.now()}`, // Temporary ID for cart item
+      name: `${deliveryType} with ${expertName}`,
+      price: price,
+      description: `30 min session on ${new Date(bookingData.date).toLocaleDateString()} at ${bookingData.time}`,
+      image: expert?.image_url || bookingData.expertImage,
+      type: "consultation",
+      // Store full booking metadata in a custom field if Cart supports it,
+      // or we just keep it in localStorage and link it during checkout.
+      // For Phase 3 MVP, let's store it in localStorage key 'pending_consultation' or just assume the last draft is valid.
+      // Better: The CartContext should support 'metadata'.
+      // But we haven't updated CartContext yet.
+      // Let's attach it to the item object even if TS complains, or just use localStorage.
+      metadata: {
+        ...bookingData,
+        deliveryType,
+        duration: 30,
+      },
+    } as any); // Cast to any to bypass type check for 'metadata' for now
+
+    setIsCartOpen(true);
+    // setScreen(Screen.USER_DASHBOARD); // Don't redirect to dashboard, open cart instead.
   };
 
   return (

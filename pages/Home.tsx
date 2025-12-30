@@ -3,14 +3,36 @@ import { Screen, NavProps } from "../types";
 import { GeminiService } from "../services/GeminiService";
 import { BirthDataForm } from "../components/BirthDataForm";
 import { useUser } from "../context/UserContext";
+import { useCart } from "../context/CartContext";
+import {
+  RecommendationEngine,
+  Product,
+} from "../services/RecommendationEngine";
 import { motion } from "framer-motion";
 
-export const Home: React.FC<NavProps> = ({ setScreen }) => {
+export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   const [dailySpark, setDailySpark] = useState<string>(
     "Aligning with the cosmos...",
   );
   const [showForm, setShowForm] = useState(false);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const { isBirthDataComplete } = useUser();
+  const { addItem } = useCart();
+
+  // Fetch featured products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const products = await RecommendationEngine.getFeaturedProducts(4);
+      setFeaturedProducts(products);
+    };
+    fetchProducts();
+  }, []);
+
+  // Handle add to cart
+  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.stopPropagation();
+    addItem(product);
+  };
 
   useEffect(() => {
     const fetchSpark = async () => {
@@ -240,38 +262,30 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
           </div>
 
           <div className="flex overflow-x-auto gap-8 pb-12 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden mask-image-gradient">
-            <ProductCard
-              title="Amethyst Cluster"
-              price="$45.00"
-              desc="Spiritual Clarity & Protection"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuDP_bOhhc4Qhi372N4ioSuuVYgGCi6TW47C5lsipQPgu03yvsFASSxchHfbCkDmGCLoiu47AnTebH1rd07SeZodgMZ95G-MCC98JvDG6bfqv8P7_wdBgl69J6uoLEe9Iu5N3CfEck0yH_5z7qJDoiG0LxKpUdT04CuIXJxzOIWaMP0jX8F3MYq6uetECncxUOI3qmruDpTcuQYyacZWCct9xUq89A_N6YubdHPiEEe0Q7jElnj1O3YXVeT2tOsB3qGi2H4hvvJ-EWat"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-              index={0}
-            />
-            <ProductCard
-              title="Golden Tarot Deck"
-              price="$32.00"
-              desc="Divination Tool, Limited Ed."
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuCjitvq9kRFe5CuRifKd6XQXh1LXQRr1fXoy_IKJveYKScvcD9_AniPcIvWpjno-w6JeQCpEryUuQpR_37v-bRA1hbg3YaUEz0PhOnw4zRrDMFcJzdeTDsvHWQWHRP1youUaRsJySNHBdlTYNUId5J99pskk7aoezdWY927fJ8zuJX_UPwjONUocANU29YLZGcr8QLx6fTJN8t66UTLNjMc7tcokl_WVh0Zi5CNS9w7ENRBTxJnefOf7_b7TXJL4PP3JhuOn1VaZApA"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-              index={1}
-            />
-            <ProductCard
-              title="Sage Bundle"
-              price="$12.00"
-              desc="Cleansing & Purification"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuBk3poV6quSXOoNErUgmqhtfis7nYaRN_n2urnfm51EGatpRyUph1c9O-semyeWwN_zV3RSmfoWPee_WhODcfQPMXJ6_wunKWjRteFm8kd-5pzmrtB9dhjHDzoTguzysDjEYcf6_SqRqF7UG7QgEn8ZeU06HRRMccexpzMqJgwUlIQ5DMK0TkYEwU6jRPTW9vVuvqg"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-              index={2}
-            />
-            <ProductCard
-              title="Moonstone Pendant"
-              price="$55.00"
-              desc="Intuition & Dreams"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuAzd5B9TSFjJHvoO2Ugw-WTMlOpKYfopG8DNLyqr7Q4EG7ETvB4U2G4mTB12Ym8Ez3UzokdE8NrM1GRyRl7KCLTkoGPDyGUps5fFY13m-73YX2yAlgFUegofFABEZ5UAuLdh-kigNKDvfT0ZUqQ2_RFH6l4M_daBpt2v3QAV47hTroa8GKmzJ4TrFcgzYqVxBVUUWTKQFTruqdmSXHWT_Ii5o0rL6fBAm0Y8DZqc25PqoyipKx66LdfOCaPK0W5G4pl_2e_yqQmWzUY"
-              onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
-              index={3}
-            />
+            {featuredProducts.length > 0 ? (
+              featuredProducts.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  title={product.title}
+                  price={`$${product.price.toFixed(2)}`}
+                  desc={product.description || "Sacred Artifact"}
+                  image={product.image_url}
+                  onClick={() => {
+                    if (setProductId) setProductId(product.id);
+                    setScreen(Screen.PRODUCT_DETAIL);
+                  }}
+                  onAddToCart={(e: React.MouseEvent) =>
+                    handleAddToCart(e, product)
+                  }
+                  index={index}
+                />
+              ))
+            ) : (
+              // Fallback / Loading State
+              <div className="w-full text-center text-white/40 py-10">
+                Summoning artifacts...
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -312,7 +326,15 @@ const FeatureCard = ({ icon, title, desc, action, onClick, index }: any) => (
   </motion.div>
 );
 
-const ProductCard = ({ title, price, desc, image, onClick, index }: any) => (
+const ProductCard = ({
+  title,
+  price,
+  desc,
+  image,
+  onClick,
+  onAddToCart,
+  index,
+}: any) => (
   <motion.div
     initial={{ opacity: 0, x: 20 }}
     whileInView={{ opacity: 1, x: 0 }}
@@ -328,7 +350,13 @@ const ProductCard = ({ title, price, desc, image, onClick, index }: any) => (
         style={{ backgroundImage: `url("${image}")` }}
       ></div>
       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 delay-100">
-        <button className="h-10 w-10 rounded-full bg-white/90 text-black flex items-center justify-center hover:bg-primary transition-colors shadow-lg transform hover:scale-105">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            // TODO: Implement Favorite Logic
+          }}
+          className="h-10 w-10 rounded-full bg-white/90 text-black flex items-center justify-center hover:bg-primary transition-colors shadow-lg transform hover:scale-105"
+        >
           <span className="material-symbols-outlined text-[20px]">
             favorite
           </span>
@@ -338,7 +366,10 @@ const ProductCard = ({ title, price, desc, image, onClick, index }: any) => (
 
       {/* Quick Add Overlay */}
       <div className="absolute bottom-0 inset-x-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-        <button className="w-full h-12 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-primary transition-colors">
+        <button
+          onClick={onAddToCart}
+          className="w-full h-12 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-primary transition-colors"
+        >
           Add to Cart - {price}
         </button>
       </div>

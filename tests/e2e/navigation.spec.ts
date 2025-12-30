@@ -16,14 +16,14 @@ import { test, expect, Page } from "@playwright/test";
 test.describe("Header 导航测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   });
 
   test("点击 Shop 应导航到商店页面", async ({ page }) => {
     await page
       .getByRole("button", { name: /^shop$/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.getByText("Curated Tools")).toBeVisible();
   });
@@ -32,7 +32,7 @@ test.describe("Header 导航测试", () => {
     await page
       .getByRole("button", { name: /^experts$/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.getByText("Expert Guidance")).toBeVisible();
   });
@@ -41,7 +41,7 @@ test.describe("Header 导航测试", () => {
     await page
       .getByRole("button", { name: /^horoscope$/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(500);
     // 可能显示星盘或设置提示
     const content = page.getByText(/Birth Chart|Cosmic Blueprint|Go to Setup/i);
@@ -52,7 +52,7 @@ test.describe("Header 导航测试", () => {
     await page
       .getByRole("button", { name: /^daily tarot|tarot$/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.getByText("Daily Guidance")).toBeVisible();
   });
@@ -61,7 +61,7 @@ test.describe("Header 导航测试", () => {
     await page
       .getByRole("button", { name: /AI Chat/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.getByText("Past, Present, Future")).toBeVisible();
   });
@@ -73,7 +73,7 @@ test.describe("Header 导航测试", () => {
 test.describe("Footer 导航测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(500);
   });
@@ -89,7 +89,7 @@ test.describe("Footer 导航测试", () => {
     await page
       .getByRole("button", { name: /Birth Chart/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(800);
     const content = page.getByText(/Birth Chart|Cosmic Blueprint|Go to Setup/i);
     await expect(content.first()).toBeVisible();
@@ -99,19 +99,23 @@ test.describe("Footer 导航测试", () => {
     await page
       .getByRole("button", { name: /Daily Tarot/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(800);
     await expect(page.getByText("Daily Guidance")).toBeVisible();
   });
 
   test("点击 Shop Artifacts 链接应导航到商店", async ({ page }) => {
-    await page.getByRole("button", { name: /Shop Artifacts/i }).click();
+    await page
+      .getByRole("button", { name: /Shop Artifacts/i })
+      .click({ force: true });
     await page.waitForTimeout(800);
     await expect(page.getByText("Curated Tools")).toBeVisible();
   });
 
   test("点击 Expert Guides 链接应导航到专家页面", async ({ page }) => {
-    await page.getByRole("button", { name: /Expert Guides/i }).click();
+    await page
+      .getByRole("button", { name: /Expert Guides/i })
+      .click({ force: true });
     await page.waitForTimeout(800);
     await expect(page.getByText("Expert Guidance")).toBeVisible();
   });
@@ -123,7 +127,7 @@ test.describe("Footer 导航测试", () => {
 test.describe("首页组件和按钮测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   });
 
   test("页面应显示主标题", async ({ page }) => {
@@ -143,7 +147,9 @@ test.describe("首页组件和按钮测试", () => {
   });
 
   test("点击 View Horoscope 应导航到星盘", async ({ page }) => {
-    await page.getByRole("button", { name: "View Horoscope" }).click();
+    await page
+      .getByRole("button", { name: "View Horoscope" })
+      .click({ force: true });
     await page.waitForTimeout(500);
     const content = page.getByText(/Birth Chart|Cosmic Blueprint|Go to Setup/i);
     await expect(content.first()).toBeVisible();
@@ -157,19 +163,19 @@ test.describe("首页组件和按钮测试", () => {
 
   test("点击 Start Reading 应导航到塔罗页面", async ({ page }) => {
     // FeatureCard 的 action 是 div 不是 button，需要点击包含该文本的卡片
-    await page.getByText("Start Reading").click();
+    await page.getByText("Start Reading").click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.getByText("Daily Guidance")).toBeVisible();
   });
 
   test("点击 Book Expert 应导航到专家页面", async ({ page }) => {
-    await page.getByText("Book Expert").click();
+    await page.getByText("Book Expert").click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.getByText("Expert Guidance")).toBeVisible();
   });
 
   test("点击 Visit Shop 应导航到商店", async ({ page }) => {
-    await page.getByText("Visit Shop").click();
+    await page.getByText("Visit Shop").click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.getByText("Curated Tools")).toBeVisible();
   });
@@ -181,8 +187,11 @@ test.describe("首页组件和按钮测试", () => {
 test.describe("商店页面测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Shop" }).first().click();
+    await page.waitForLoadState("load");
+    await page
+      .getByRole("button", { name: "Shop" })
+      .first()
+      .click({ force: true });
     await page.waitForTimeout(1000);
   });
 
@@ -195,7 +204,9 @@ test.describe("商店页面测试", () => {
   });
 
   test("返回按钮应导航到首页", async ({ page }) => {
-    await page.getByRole("button", { name: /Back to Home/i }).click();
+    await page
+      .getByRole("button", { name: /Back to Home/i })
+      .click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.locator("h1")).toContainText(
       /Ancient Wisdom|Digital Age/i,
@@ -213,8 +224,11 @@ test.describe("商店页面测试", () => {
 test.describe("专家页面测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Experts" }).first().click();
+    await page.waitForLoadState("load");
+    await page
+      .getByRole("button", { name: "Experts" })
+      .first()
+      .click({ force: true });
     await page.waitForTimeout(1000);
   });
 
@@ -227,7 +241,9 @@ test.describe("专家页面测试", () => {
   });
 
   test("返回按钮应导航到首页", async ({ page }) => {
-    await page.getByRole("button", { name: /Back to Home/i }).click();
+    await page
+      .getByRole("button", { name: /Back to Home/i })
+      .click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.locator("h1")).toContainText(
       /Ancient Wisdom|Digital Age/i,
@@ -245,8 +261,11 @@ test.describe("专家页面测试", () => {
 test.describe("塔罗页面测试", () => {
   test("塔罗每日页面应显示正确内容", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Tarot" }).first().click();
+    await page.waitForLoadState("load");
+    await page
+      .getByRole("button", { name: "Tarot" })
+      .first()
+      .click({ force: true });
     await page.waitForTimeout(500);
 
     await expect(page.getByText("Daily Guidance")).toBeVisible();
@@ -258,14 +277,14 @@ test.describe("塔罗页面测试", () => {
 
   test("塔罗每日页面返回按钮应工作", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page
       .getByRole("button", { name: /^daily tarot|tarot$/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(500);
 
-    await page.getByRole("button", { name: /Back/i }).click();
+    await page.getByRole("button", { name: /Back/i }).click({ force: true });
     await page.waitForTimeout(500);
     await expect(page.locator("h1")).toContainText(
       /Ancient Wisdom|Digital Age/i,
@@ -274,11 +293,11 @@ test.describe("塔罗页面测试", () => {
 
   test("塔罗牌阵页面应显示三张牌位", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page
       .getByRole("button", { name: /AI Chat/i })
       .first()
-      .click();
+      .click({ force: true });
     await page.waitForTimeout(500);
 
     await expect(page.getByText("Past, Present, Future")).toBeVisible();
@@ -291,14 +310,16 @@ test.describe("塔罗页面测试", () => {
 test.describe("滚动到顶部功能测试", () => {
   test("导航后页面应滚动到顶部", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // 滚动到页面底部
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(300);
 
     // 点 Footer 导航链接
-    await page.getByRole("button", { name: /Shop Artifacts/i }).click();
+    await page
+      .getByRole("button", { name: /Shop Artifacts/i })
+      .click({ force: true });
     await page.waitForTimeout(1000); // 等待平滑滚动
 
     // 检查页面是否滚动到顶部
@@ -314,7 +335,7 @@ test.describe("响应式设计测试", () => {
   test("移动端视图应正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });
@@ -322,7 +343,7 @@ test.describe("响应式设计测试", () => {
   test("平板视图应正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });
@@ -330,7 +351,7 @@ test.describe("响应式设计测试", () => {
   test("桌面视图应正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });

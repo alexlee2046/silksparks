@@ -4,6 +4,7 @@ import { Screen, NavProps } from "../types";
 import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
+import { supabase } from "../services/supabase";
 
 export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
   const { user } = useUser();
@@ -199,6 +200,50 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
+export const Orders: React.FC<NavProps> = ({ setScreen }) => {
+  return (
+    <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
+      <button
+        onClick={() => setScreen(Screen.USER_DASHBOARD)}
+        className="text-white/50 hover:text-white mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
+      >
+        <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
+          arrow_back
+        </span>{" "}
+        Back to Dashboard
+      </button>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col gap-2 mb-10"
+      >
+        <h1 className="text-3xl md:text-4xl font-light font-display text-white">
+          Order <span className="font-bold text-primary">History</span>
+        </h1>
+        <p className="text-text-muted font-light">
+          Track your physical artifacts and deliveries.
+        </p>
+      </motion.div>
+
+      <GlassCard className="text-center py-20 border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center">
+        <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center text-white/20 mb-4">
+          <span className="material-symbols-outlined text-3xl">
+            local_shipping
+          </span>
+        </div>
+        <p className="text-text-muted">No orders placed yet.</p>
+        <button
+          onClick={() => setScreen(Screen.SHOP_LIST)}
+          className="text-primary mt-4 hover:text-white font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-white transition-all"
+        >
+          Browse Shop
+        </button>
+      </GlassCard>
+    </div>
+  );
+};
+
 const NavBtn = ({ icon, label, active, onClick }: any) => (
   <button
     onClick={onClick}
@@ -347,9 +392,21 @@ const ArchiveCard = ({ item }: { item: any }) => {
   );
 };
 
-export const Orders: React.FC<NavProps> = ({ setScreen }) => {
-  const { user } = useUser();
-  const orders = user.orders || [];
+export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
+  const { user, updateUser } = useUser();
+  const [marketing, setMarketing] = React.useState(
+    user.preferences?.marketingConsent || false,
+  );
+  const [loading, setLoading] = React.useState(false);
+
+  const handleSave = async () => {
+    setLoading(true);
+    await updateUser({
+      preferences: { ...user.preferences, marketingConsent: marketing },
+    });
+    setLoading(false);
+    alert("Settings saved!");
+  };
 
   return (
     <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
@@ -369,109 +426,158 @@ export const Orders: React.FC<NavProps> = ({ setScreen }) => {
         className="flex flex-col gap-2 mb-10"
       >
         <h1 className="text-3xl md:text-4xl font-light font-display text-white">
-          Order <span className="font-bold text-primary">History</span>
+          Account <span className="font-bold text-primary">Settings</span>
         </h1>
         <p className="text-text-muted font-light">
-          Track your spiritual tools and consultations.
+          Manage your preferences and privacy.
         </p>
       </motion.div>
 
-      <div className="flex flex-col gap-6">
-        {orders.length === 0 ? (
-          <GlassCard className="text-center py-20 border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center">
-            <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center text-white/20 mb-4">
-              <span className="material-symbols-outlined text-3xl">
-                shopping_bag
-              </span>
+      <GlassCard className="max-w-2xl p-8 border-white/10">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-white font-bold text-lg">
+                Marketing Communications
+              </h3>
+              <p className="text-text-muted text-sm mt-1">
+                Receive updates about new artifacts and celestial events.
+              </p>
             </div>
-            <p className="text-text-muted">No orders yet.</p>
-            <button
-              onClick={() => setScreen(Screen.SHOP_LIST)}
-              className="text-primary mt-4 hover:text-white font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-white transition-all"
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={marketing}
+                onChange={(e) => setMarketing(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+
+          <div className="pt-6 border-t border-white/10">
+            <GlowButton onClick={handleSave} disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </GlowButton>
+          </div>
+        </div>
+      </GlassCard>
+    </div>
+  );
+};
+
+export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
+  const { user } = useUser();
+  const [consultations, setConsultations] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchConsultations = async () => {
+      // Join with experts table to get names
+      // Since supabase-js join syntax is tricky with foreign keys if not explicitly named,
+      // we might need a view or just fetch separately.
+      // Or: .select(`*, experts(name, image_url)`)
+      const { data, error } = await supabase
+        .from("consultations")
+        .select(
+          `
+          *,
+          experts (
+            name,
+            image_url
+          )
+        `,
+        )
+        .eq("user_id", user.id)
+        .order("scheduled_at", { ascending: false });
+
+      if (!error && data) {
+        setConsultations(data);
+      }
+      setLoading(false);
+    };
+    if (user.id) fetchConsultations();
+  }, [user.id]);
+
+  return (
+    <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
+      <button
+        onClick={() => setScreen(Screen.USER_DASHBOARD)}
+        className="text-white/50 hover:text-white mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
+      >
+        <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
+          arrow_back
+        </span>{" "}
+        Back to Dashboard
+      </button>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col gap-2 mb-10"
+      >
+        <h1 className="text-3xl md:text-4xl font-light font-display text-white">
+          My <span className="font-bold text-primary">Consultations</span>
+        </h1>
+        <p className="text-text-muted font-light">
+          Upcoming sessions and past guidance.
+        </p>
+      </motion.div>
+
+      {consultations.length === 0 ? (
+        <GlassCard className="text-center py-20 border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center">
+          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center text-white/20 mb-4">
+            <span className="material-symbols-outlined text-3xl">
+              calendar_month
+            </span>
+          </div>
+          <p className="text-text-muted">No consultations booked yet.</p>
+          <button
+            onClick={() => setScreen(Screen.BOOKING)}
+            className="text-primary mt-4 hover:text-white font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-white transition-all"
+          >
+            Book a Session
+          </button>
+        </GlassCard>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {consultations.map((c) => (
+            <GlassCard
+              key={c.id}
+              className="p-6 border-white/10 flex flex-col md:flex-row gap-6 items-start md:items-center"
             >
-              Browse Shop
-            </button>
-          </GlassCard>
-        ) : (
-          orders.map((order, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-            >
-              <GlassCard className="p-0 overflow-hidden border-white/10">
-                <div className="bg-white/5 px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-white/10">
-                  <div className="flex gap-8 text-sm">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-white/40 text-[10px] font-bold uppercase tracking-wider">
-                        Order Placed
-                      </span>
-                      <span className="text-white font-medium">
-                        {new Date(order.date).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-white/40 text-[10px] font-bold uppercase tracking-wider">
-                        Total
-                      </span>
-                      <span className="text-primary font-bold">
-                        ${order.total}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 border border-white/5">
-                    <span
-                      className={`flex size-2 rounded-full ${order.status === "completed" ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"}`}
-                    ></span>
-                    <span
-                      className={`${order.status === "completed" ? "text-green-500" : "text-amber-500"} text-xs font-bold uppercase tracking-wider`}
-                    >
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  {order.items.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex gap-5 items-start mb-4 last:mb-0"
-                    >
-                      <div
-                        className="size-20 shrink-0 rounded-lg bg-cover bg-center border border-white/10 bg-surface-dark shadow-inner"
-                        style={{
-                          backgroundImage: item.image
-                            ? `url("${item.image}")`
-                            : undefined,
-                        }}
-                      >
-                        {!item.image && (
-                          <span className="material-symbols-outlined text-3xl text-text-muted flex items-center justify-center h-full">
-                            inventory_2
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-col h-full justify-between py-1">
-                        <div>
-                          <h3 className="text-white font-bold text-lg leading-tight">
-                            {item.name}
-                          </h3>
-                          <p className="text-white/40 text-xs font-bold uppercase tracking-wider mt-1">
-                            Service
-                          </p>
-                        </div>
-                        <p className="text-white font-bold text-lg mt-2">
-                          ${item.price}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </GlassCard>
-            </motion.div>
-          ))
-        )}
-      </div>
+              <div
+                className="h-16 w-16 rounded-full bg-cover bg-center border border-white/10"
+                style={{ backgroundImage: `url('${c.experts?.image_url}')` }}
+              ></div>
+              <div className="flex-1">
+                <h3 className="text-white font-bold text-lg">
+                  {c.delivery_method || "Consultation"} with {c.experts?.name}
+                </h3>
+                <p className="text-text-muted text-sm flex items-center gap-2 mt-1">
+                  <span className="material-symbols-outlined text-xs">
+                    event
+                  </span>
+                  {new Date(c.scheduled_at).toLocaleString()}
+                </p>
+                {c.meeting_link && (
+                  <a
+                    href={c.meeting_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary text-xs font-bold uppercase tracking-wider mt-2 block hover:underline"
+                  >
+                    Join Meeting
+                  </a>
+                )}
+              </div>
+              <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-white/60">
+                {c.status}
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

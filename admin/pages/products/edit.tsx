@@ -4,7 +4,12 @@ import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
 
 export const ProductEdit: React.FC = () => {
-  const { onFinish, mutation, query: queryResult, formLoading } = useForm({
+  const {
+    onFinish,
+    mutation,
+    query: queryResult,
+    formLoading,
+  } = useForm({
     action: "edit",
     resource: "products",
     redirect: "list",

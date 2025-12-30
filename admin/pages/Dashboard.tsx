@@ -28,7 +28,8 @@ export const Dashboard: React.FC = () => {
     filters: [{ field: "status", operator: "eq", value: "scheduled" }],
     pagination: { pageSize: 1 },
   });
-  const { data: appointmentsData, isLoading: appointmentsLoading } = appointmentsQuery;
+  const { data: appointmentsData, isLoading: appointmentsLoading } =
+    appointmentsQuery;
 
   // Calculate generic stats
   const totalUsers = usersData?.total || 0;

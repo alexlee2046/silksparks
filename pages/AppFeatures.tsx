@@ -1,6 +1,7 @@
 import React from "react";
 import { Screen, NavProps } from "../types";
 import { GeminiService } from "../services/GeminiService";
+import { GlowButton } from "../components/GlowButton";
 import {
   RecommendationEngine,
   Product,
@@ -9,12 +10,14 @@ import { useUser } from "../context/UserContext";
 import { AstrologyEngine } from "../services/AstrologyEngine";
 import { motion, AnimatePresence } from "framer-motion";
 import { CosmicBackground } from "../components/CosmicBackground";
+import tarotData from "../src/data/tarot_cards.json";
 
 export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
   const { user, isBirthDataComplete, addArchive } = useUser();
   const [analysis, setAnalysis] = React.useState<string | null>(null);
   const [planets, setPlanets] = React.useState<any>(null);
   const [elements, setElements] = React.useState<any>(null);
+  const [recommendations, setRecommendations] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -45,6 +48,8 @@ export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
             e,
           );
           setAnalysis(text);
+          const recs = await RecommendationEngine.getRecommendations(text, 3);
+          setRecommendations(recs);
           localStorage.setItem(cacheKey, text);
 
           // Save to Archives
@@ -297,28 +302,8 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
       setReadingState("drawing");
 
       setTimeout(async () => {
-        const mockCards = [
-          {
-            name: "The Fool",
-            image:
-              "https://lh3.googleusercontent.com/aida-public/AB6AXuBAOixeUJwOe9jv0fn10m8eZk65thsV1FHnz1OpnUu4K7LqHsqGqb9wZCy7qEguiDU1tT6x93RXmVvPUUdDI_0-C78Ilbv-OqjFKyv8NmfWMMMO2E8NJDkDTbSiPgp2llYugxz_Itkgd1bjgfARc_TjhRtC0a4le7z_PYQota_K8Qj3FEjhuw5pj6i2eVcDBIl1NZa1xE_AR1R5bhqBAxFynkJ_GA5Za4ye5yGEIORL2AEB6wyZpkuiC5dvPtZHsBH6vIAfv7AzuKnD",
-            arcana: "Major Arcana",
-          },
-          {
-            name: "The Magician",
-            image:
-              "https://lh3.googleusercontent.com/aida-public/AB6AXuACRXRL36HXytfTCJKsRNr_6nRco7q5B0ZOMXxy2W_hf44wR85pKwTaXq8IDHTpFEtQGsFYbbFvY9k9-m4l_OGrqj3zAjC0hUQ0l488eGSfe2zMjzSVhFAUuY_sexVv56PgW61lpVaqm-JgeXWY-ebklU1Eh2JvDkigwpOxRXT57YMu2JtaIEA0pSsH8dJtkbdF_MQu8eKm7JsNPaquJTRRLJSFFuNSgX4ZxQE5Ad7tRTQU6oiZ1Y37PXUfXuDG0VuhKqVZR-j_SC50",
-            arcana: "Major Arcana",
-          },
-          {
-            name: "The High Priestess",
-            image:
-              "https://lh3.googleusercontent.com/aida-public/AB6AXuALMgwQ-T9w-swS4MxajtyM8fKYzlUUjKwUKg_5KrhjjGSYW2c5XFTOZ3RcC3bXnP9WCPx8JbrRQanfsM9O59DUrldp6q87AkQ06fvlYkHR-SCtVhaYe5Kpxz1tj8UjJNLtmBMwUwtCRJHI1nM8Cx_daJJjNgwrCkDe9Br-OYXEDyJdH8_NWOUkdlvVIQs3y8s57ZqTPp-UeaJQkIODbBQbDvjET80crwCOzgk_coXXbmXT-9ficjM-TB8AaTqqDVZIPVJrkjsdbpsj",
-            arcana: "Major Arcana",
-          },
-        ];
         const randomCard =
-          mockCards[Math.floor(Math.random() * mockCards.length)];
+          tarotData[Math.floor(Math.random() * tarotData.length)];
         setCard(randomCard);
 
         try {
@@ -327,7 +312,7 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
             "General daily advice",
           );
           setInterpretation(interpret);
-          const recs = RecommendationEngine.getRecommendations(interpret);
+          const recs = await RecommendationEngine.getRecommendations(interpret);
           setRecommendations(recs);
 
           addArchive({
@@ -489,7 +474,11 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                   >
                     <div
                       className="absolute inset-0 w-full h-full bg-cover bg-center rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-[1.02]"
-                      style={{ backgroundImage: `url("${card.image}")` }}
+                      style={{
+                        backgroundImage: `url("${card.image}")`,
+                        filter:
+                          "grayscale(100%) brightness(0.6) contrast(1.2) invert(100%) sepia(100%) saturate(600%) hue-rotate(10deg)",
+                      }}
                     ></div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-3xl"></div>
                     <div className="absolute bottom-8 left-0 right-0 text-center">
@@ -614,6 +603,54 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
 };
 
 export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
+  const [readingState, setReadingState] = React.useState<
+    "idle" | "shuffling" | "drawing" | "revealed"
+  >("idle");
+  const [cards, setCards] = React.useState<any[]>([]);
+  const [interpretation, setInterpretation] = React.useState<string>("");
+  const [recommendations, setRecommendations] = React.useState<Product[]>([]);
+
+  const handleStartSession = () => {
+    setReadingState("shuffling");
+    setTimeout(() => {
+      // Draw 3 random cards
+      const drawn = [];
+      const deck = [...tarotData];
+      for (let i = 0; i < 3; i++) {
+        const randomIndex = Math.floor(Math.random() * deck.length);
+        drawn.push({
+          ...deck[randomIndex],
+          isReversed: Math.random() > 0.5,
+        });
+        deck.splice(randomIndex, 1);
+      }
+      setCards(drawn);
+      setReadingState("drawing");
+
+      // Generate Reading
+      setTimeout(async () => {
+        try {
+          const prompt = `Spread: Past (${drawn[0].name}), Present (${drawn[1].name}), Future (${drawn[2].name}). Synthesize a cohesive narrative.`;
+          // Logic to call Gemini (mocking for speed/safety if API not ready, but using Service if available)
+          // For now, let's use the service but fallback if it fails or if we want to save tokens in dev
+          const text = await GeminiService.generateTarotInterpretation(
+            "3-Card Spread",
+            prompt,
+          );
+          setInterpretation(text);
+
+          const recs = await RecommendationEngine.getRecommendations(text, 3);
+          setRecommendations(recs);
+        } catch (e) {
+          setInterpretation(
+            "The veil is thick today... but the cards speak of transformation.",
+          );
+        }
+        setReadingState("revealed");
+      }, 2000);
+    }, 1500);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -640,7 +677,7 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
             <span className="material-symbols-outlined text-sm">
               auto_awesome
             </span>{" "}
-            Active Session
+            Three Card Spread
           </div>
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
@@ -652,112 +689,139 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
               Future
             </span>
           </motion.h1>
+          {readingState === "idle" && (
+            <p className="text-white/60 max-w-lg mx-auto mt-4 text-lg">
+              Focus on a question about your path...
+            </p>
+          )}
         </div>
 
-        <div className="w-full max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative mb-16">
-          <div className="hidden md:block absolute top-1/2 left-10 right-10 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent -translate-y-1/2 z-0"></div>
+        <div className="w-full max-w-[1100px] mx-auto min-h-[400px]">
+          {readingState === "idle" && (
+            <div className="flex justify-center mt-10">
+              <GlowButton
+                onClick={handleStartSession}
+                className="px-12 py-6 text-xl"
+                icon="playing_cards"
+              >
+                Begin Reading
+              </GlowButton>
+            </div>
+          )}
 
-          <TarotCard
-            title="The Moon"
-            position="I"
-            context="The Past"
-            subtitle="Reversed"
-            image="https://lh3.googleusercontent.com/aida-public/AB6AXuALMgwQ-T9w-swS4MxajtyM8fKYzlUUjKwUKg_5KrhjjGSYW2c5XFTOZ3RcC3bXnP9WCPx8JbrRQanfsM9O59DUrldp6q87AkQ06fvlYkHR-SCtVhaYe5Kpxz1tj8UjJNLtmBMwUwtCRJHI1nM8Cx_daJJjNgwrCkDe9Br-OYXEDyJdH8_NWOUkdlvVIQs3y8s57ZqTPp-UeaJQkIODbBQbDvjET80crwCOzgk_coXXbmXT-9ficjM-TB8AaTqqDVZIPVJrkjsdbpsj"
-            icon="brightness_3"
-            delay={0.1}
-          />
-          <TarotCard
-            title="Justice"
-            position="II"
-            context="The Present"
-            subtitle="Upright"
-            image="https://lh3.googleusercontent.com/aida-public/AB6AXuACRXRL36HXytfTCJKsRNr_6nRco7q5B0ZOMXxy2W_hf44wR85pKwTaXq8IDHTpFEtQGsFYbbFvY9k9-m4l_OGrqj3zAjC0hUQ0l488eGSfe2zMjzSVhFAUuY_sexVv56PgW61lpVaqm-JgeXWY-ebklU1Eh2JvDkigwpOxRXT57YMu2JtaIEA0pSsH8dJtkbdF_MQu8eKm7JsNPaquJTRRLJSFFuNSgX4ZxQE5Ad7tRTQU6oiZ1Y37PXUfXuDG0VuhKqVZR-j_SC50"
-            icon="balance"
-            active
-            delay={0.3}
-          />
-          <TarotCard
-            title="Ace of Wands"
-            position="III"
-            context="The Future"
-            subtitle="Upright"
-            image="https://lh3.googleusercontent.com/aida-public/AB6AXuDCzPixgi42uaYIEv51Ji8jIcCWDI5C06FDAY4K4be6Rd72m_kU-427gjdKUt73mqiLROPfvMkp2FnbxvvORxMoaG-PPNHl01oa8LxbjNR1-O_OQQSmAEATagqnm2Of1VecyQ_Sfo8St9zMfEWRsmKf4w1xxeYIjKDjevO5y7Q31vPl5K8kBwvDNhys7FjDt4o-lnOLEMawzLAKwIlheBYbxU2NZtmRPgxSOftSWqQFESNX1atP5qTsQBNzySKCoSNSGU7yUEB55O8e"
-            icon="local_fire_department"
-            delay={0.5}
-          />
-        </div>
-
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          className="w-full max-w-[960px] bg-surface-dark border border-surface-border rounded-xl p-8 shadow-2xl"
-        >
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-border/50">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined">psychology_alt</span>
-            </div>
-            <div>
-              <h3 className="text-white font-bold text-lg">
-                Spark AI Interpretation
-              </h3>
-              <p className="text-text-muted text-xs">
-                Generated based on planetary transits & card symbology
-              </p>
-            </div>
-          </div>
-          <div className="space-y-6 text-sm text-text-muted">
-            <div className="p-4 rounded-lg bg-background-dark/50 border border-surface-border border-l-4 border-l-primary">
-              <strong className="block text-primary text-xs uppercase tracking-widest mb-2">
-                Synthesis
-              </strong>
-              <p className="text-white/90 leading-relaxed">
-                The convergence of Justice in your present suggests a pivotal
-                moment of karmic balance. While The Moon (Reversed) indicates
-                you are emerging from a period of confusion, the clarity you
-                seek is arriving swiftly. The Ace of Wands promises a surge of
-                creative energy.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <strong className="block text-white mb-1 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">
-                    history
-                  </span>{" "}
-                  The Past: The Moon (Rx)
-                </strong>
-                <p>
-                  You have recently navigated through a fog of uncertainty. The
-                  Moon reversed suggests that secrets have been revealed or
-                  intuitive fears are subsiding.
-                </p>
-              </div>
-              <div>
-                <strong className="block text-primary mb-1 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">
-                    location_on
-                  </span>{" "}
-                  The Present: Justice
-                </strong>
-                <p>
-                  This is a time for objective truth. Decisions made now will
-                  have long-lasting effects. Weigh your options carefully and
-                  remove emotion.
-                </p>
+          {readingState === "shuffling" && (
+            <div className="flex justify-center items-center h-64">
+              <div className="text-primary tracking-[0.3em] font-bold animate-pulse text-xl">
+                SHUFFLING THE COSMOS...
               </div>
             </div>
-          </div>
-          <div className="mt-8 flex justify-center gap-4">
-            <button
-              onClick={() => setScreen(Screen.SHOP_LIST)}
-              className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-background-dark font-bold transition-all shadow-[0_0_20px_rgba(244,192,37,0.2)] flex items-center gap-2"
+          )}
+
+          {(readingState === "drawing" || readingState === "revealed") && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative mb-16">
+              {/* Connecting Line */}
+              <div className="hidden md:block absolute top-1/2 left-10 right-10 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent -translate-y-1/2 z-0"></div>
+
+              {cards.map((card, i) => (
+                <TarotCard
+                  key={i}
+                  title={card.name}
+                  position={i === 0 ? "I" : i === 1 ? "II" : "III"}
+                  context={
+                    i === 0
+                      ? "The Past"
+                      : i === 1
+                        ? "The Present"
+                        : "The Future"
+                  }
+                  subtitle={card.isReversed ? "Reversed" : "Upright"}
+                  image={card.image}
+                  delay={i * 0.2}
+                  active={i === 1} // Highlight center
+                />
+              ))}
+            </div>
+          )}
+
+          {readingState === "revealed" && (
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              className="w-full max-w-[960px] mx-auto bg-surface-dark border border-surface-border rounded-xl p-8 shadow-2xl"
             >
-              <span className="material-symbols-outlined">shopping_bag</span>{" "}
-              Shop Associated Crystals
-            </button>
-          </div>
-        </motion.div>
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-border/50">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined">
+                    psychology_alt
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-lg">
+                    Spark AI Interpretation
+                  </h3>
+                  <p className="text-text-muted text-xs">
+                    Generated based on planetary transits & card symbology
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-6 text-sm text-text-muted">
+                <div className="p-4 rounded-lg bg-background-dark/50 border border-surface-border border-l-4 border-l-primary">
+                  <strong className="block text-primary text-xs uppercase tracking-widest mb-2">
+                    Synthesis
+                  </strong>
+                  <p className="text-white/90 leading-relaxed font-light text-lg">
+                    {interpretation}
+                  </p>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              {recommendations.length > 0 && (
+                <div className="mt-8 border-t border-white/5 pt-8">
+                  <h4 className="text-white text-xs font-bold uppercase tracking-widest mb-4">
+                    Recommended for your journey
+                  </h4>
+                  <div className="flex flex-wrap gap-4 justify-center">
+                    {recommendations.map((r) => (
+                      <div
+                        key={r.id}
+                        onClick={() => {
+                          // If we had a router SetProductId here
+                          setScreen(Screen.PRODUCT_DETAIL);
+                        }}
+                        className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors"
+                      >
+                        <span className="text-primary material-symbols-outlined text-sm">
+                          diamond
+                        </span>
+                        <span className="text-white text-sm">{r.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-8 flex justify-center gap-4">
+                <button
+                  onClick={() => setScreen(Screen.SHOP_LIST)}
+                  className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-background-dark font-bold transition-all shadow-[0_0_20px_rgba(244,192,37,0.2)] flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined">
+                    shopping_bag
+                  </span>{" "}
+                  Browse Sacred Shop
+                </button>
+                <button
+                  onClick={() => setReadingState("idle")}
+                  className="px-6 py-3 rounded-lg border border-white/10 hover:bg-white/5 text-white font-bold transition-all"
+                >
+                  New Reading
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </div>
       </section>
     </motion.div>
   );
@@ -792,8 +856,12 @@ const TarotCard = ({
       className={`relative w-full max-w-[260px] aspect-[2/3] rounded-xl border border-surface-border bg-surface-dark/80 backdrop-blur-sm transition-all duration-700 transform group-hover:-translate-y-4 group-hover:scale-105 overflow-hidden cursor-pointer ${active ? "shadow-[0_0_40px_rgba(244,192,37,0.2)] border-primary/50" : "shadow-lg"}`}
     >
       <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 opacity-80"
-        style={{ backgroundImage: `url('${image}')` }}
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 opacity-90"
+        style={{
+          backgroundImage: `url('${image}')`,
+          filter:
+            "grayscale(100%) brightness(0.6) contrast(1.2) invert(100%) sepia(100%) saturate(600%) hue-rotate(10deg)",
+        }}
       ></div>
       <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent"></div>
       <div className="absolute bottom-0 left-0 w-full p-6 text-center">

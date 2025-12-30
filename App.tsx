@@ -7,14 +7,18 @@ import { AstrologyReport, TarotDaily, TarotSpread } from "./pages/AppFeatures";
 import { ShopList, ProductDetail } from "./pages/Commerce";
 import { Experts, Booking, Intake, Delivery } from "./pages/Consultation";
 import { UserDashboard, Archives, Orders } from "./pages/UserDashboard";
-import { Payments, Currency, Shipping } from "./pages/Admin";
+import { Payments, Currency, Shipping, SystemSettings } from "./pages/Admin";
 import { UserProvider, useUser } from "./context/UserContext";
+import { CartProvider } from "./context/CartContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { Auth } from "./components/Auth";
+import { CartDrawer } from "./components/CartDrawer";
 
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.HOME);
   const [showAuth, setShowAuth] = useState(false);
+  const [productId, setProductId] = useState<string | undefined>(undefined);
+  const [expertId, setExpertId] = useState<string | undefined>(undefined);
   const { session, loading } = useUser();
 
   // 包装 setScreen，在切换页面时自动滚动到顶部
@@ -44,6 +48,7 @@ const AppContent: React.FC = () => {
       case Screen.ADMIN_PAYMENTS:
       case Screen.ADMIN_CURRENCY:
       case Screen.ADMIN_SHIPPING:
+      case Screen.ADMIN_SETTINGS:
         return "admin";
       default:
         return "public";
@@ -51,7 +56,14 @@ const AppContent: React.FC = () => {
   };
 
   const renderScreen = () => {
-    const props = { currentScreen, setScreen };
+    const props = {
+      currentScreen,
+      setScreen,
+      productId,
+      setProductId,
+      expertId,
+      setExpertId,
+    };
 
     // 路由保护逻辑
     const protectedScreens = [
@@ -61,6 +73,7 @@ const AppContent: React.FC = () => {
       Screen.ADMIN_PAYMENTS,
       Screen.ADMIN_CURRENCY,
       Screen.ADMIN_SHIPPING,
+      Screen.ADMIN_SETTINGS,
     ];
 
     if (protectedScreens.includes(currentScreen) && !session) {
@@ -127,6 +140,8 @@ const AppContent: React.FC = () => {
         return <Currency {...props} />;
       case Screen.ADMIN_SHIPPING:
         return <Shipping {...props} />;
+      case Screen.ADMIN_SETTINGS:
+        return <SystemSettings {...props} />;
       default:
         return <Home {...props} />;
     }
@@ -154,6 +169,7 @@ const AppContent: React.FC = () => {
       <AnimatePresence>
         {showAuth && <Auth onClose={() => setShowAuth(false)} />}
       </AnimatePresence>
+      <CartDrawer />
     </Layout>
   );
 };
@@ -164,10 +180,12 @@ import { AdminApp } from "./admin/App";
 const App: React.FC = () => {
   return (
     <UserProvider>
-      <Routes>
-        <Route path="/admin/*" element={<AdminApp />} />
-        <Route path="/*" element={<AppContent />} />
-      </Routes>
+      <CartProvider>
+        <Routes>
+          <Route path="/admin/*" element={<AdminApp />} />
+          <Route path="/*" element={<AppContent />} />
+        </Routes>
+      </CartProvider>
     </UserProvider>
   );
 };

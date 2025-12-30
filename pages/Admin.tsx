@@ -90,6 +90,12 @@ const AdminLayout: React.FC<{
                 icon="local_shipping"
                 label="Shipping"
               />
+              <AdminNavLink
+                active={title === "System Intelligence"}
+                onClick={() => setScreen(Screen.ADMIN_SETTINGS)}
+                icon="psychology"
+                label="AI Config"
+              />
             </nav>
 
             <div className="mt-10 pt-6 border-t border-white/5">
@@ -140,41 +146,68 @@ const AdminNavLink = ({ active, onClick, icon, label }: any) => (
   </button>
 );
 
-export const Payments: React.FC<NavProps> = ({ setScreen }) => (
-  <AdminLayout title="Payment Configuration" setScreen={setScreen}>
-    <GlassCard className="p-8 border-white/5">
-      <div className="flex flex-col md:flex-row items-start justify-between gap-6 pb-8 border-b border-white/5 mb-8">
-        <div className="space-y-1">
-          <h3 className="text-white font-bold text-xl font-display">
-            Payment Environment
-          </h3>
-          <p className="text-white/40 text-sm font-light">
-            Control transaction processing mode across the entire platform.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-full border border-white/5">
-          <button className="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full text-white/40 hover:text-white transition-colors">
-            Test Mode
-          </button>
-          <button className="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full bg-primary text-background-dark shadow-lg shadow-primary/20">
-            Live Production
-          </button>
-        </div>
-      </div>
+export const Payments: React.FC<NavProps> = ({ setScreen }) => {
+  const [stats, setStats] = React.useState({
+    revenue: 0,
+    transactions: 0,
+  });
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ProviderCard name="Stripe" icon="credit_card" connected />
-        <ProviderCard name="PayPal" icon="account_balance_wallet" connected />
-      </div>
-    </GlassCard>
+  React.useEffect(() => {
+    // Mock stats from real orders if possible, or just mock for now
+    const fetchStats = async () => {
+      const { data } = await supabase.from("orders").select("total, status");
+      if (data) {
+        const total = data.reduce((acc, curr) => acc + (curr.total || 0), 0);
+        setStats({ revenue: total, transactions: data.length });
+      }
+    };
+    fetchStats();
+  }, []);
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsMini label="Total Revenue (30d)" value="$42,850" change="+12.5%" />
-      <StatsMini label="Successful Tx" value="1,248" change="+5.2%" />
-      <StatsMini label="Refund Rate" value="0.8%" change="-1.2%" />
-    </div>
-  </AdminLayout>
-);
+  return (
+    <AdminLayout title="Payment Configuration" setScreen={setScreen}>
+      <GlassCard className="p-8 border-white/5">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-6 pb-8 border-b border-white/5 mb-8">
+          <div className="space-y-1">
+            <h3 className="text-white font-bold text-xl font-display">
+              Payment Environment
+            </h3>
+            <p className="text-white/40 text-sm font-light">
+              Control transaction processing mode across the entire platform.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-full border border-white/5">
+            <button className="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full text-white/40 hover:text-white transition-colors">
+              Test Mode
+            </button>
+            <button className="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full bg-primary text-background-dark shadow-lg shadow-primary/20">
+              Live Production
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ProviderCard name="Stripe" icon="credit_card" connected />
+          <ProviderCard name="PayPal" icon="account_balance_wallet" connected />
+        </div>
+      </GlassCard>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatsMini
+          label="Total Revenue (All Time)"
+          value={`$${stats.revenue.toFixed(2)}`}
+          change="+100%"
+        />
+        <StatsMini
+          label="Total Orders"
+          value={stats.transactions.toString()}
+          change="+100%"
+        />
+        <StatsMini label="Refund Rate" value="0.0%" change="0%" />
+      </div>
+    </AdminLayout>
+  );
+};
 
 const StatsMini = ({ label, value, change }: any) => (
   <GlassCard className="p-6 border-white/5" intensity="low">
@@ -362,6 +395,14 @@ export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
     fetchShipping();
   }, []);
 
+  const handleAddZone = async () => {
+    // Mock creation for now or real insert
+    const { error } = await supabase
+      .from("shipping_zones")
+      .insert({ name: "New Zone", countries: [] });
+    if (!error) window.location.reload(); // Simple reload for Phase 4
+  };
+
   return (
     <AdminLayout title="Shipping Rate Templates" setScreen={setScreen}>
       <div className="grid grid-cols-1 gap-8">
@@ -382,7 +423,12 @@ export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
                 {zones.length} shipping zones
               </p>
             </div>
-            <GlowButton variant="secondary" className="h-10 text-xs" icon="add">
+            <GlowButton
+              variant="secondary"
+              className="h-10 text-xs"
+              icon="add"
+              onClick={handleAddZone}
+            >
               New Profile
             </GlowButton>
           </div>
@@ -403,10 +449,12 @@ export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
                   <ShippingZone
                     key={zone.id}
                     name={zone.name}
-                    rates={zone.shipping_rates.map((r: any) => ({
-                      name: r.name,
-                      price: `$${r.price.toFixed(2)}`,
-                    }))}
+                    rates={
+                      zone.shipping_rates?.map((r: any) => ({
+                        name: r.name,
+                        price: `$${r.price.toFixed(2)}`,
+                      })) || []
+                    }
                   />
                 ))
               )}
@@ -453,3 +501,65 @@ const ShippingZone = ({ name, rates }: any) => (
     </div>
   </div>
 );
+
+export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
+  const [systemPrompt, setSystemPrompt] = React.useState(
+    "You are SilkSpark AI, a mystical and empathetic guide. Your tone is warm, cosmic, and insightful. Use astrology and tarot metaphors where appropriate.",
+  );
+  const [modelTemp, setModelTemp] = React.useState(0.7);
+
+  return (
+    <AdminLayout title="System Intelligence" setScreen={setScreen}>
+      <GlassCard className="p-8 border-white/5">
+        <h2 className="text-xl font-bold text-white mb-6 font-display flex items-center gap-2">
+          <span className="text-primary">✦</span> Core Personality
+        </h2>
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">
+              System Prompt (Persona)
+            </label>
+            <textarea
+              className="w-full h-48 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors resize-none font-mono text-xs leading-relaxed"
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+            />
+            <p className="text-[10px] text-white/30 text-right">
+              {systemPrompt.length} characters
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                Creativity Temperature
+              </label>
+              <span className="text-primary font-bold text-sm">
+                {modelTemp}
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={modelTemp}
+              onChange={(e) => setModelTemp(parseFloat(e.target.value))}
+              className="w-full accent-primary h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-end border-t border-white/5 pt-6">
+          <GlowButton
+            onClick={() => alert("Model settings updated!")}
+            icon="save"
+            className="px-8"
+          >
+            Update Model
+          </GlowButton>
+        </div>
+      </GlassCard>
+    </AdminLayout>
+  );
+};

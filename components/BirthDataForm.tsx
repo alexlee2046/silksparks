@@ -31,9 +31,22 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
       return;
     }
     // Finalize date
+    const finalData: any = {};
+    if (tempDate) {
+      finalData.date = new Date(tempDate);
+    }
+    // Ensure birth time is passed if it was set in step 2 but not saved yet?
+    // Actually updateBirthData saves immediately on change in current impl (onChange -> updateBirthData).
+    // So we just need to ensure date is saved.
+    // However, for better UX, maybe we should only save on "Next" or "Finish".
+    // But the current code calls updateBirthData on change.
+    // Let's make sure 'preferences' are saved.
+    // They are saved on checkbox change in step 3.
+
     if (tempDate) {
       updateBirthData({ date: new Date(tempDate) });
     }
+
     if (onComplete) onComplete();
   };
 
