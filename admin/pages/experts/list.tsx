@@ -1,9 +1,7 @@
 import React from "react";
-import { useList, useGo } from "@refinedev/core";
+import { useList, useGo, useDelete, Authenticated } from "@refinedev/core";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
-
-import { Authenticated } from "@refinedev/core";
 
 export const ExpertList: React.FC = () => {
   const { query } = useList({
@@ -11,9 +9,21 @@ export const ExpertList: React.FC = () => {
   });
   const { data: experts, isLoading } = query;
   const go = useGo();
+  const { mutate: deleteExpert } = useDelete();
+
   return (
     <Authenticated key="admin-experts-auth" fallback={null}>
-      <ExpertListContent isLoading={isLoading} experts={experts} go={go} />
+      <ExpertListContent
+        isLoading={isLoading}
+        experts={experts}
+        go={go}
+        onDelete={(id: string) =>
+          deleteExpert(
+            { resource: "experts", id },
+            { onSuccess: () => query.refetch() }
+          )
+        }
+      />
     </Authenticated>
   );
 };
@@ -21,8 +31,9 @@ export const ExpertList: React.FC = () => {
 const ExpertListContent: React.FC<{
   isLoading: boolean;
   experts: any;
-  go: any;
-}> = ({ isLoading, experts, go }) => {
+  go: ReturnType<typeof useGo>;
+  onDelete: (id: string) => void;
+}> = ({ isLoading, experts, go, onDelete }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -112,23 +123,39 @@ const ExpertListContent: React.FC<{
                     ({expert.review_count})
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
-                  <button
-                    onClick={() =>
-                      go({
-                        to: {
-                          resource: "experts",
-                          action: "edit",
-                          id: expert.id,
-                        },
-                      })
-                    }
-                    className="text-white/20 hover:text-white transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      edit
-                    </span>
-                  </button>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() =>
+                        go({
+                          to: {
+                            resource: "experts",
+                            action: "edit",
+                            id: expert.id,
+                          },
+                        })
+                      }
+                      className="text-white/20 hover:text-white transition-colors"
+                      title="Edit"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        edit
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete "${expert.name}"?`)) {
+                          onDelete(expert.id);
+                        }
+                      }}
+                      className="text-white/20 hover:text-rose-400 transition-colors"
+                      title="Delete"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        delete
+                      </span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

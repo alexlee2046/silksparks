@@ -1,19 +1,29 @@
 import React from "react";
-import { useList } from "@refinedev/core";
+import { useList, useGo, useDelete, Authenticated } from "@refinedev/core";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
-
-import { Authenticated } from "@refinedev/core";
 
 export const ProductList: React.FC = () => {
   const { query } = useList({
     resource: "products",
-    // syncWithLocation: true, // Optional
   });
   const { data: products, isLoading } = query;
+  const go = useGo();
+  const { mutate: deleteProduct } = useDelete();
+
   return (
     <Authenticated key="admin-products-auth" fallback={null}>
-      <ProductListContent isLoading={isLoading} products={products} />
+      <ProductListContent
+        isLoading={isLoading}
+        products={products}
+        go={go}
+        onDelete={(id: string) =>
+          deleteProduct(
+            { resource: "products", id },
+            { onSuccess: () => query.refetch() }
+          )
+        }
+      />
     </Authenticated>
   );
 };
@@ -21,7 +31,9 @@ export const ProductList: React.FC = () => {
 const ProductListContent: React.FC<{
   isLoading: boolean;
   products: any;
-}> = ({ isLoading, products }) => {
+  go: ReturnType<typeof useGo>;
+  onDelete: (id: string) => void;
+}> = ({ isLoading, products, go, onDelete }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -38,7 +50,11 @@ const ProductListContent: React.FC<{
         <h1 className="text-3xl font-display font-light text-white tracking-tight">
           Products
         </h1>
-        <GlowButton variant="primary" icon="add">
+        <GlowButton
+          variant="primary"
+          icon="add"
+          onClick={() => go({ to: "create" })}
+        >
           New Product
         </GlowButton>
       </div>
@@ -81,12 +97,39 @@ const ProductListContent: React.FC<{
                     {product.category}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-white/20 hover:text-white transition-colors">
-                    <span className="material-symbols-outlined text-[18px]">
-                      edit
-                    </span>
-                  </button>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() =>
+                        go({
+                          to: {
+                            resource: "products",
+                            action: "edit",
+                            id: product.id,
+                          },
+                        })
+                      }
+                      className="text-white/20 hover:text-white transition-colors"
+                      title="Edit"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        edit
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete "${product.title}"?`)) {
+                          onDelete(product.id);
+                        }
+                      }}
+                      className="text-white/20 hover:text-rose-400 transition-colors"
+                      title="Delete"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        delete
+                      </span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

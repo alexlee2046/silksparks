@@ -1,5 +1,5 @@
 import React from "react";
-import { useList, useGo } from "@refinedev/core";
+import { useList, useGo, useDelete } from "@refinedev/core";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
 
@@ -12,6 +12,16 @@ export const TagList: React.FC = () => {
   });
   const { data: tags, isLoading } = query;
   const go = useGo();
+  const { mutate: deleteItem } = useDelete();
+
+  const handleDelete = (id: string, name: string) => {
+    if (confirm(`Delete tag "${name}"?`)) {
+      deleteItem(
+        { resource: "tags", id },
+        { onSuccess: () => query.refetch() }
+      );
+    }
+  };
 
   if (isLoading) {
     return (
@@ -70,19 +80,31 @@ export const TagList: React.FC = () => {
                     {item.type}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
-                  <button
-                    onClick={() =>
-                      go({
-                        to: { resource: "tags", action: "edit", id: item.id },
-                      })
-                    }
-                    className="text-white/20 hover:text-white transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      edit
-                    </span>
-                  </button>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() =>
+                        go({
+                          to: { resource: "tags", action: "edit", id: item.id },
+                        })
+                      }
+                      className="text-white/20 hover:text-white transition-colors"
+                      title="Edit"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        edit
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id, item.name)}
+                      className="text-white/20 hover:text-rose-400 transition-colors"
+                      title="Delete"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        delete
+                      </span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

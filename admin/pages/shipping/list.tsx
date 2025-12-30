@@ -11,6 +11,15 @@ export const ShippingList: React.FC = () => {
   const { mutate: deleteZone } = useDelete();
   const go = useGo();
 
+  const handleDelete = (id: string, name: string) => {
+    if (confirm(`Delete shipping zone "${name}"?`)) {
+      deleteZone(
+        { resource: "shipping_zones", id },
+        { onSuccess: () => query.refetch() }
+      );
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -64,24 +73,36 @@ export const ShippingList: React.FC = () => {
                     {item.region}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right flex justify-end gap-2">
-                  <button
-                    onClick={() =>
-                      go({
-                        to: {
-                          resource: "shipping_zones",
-                          action: "edit",
-                          id: item.id,
-                        },
-                      })
-                    }
-                    className="text-white/20 hover:text-white transition-colors flex items-center gap-1 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">
-                      edit
-                    </span>{" "}
-                    Edit Rates
-                  </button>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() =>
+                        go({
+                          to: {
+                            resource: "shipping_zones",
+                            action: "edit",
+                            id: item.id,
+                          },
+                        })
+                      }
+                      className="text-white/20 hover:text-white transition-colors flex items-center gap-1 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5"
+                      title="Edit"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">
+                        edit
+                      </span>{" "}
+                      Edit Rates
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id, item.name)}
+                      className="text-white/20 hover:text-rose-400 transition-colors"
+                      title="Delete"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        delete
+                      </span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

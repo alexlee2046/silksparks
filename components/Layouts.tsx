@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Screen } from "../types";
 import Lenis from "lenis";
 import { CosmicBackground } from "./CosmicBackground";
@@ -278,7 +279,10 @@ const HeaderLink = ({
 
 export const Footer: React.FC<{ setScreen?: (s: Screen) => void }> = ({
   setScreen,
-}) => (
+}) => {
+  const navigate = useNavigate();
+
+  return (
   <footer className="bg-background-dark border-t border-white/5 pt-20 pb-10 text-white/40 relative z-10 overflow-hidden">
     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
 
@@ -435,7 +439,7 @@ export const Footer: React.FC<{ setScreen?: (s: Screen) => void }> = ({
             Cookies
           </button>
           <button
-            onClick={() => setScreen?.(Screen.ADMIN_PAYMENTS)}
+            onClick={() => navigate("/admin")}
             className="hover:text-primary transition-colors flex items-center gap-1"
           >
             <span className="material-symbols-outlined text-[10px]">
@@ -447,7 +451,8 @@ export const Footer: React.FC<{ setScreen?: (s: Screen) => void }> = ({
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 const SocialIcon = ({ icon }: { icon: string }) => (
   <button
