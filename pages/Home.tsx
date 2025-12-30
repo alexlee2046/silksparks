@@ -398,7 +398,7 @@ export const ProductCard = ({
           }`}
         >
           <span
-            className={`material-symbols-outlined text-[20px] ${isFavorited ? "fill-current" : ""}`}
+            className={`material-symbols-outlined text-[20px] ${isFavorited ? "fill" : ""}`}
           >
             favorite
           </span>
