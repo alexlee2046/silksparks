@@ -483,7 +483,7 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                       y: [0, Math.abs(i - 2) * -10, 0],
                       rotate: [0, (i - 2) * 10, 0],
                       scale: [1, 1.05, 1],
-                      zIndex: i === 2 ? 10 : 0
+                      zIndex: i === 2 ? 10 : 0,
                     }}
                     transition={{
                       duration: 0.8,
@@ -619,7 +619,8 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                       </span>
                     </div>
                     <h3 className="text-white font-bold mb-4 text-lg flex items-center gap-2">
-                      <span className="text-[#F4C025]">✦</span> AI Interpretation
+                      <span className="text-[#F4C025]">✦</span> AI
+                      Interpretation
                     </h3>
                     <p className="text-gray-300 leading-relaxed text-lg font-light">
                       {interpretation || "Interpreting the stars..."}
@@ -822,7 +823,7 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
             <div className="flex flex-col items-center justify-center h-[500px] relative">
               {/* 3 Card Shuffling Animation */}
               <div className="relative w-64 h-[400px]">
-                {[0, 1, 2].map(i => (
+                {[0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
                     className="absolute inset-0"
@@ -831,13 +832,13 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
                       y: [0, -20, 0],
                       rotate: [0, (i - 1) * 10, 0],
                       scale: [1, 1.05, 1],
-                      zIndex: [0, 10, 0]
+                      zIndex: [0, 10, 0],
                     }}
                     transition={{
                       duration: 2, // Longer shuffle for 3 cards
                       repeat: Infinity,
                       ease: "easeInOut",
-                      delay: i * 0.2
+                      delay: i * 0.2,
                     }}
                   >
                     <TarotCardBack showPattern={i === 1} />
@@ -981,10 +982,10 @@ const TarotCard = ({
   icon,
   active,
   delay = 0,
-  cardData // Pass full card data if available to get number
+  cardData, // Pass full card data if available to get number
 }: any) => {
   // Try to find the card object from title if cardData not passed directly (lazy match)
-  const foundCard = tarotData.find(t => t.name === title);
+  const foundCard = tarotData.find((t) => t.name === title);
   const displayNumber = foundCard ? getCardNumberDisplay(foundCard) : "";
 
   return (
@@ -1009,9 +1010,10 @@ const TarotCard = ({
       {/* Card Container mimicking the physical card */}
       <div
         className={`relative w-full max-w-[260px] aspect-[4/7] rounded-xl bg-[#141414] transition-all duration-700 transform group-hover:-translate-y-4 group-hover:scale-105 overflow-hidden cursor-pointer flex flex-col p-[6%]
-          ${active
-            ? "shadow-[0_0_30px_rgba(244,192,37,0.2)] border border-[#F4C025]"
-            : "shadow-2xl border border-white/20 hover:border-[#F4C025]"
+          ${
+            active
+              ? "shadow-[0_0_30px_rgba(244,192,37,0.2)] border border-[#F4C025]"
+              : "shadow-2xl border border-white/20 hover:border-[#F4C025]"
           }`}
       >
         {/* Inner Gold Border */}
@@ -1061,9 +1063,14 @@ const TarotCard = ({
 const TarotCardBack = ({ showPattern = true }: { showPattern?: boolean }) => (
   <div className="relative w-full h-full rounded-2xl bg-[#0a0a0a] border border-[#F4C025]/30 overflow-hidden shadow-2xl flex items-center justify-center">
     {/* Geometric Background Pattern */}
-    <div className="absolute inset-0 opacity-10"
-      style={{ backgroundImage: "radial-gradient(circle at 50% 50%, #F4C025 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
-    </div>
+    <div
+      className="absolute inset-0 opacity-10"
+      style={{
+        backgroundImage:
+          "radial-gradient(circle at 50% 50%, #F4C025 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
+      }}
+    ></div>
 
     {/* Inner Frame */}
     <div className="absolute inset-3 border-2 border-[#F4C025]/60 rounded-xl flex items-center justify-center">
@@ -1071,9 +1078,22 @@ const TarotCardBack = ({ showPattern = true }: { showPattern?: boolean }) => (
 
       {/* Corner Ornaments */}
       {[0, 90, 180, 270].map((rot) => (
-        <div key={rot} className="absolute w-8 h-8 pointer-events-none" style={{ transform: `rotate(${rot}deg)`, top: rot === 180 || rot === 270 ? 'auto' : 2, left: rot === 90 || rot === 180 ? 'auto' : 2, bottom: rot === 180 || rot === 270 ? 2 : 'auto', right: rot === 90 || rot === 180 ? 2 : 'auto' }}>
+        <div
+          key={rot}
+          className="absolute w-8 h-8 pointer-events-none"
+          style={{
+            transform: `rotate(${rot}deg)`,
+            top: rot === 180 || rot === 270 ? "auto" : 2,
+            left: rot === 90 || rot === 180 ? "auto" : 2,
+            bottom: rot === 180 || rot === 270 ? 2 : "auto",
+            right: rot === 90 || rot === 180 ? 2 : "auto",
+          }}
+        >
           <svg viewBox="0 0 100 100" className="w-full h-full fill-[#F4C025]">
-            <path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z" opacity="0.8" />
+            <path
+              d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"
+              opacity="0.8"
+            />
           </svg>
         </div>
       ))}

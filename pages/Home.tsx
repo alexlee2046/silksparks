@@ -81,17 +81,19 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
         description="Enter the Spark Engine. Decode your stars instantly with our AI-powered astrological interpreter."
         keywords={["astrology", "AI", "tarot", "horoscope", "Silk & Spark"]}
       />
-      <JsonLd data={{
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Silk & Spark",
-        "url": "https://silksparks.com",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://silksparks.com/search?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
-      }} />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Silk & Spark",
+          url: "https://silksparks.com",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://silksparks.com/search?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }}
+      />
       {/* Daily Ticker */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

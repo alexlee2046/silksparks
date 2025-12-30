@@ -10,9 +10,19 @@ export const ProfileList: React.FC = () => {
 
   const { data: profiles, isLoading } = query;
 
-  const handleRoleUpdate = (id: string, currentStatus: boolean, name: string) => {
-    const action = currentStatus ? "remove admin rights from" : "grant admin rights to";
-    if (window.confirm(`Are you sure you want to ${action} ${name || "this user"}?`)) {
+  const handleRoleUpdate = (
+    id: string,
+    currentStatus: boolean,
+    name: string,
+  ) => {
+    const action = currentStatus
+      ? "remove admin rights from"
+      : "grant admin rights to";
+    if (
+      window.confirm(
+        `Are you sure you want to ${action} ${name || "this user"}?`,
+      )
+    ) {
       mutate({
         resource: "profiles",
         id,
@@ -86,12 +96,23 @@ export const ProfileList: React.FC = () => {
                 </td>
                 <td className="px-6 py-4">
                   <button
-                    onClick={() => handleRoleUpdate(profile.id, profile.is_admin, profile.full_name)}
-                    className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${profile.is_admin
-                      ? "bg-primary/20 border-primary/50 text-primary hover:bg-primary/30"
-                      : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60 hover:border-white/20"
-                      }`}
-                    title={profile.is_admin ? "Click to demote" : "Click to promote to Admin"}
+                    onClick={() =>
+                      handleRoleUpdate(
+                        profile.id,
+                        profile.is_admin,
+                        profile.full_name,
+                      )
+                    }
+                    className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                      profile.is_admin
+                        ? "bg-primary/20 border-primary/50 text-primary hover:bg-primary/30"
+                        : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60 hover:border-white/20"
+                    }`}
+                    title={
+                      profile.is_admin
+                        ? "Click to demote"
+                        : "Click to promote to Admin"
+                    }
                   >
                     {profile.is_admin ? "Admin" : "User"}
                   </button>

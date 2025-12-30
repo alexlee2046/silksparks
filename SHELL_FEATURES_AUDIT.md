@@ -32,16 +32,20 @@
 ## 1. Document Analysis
 
 ### 1.1 Purpose
+
 The purpose of this document is to systematically identify, document, and plan the remediation of "Shell Features" within the Silk & Spark application. A "Shell Feature" represents technical debt where user interface components exist but lack the necessary backend logic, database persistence, or business logic integration.
 
 ### 1.2 Scope
+
 This audit covers the entire frontend codebase (`/pages`, `/components`, `/context`) and its integration with the Supabase backend. It specifically focuses on:
+
 - User-facing interactions (clicks, form submissions).
 - Data persistence (CRUD operations).
 - Navigation flows (broken links, dead ends).
 - Mock data usage.
 
 ### 1.3 Definitions
+
 - **Shell Feature**: A UI component that looks functional but performs no meaningful action (e.g., `onClick={() => {}}`, `href="#"`).
 - **Mock Logic**: Hardcoded data or logic that simulates a feature without real backend integration.
 - **MVP Placeholder**: Features intentionally left simplified for the Minimum Viable Product but needing replacement for production.
@@ -52,37 +56,45 @@ This audit covers the entire frontend codebase (`/pages`, `/components`, `/conte
 
 The remediation of these features is broken down into prioritized phases.
 
-| Phase | Focus Area | Estimated Effort | Goals |
-|-------|------------|------------------|-------|
-| **1** | **Core Commerce & Cart** | 3 Days | Enable real product browsing, cart management, and mock checkout flow. |
-| **2** | **User Profile & Auth** | 2 Days | Persist user preferences, birth data, and settings. |
-| **3** | **Consultation Flow** | 4 Days | Implement real booking slots, appointment creation, and order linkage. |
-| **4** | **Admin & Content** | 3 Days | Unify Admin tools, enable real configuration updates. |
-| **5** | **Cleanup & Polish** | 2 Days | Remove dead links, fix global UI shells (notifications). |
+| Phase | Focus Area               | Estimated Effort | Goals                                                                  |
+| ----- | ------------------------ | ---------------- | ---------------------------------------------------------------------- |
+| **1** | **Core Commerce & Cart** | 3 Days           | Enable real product browsing, cart management, and mock checkout flow. |
+| **2** | **User Profile & Auth**  | 2 Days           | Persist user preferences, birth data, and settings.                    |
+| **3** | **Consultation Flow**    | 4 Days           | Implement real booking slots, appointment creation, and order linkage. |
+| **4** | **Admin & Content**      | 3 Days           | Unify Admin tools, enable real configuration updates.                  |
+| **5** | **Cleanup & Polish**     | 2 Days           | Remove dead links, fix global UI shells (notifications).               |
 
 ---
 
 ## 3. Global / Common Shell Patterns
 
 ### 3.1 Empty Event Handlers
+
 **Finding:** Multiple components use empty arrow functions for interactions.
+
 - **Location:** [UserDashboard.tsx:L60-L83](file:///Users/alex/Develop/silksparks/pages/UserDashboard.tsx#L60-L83)
 - **Impact:** Users click buttons expecting action, but nothing happens.
 - **Remediation:** Implement toast notifications for "Coming Soon" or wire up actual logic.
 
 ### 3.2 Form Submission Prevention
+
 **Finding:** Forms that only call `e.preventDefault()` without processing data.
+
 - **Location:** [Layouts.tsx:L300-L330](file:///Users/alex/Develop/silksparks/components/Layouts.tsx#L300-L330), [Consultation.tsx:L523-L529](file:///Users/alex/Develop/silksparks/pages/Consultation.tsx#L523-L529)
 - **Impact:** Data loss; user input is discarded.
 - **Remediation:** Connect to Supabase API or Edge Functions.
 
 ### 3.3 Placeholder Links
+
 **Finding:** `href="#"` used extensively in navigation and footers.
+
 - **Location:** [Layouts.tsx:L334-L349](file:///Users/alex/Develop/silksparks/components/Layouts.tsx#L334-L349)
 - **Impact:** Poor user experience; navigation dead ends.
 
 ### 3.4 Hardcoded Mocks
+
 **Finding:** Mock data used for critical business logic (slots, catalogs).
+
 - **Impact:** System behavior is static and not data-driven.
 
 ---
@@ -90,6 +102,7 @@ The remediation of these features is broken down into prioritized phases.
 ## 4. Global UI (Header/Footer)
 
 ### 4.1 Notifications Entry Point
+
 - **Current Status:** Shell. Bell icon exists but lacks interaction.
 - **Location:** [Layouts.tsx:L155-L163](file:///Users/alex/Develop/silksparks/components/Layouts.tsx#L155-L163)
 - **Feature Specification:**
@@ -101,6 +114,7 @@ The remediation of these features is broken down into prioritized phases.
   - Implement `useNotifications` hook.
 
 ### 4.2 Newsletter Subscription
+
 - **Current Status:** Shell. Form submits but does nothing.
 - **Location:** [Layouts.tsx:L300-L330](file:///Users/alex/Develop/silksparks/components/Layouts.tsx#L300-L330)
 - **Feature Specification:**
@@ -111,6 +125,7 @@ The remediation of these features is broken down into prioritized phases.
   - Use Edge Function to trigger email (e.g., Resend/SendGrid).
 
 ### 4.3 Footer Legal & Social Links
+
 - **Current Status:** Shell. Links are `#`.
 - **Location:** [Layouts.tsx:L334-L349](file:///Users/alex/Develop/silksparks/components/Layouts.tsx#L334-L349)
 - **Action:** Create static pages for Privacy, Terms, Cookies or link to external legal docs.
@@ -120,6 +135,7 @@ The remediation of these features is broken down into prioritized phases.
 ## 5. Home Page
 
 ### 5.1 Product Carousel Navigation
+
 - **Current Status:** Broken Link / Shell.
 - **Finding:** Clicking a product card sets screen to `PRODUCT_DETAIL` but fails to pass `productId`.
 - **Location:** [Home.tsx:L242-L275](file:///Users/alex/Develop/silksparks/pages/Home.tsx#L242-L275)
@@ -136,6 +152,7 @@ The remediation of these features is broken down into prioritized phases.
     ```
 
 ### 5.2 Interactive Card Buttons
+
 - **Current Status:** Shell.
 - **Finding:** "Favorite" and "Add to Cart" buttons on Home cards have no handlers.
 - **Location:** [Home.tsx:L315-L355](file:///Users/alex/Develop/silksparks/pages/Home.tsx#L315-L355)
@@ -148,6 +165,7 @@ The remediation of these features is broken down into prioritized phases.
 ## 6. Commerce
 
 ### 6.1 Filters & Sorting
+
 - **Current Status:** Shell. UI exists but no logic.
 - **Location:** [Commerce.tsx:L90-L216](file:///Users/alex/Develop/silksparks/pages/Commerce.tsx#L90-L216)
 - **Feature Specification:**
@@ -158,11 +176,13 @@ The remediation of these features is broken down into prioritized phases.
   - Trigger Supabase fetch on change.
 
 ### 6.2 Quick Add
+
 - **Current Status:** Shell. Button appears on hover but does nothing.
 - **Location:** [Commerce.tsx:L252-L256](file:///Users/alex/Develop/silksparks/pages/Commerce.tsx#L252-L256)
 - **Action:** Wire to `CartContext.addItem(product)`.
 
 ### 6.3 Product Detail Page
+
 - **Current Status:** Partial Mock.
 - **Findings:**
   - Gallery images are repeated mocks ([Commerce.tsx:L345-L351](file:///Users/alex/Develop/silksparks/pages/Commerce.tsx#L345-L351)).
@@ -177,6 +197,7 @@ The remediation of these features is broken down into prioritized phases.
 ## 7. Cart & Checkout
 
 ### 7.1 Checkout Process
+
 - **Current Status:** Shell. "Proceed to Checkout" triggers `alert()`.
 - **Location:** [CartDrawer.tsx:L145-L149](file:///Users/alex/Develop/silksparks/components/CartDrawer.tsx#L145-L149)
 - **Feature Specification:**
@@ -192,12 +213,14 @@ The remediation of these features is broken down into prioritized phases.
 ## 8. Recommendation System
 
 ### 8.1 Data Source
+
 - **Current Status:** Mock.
 - **Finding:** `RecommendationEngine.ts` uses hardcoded `PRODUCTS` constant.
 - **Location:** [RecommendationEngine.ts:L1-L57](file:///Users/alex/Develop/silksparks/services/RecommendationEngine.ts#L1-L57)
 - **Action:** Refactor to fetch from Supabase `products` table using embedding vectors (pgvector) or simple tag matching.
 
 ### 8.2 Broken Navigation
+
 - **Current Status:** Broken Link.
 - **Finding:** Clicking a recommended item fails to open details correctly (missing `productId`).
 - **Location:** [AppFeatures.tsx:L755-L769](file:///Users/alex/Develop/silksparks/pages/AppFeatures.tsx#L755-L769)
@@ -208,6 +231,7 @@ The remediation of these features is broken down into prioritized phases.
 ## 9. Consultation & Booking
 
 ### 9.1 Booking Slots
+
 - **Current Status:** Mock.
 - **Finding:** Slots are generated by random logic based on date parity.
 - **Location:** [Consultation.tsx:L285-L296](file:///Users/alex/Develop/silksparks/pages/Consultation.tsx#L285-L296)
@@ -216,16 +240,19 @@ The remediation of these features is broken down into prioritized phases.
   - Query available slots: `ExpertAvailability - ExistingAppointments`.
 
 ### 9.2 Booking Persistence
+
 - **Current Status:** Shell. "Confirm Time" only switches screen, data is lost.
 - **Location:** [Consultation.tsx:L466-L478](file:///Users/alex/Develop/silksparks/pages/Consultation.tsx#L466-L478)
 - **Action:** Store `selectedDate` and `selectedSlot` in `ConsultationContext` or Redux/Zustand store until checkout.
 
 ### 9.3 Intake Form
+
 - **Current Status:** Shell. Submits to void.
 - **Location:** [Consultation.tsx:L523-L529](file:///Users/alex/Develop/silksparks/pages/Consultation.tsx#L523-L529)
 - **Action:** Store form data (focus areas, questions) in temporary state, then save to `consultations` table upon payment/completion.
 
 ### 9.4 Delivery Flow
+
 - **Current Status:** Partial Mock. Creates orders but mock time/duration.
 - **Location:** [Consultation.tsx:L625-L645](file:///Users/alex/Develop/silksparks/pages/Consultation.tsx#L625-L645)
 - **Action:** Create actual `appointments` record linked to the `order`.
@@ -235,17 +262,20 @@ The remediation of these features is broken down into prioritized phases.
 ## 10. User Dashboard
 
 ### 10.1 Navigation Shells
+
 - **Current Status:** Shell.
 - **Finding:** "Consultations" and "Settings" buttons are empty.
 - **Location:** [UserDashboard.tsx:L60-L83](file:///Users/alex/Develop/silksparks/pages/UserDashboard.tsx#L60-L83)
 - **Action:** Create `ConsultationHistory` and `UserSettings` components/screens.
 
 ### 10.2 Hardcoded Rewards
+
 - **Current Status:** Static. Points and Tier are hardcoded.
 - **Location:** [UserDashboard.tsx:L129-L153](file:///Users/alex/Develop/silksparks/pages/UserDashboard.tsx#L129-L153)
 - **Action:** Bind to `profiles.points` and calculate tier dynamically.
 
 ### 10.3 Sign Out
+
 - **Current Status:** Shell. Only switches screen.
 - **Location:** [UserDashboard.tsx:L86-L90](file:///Users/alex/Develop/silksparks/pages/UserDashboard.tsx#L86-L90)
 - **Fix:** Call `supabase.auth.signOut()`.
@@ -255,11 +285,13 @@ The remediation of these features is broken down into prioritized phases.
 ## 11. User Profile & Privacy
 
 ### 11.1 Marketing Consent
+
 - **Current Status:** Shell. Not persisted.
 - **Location:** [UserContext.tsx:L219-L231](file:///Users/alex/Develop/silksparks/context/UserContext.tsx#L219-L231)
 - **Action:** Add `preferences` JSONB column to `profiles` table and save consent there.
 
 ### 11.2 Birth Data
+
 - **Current Status:** Partial. Birth time is ignored.
 - **Location:** [UserContext.tsx:L233-L254](file:///Users/alex/Develop/silksparks/context/UserContext.tsx#L233-L254)
 - **Action:** Add `birth_time` column to `profiles` and include in update query.
@@ -269,11 +301,13 @@ The remediation of these features is broken down into prioritized phases.
 ## 12. Admin System (Custom & Refine)
 
 ### 12.1 Dual System Redundancy
+
 - **Issue:** Two admin systems exist (`/pages/Admin.tsx` and `/admin` Refine app).
 - **Risk:** Inconsistent state. Refine writes to DB, Custom Admin often doesn't.
 - **Recommendation:** Deprecate Custom Admin (`pages/Admin.tsx`) and migrate all features to Refine (`admin/`).
 
 ### 12.2 Missing Write Logic (Custom Admin)
+
 - **Finding:** "Save Changes", Payment Settings, and Shipping Manage are shells.
 - **Location:** [Admin.tsx:L46-L57](file:///Users/alex/Develop/silksparks/pages/Admin.tsx#L46-L57)
 - **Action:** If retaining Custom Admin, implement `updateSettings` API calls.
@@ -283,10 +317,12 @@ The remediation of these features is broken down into prioritized phases.
 ## 13. Database Gap Analysis
 
 ### 13.1 Unused Tables
+
 - `appointments`: Created by SQL script but not written to by the Consultation flow.
 - **Action:** Update `Consultation.tsx` to write to this table.
 
 ### 13.2 Missing Tables/Columns
+
 - `notifications`: Missing entirely.
 - `newsletter_subscribers`: Missing entirely.
 - `reviews`: Missing entirely.
@@ -305,6 +341,7 @@ The remediation of these features is broken down into prioritized phases.
 ## 15. Deliverables & Changelog
 
 ### Changelog (v2.0)
+
 - **Added:** Detailed technical specifications for all identified shell features.
 - **Added:** Implementation plans with specific Supabase integration points.
 - **Added:** Prioritized roadmap.

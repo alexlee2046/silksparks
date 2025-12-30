@@ -44,7 +44,7 @@ async function run() {
           console.log(
             "⚠ Error executing statement:",
             statement.substring(0, 50).replace(/\n/g, " ") + "...",
-            err.message
+            err.message,
           );
         }
       }

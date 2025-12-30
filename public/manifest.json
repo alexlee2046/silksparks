@@ -1,16 +1,16 @@
 {
-    "name": "Silk & Spark",
-    "short_name": "SilkSpark",
-    "description": "Ancient Wisdom Meets Artificial Intelligence",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#F4C025",
-    "icons": [
-        {
-            "src": "/favicon.svg",
-            "sizes": "192x192 512x512",
-            "type": "image/svg+xml"
-        }
-    ]
+  "name": "Silk & Spark",
+  "short_name": "SilkSpark",
+  "description": "Ancient Wisdom Meets Artificial Intelligence",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#F4C025",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
 }

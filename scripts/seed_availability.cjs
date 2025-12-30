@@ -1,8 +1,9 @@
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
+const { createClient } = require("@supabase/supabase-js");
+require("dotenv").config({ path: ".env.local" });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY; 
+const supabaseServiceKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 // Warning: Using ANON key for seeding might fail if RLS prevents inserts.
 // Ideally should use SERVICE_ROLE_KEY.
@@ -28,12 +29,12 @@ async function seed() {
     console.log("Connected to DB");
 
     // 1. Get Experts
-    const res = await client.query('SELECT id FROM public.experts');
+    const res = await client.query("SELECT id FROM public.experts");
     const experts = res.rows;
     console.log(`Found ${experts.length} experts`);
 
     // 2. Clear existing availability
-    await client.query('DELETE FROM public.expert_availability');
+    await client.query("DELETE FROM public.expert_availability");
 
     // 3. Insert new availability
     for (const expert of experts) {
@@ -48,7 +49,6 @@ async function seed() {
       await client.query(query, [expertId]);
     }
     console.log("Seeded availability");
-
   } catch (err) {
     console.error("Error seeding:", err);
   } finally {

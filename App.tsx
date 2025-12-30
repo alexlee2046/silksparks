@@ -6,7 +6,13 @@ import { BirthChart } from "./pages/BirthChart";
 import { AstrologyReport, TarotDaily, TarotSpread } from "./pages/AppFeatures";
 import { ShopList, ProductDetail } from "./pages/Commerce";
 import { Experts, Booking, Intake, Delivery } from "./pages/Consultation";
-import { UserDashboard, Archives, Orders, Consultations, UserSettings } from "./pages/UserDashboard";
+import {
+  UserDashboard,
+  Archives,
+  Orders,
+  Consultations,
+  UserSettings,
+} from "./pages/UserDashboard";
 import { Payments, Currency, Shipping, SystemSettings } from "./pages/Admin";
 import { UserProvider, useUser } from "./context/UserContext";
 import { CartProvider } from "./context/CartContext";

@@ -155,7 +155,11 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
                   variant="cosmic"
                   icon="diamond"
                   className="mt-4 sm:mt-0"
-                  onClick={() => alert('Rewards redemption coming soon! Stay tuned for exciting rewards.')}
+                  onClick={() =>
+                    alert(
+                      "Rewards redemption coming soon! Stay tuned for exciting rewards.",
+                    )
+                  }
                 >
                   Redeem Rewards
                 </GlowButton>
