@@ -1,24 +1,50 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useMenu, useGo, useLogout } from "@refinedev/core";
 import { GlassCard } from "../../components/GlassCard";
 import { motion } from "framer-motion";
 import { Outlet } from "react-router-dom";
+import Lenis from "lenis";
 
 export const AdminLayout: React.FC = () => {
   const { menuItems, selectedKey } = useMenu();
   const go = useGo();
   const { mutate: logout } = useLogout();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 0.6,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      lerp: 0.15,
+      wheelMultiplier: 1.2,
+      touchMultiplier: 1.5,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
 
   return (
     <div className="flex-1 bg-background-dark min-h-screen relative overflow-hidden flex flex-col md:flex-row">
       {/* Background Decorative Element */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Sidebar */}
+      {/* Sidebar - Fixed on desktop to not scroll with content */}
       <motion.div
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="w-full md:w-64 p-4 md:p-6 z-10 flex flex-col gap-6"
+        className="w-full md:w-64 p-4 md:p-6 z-20 flex flex-col gap-6 md:h-screen md:sticky md:top-0"
       >
         <div className="px-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold uppercase tracking-widest text-primary mb-2">
@@ -35,8 +61,11 @@ export const AdminLayout: React.FC = () => {
           </h1>
         </div>
 
-        <GlassCard className="flex-1 p-4 border-white/5" intensity="low">
-          <nav className="space-y-2">
+        <GlassCard
+          className="flex-1 p-4 border-white/5 flex flex-col"
+          intensity="low"
+        >
+          <nav className="space-y-2 overflow-y-auto no-scrollbar flex-1">
             {menuItems.map((item) => (
               <button
                 key={item.key}
@@ -57,7 +86,7 @@ export const AdminLayout: React.FC = () => {
             ))}
           </nav>
 
-          <div className="mt-auto pt-6 border-t border-white/5">
+          <div className="mt-6 pt-6 border-t border-white/5">
             <button
               onClick={() => logout()}
               className="flex items-center gap-3 px-3 py-2.5 text-xs font-bold w-full text-left rounded-lg text-white/50 hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-300"
@@ -72,7 +101,7 @@ export const AdminLayout: React.FC = () => {
       </motion.div>
 
       {/* Main Content */}
-      <div className="flex-1 p-4 md:p-10 relative z-10 overflow-y-auto h-screen">
+      <div className="flex-1 p-4 md:p-10 relative z-10 w-full min-w-0">
         <Outlet />
       </div>
     </div>

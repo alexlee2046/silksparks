@@ -4,6 +4,8 @@ import { supabase } from "../../../services/supabase";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
 
+import { Authenticated } from "@refinedev/core";
+
 export const SystemSettingsList: React.FC = () => {
   const { query } = useList({
     resource: "system_settings",
@@ -36,7 +38,50 @@ export const SystemSettingsList: React.FC = () => {
       }
     }
   }, [settings]);
+  return (
+    <Authenticated key="admin-settings-auth" fallback={null}>
+      <SystemSettingsContent
+        isLoading={isLoading}
+        aiConfig={aiConfig}
+        setAiConfig={setAiConfig}
+        editingKey={editingKey}
+        setEditingKey={setEditingKey}
+        editValue={editValue}
+        setEditValue={setEditValue}
+        isUpdating={isUpdating}
+        setIsUpdating={setIsUpdating}
+        settings={settings}
+        refetch={refetch}
+      />
+    </Authenticated>
+  );
+};
 
+const SystemSettingsContent: React.FC<{
+  isLoading: boolean;
+  aiConfig: any;
+  setAiConfig: any;
+  editingKey: string | null;
+  setEditingKey: any;
+  editValue: string;
+  setEditValue: any;
+  isUpdating: boolean;
+  setIsUpdating: any;
+  settings: any;
+  refetch: any;
+}> = ({
+  isLoading,
+  aiConfig,
+  setAiConfig,
+  editingKey,
+  setEditingKey,
+  editValue,
+  setEditValue,
+  isUpdating,
+  setIsUpdating,
+  settings,
+  refetch,
+}) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">

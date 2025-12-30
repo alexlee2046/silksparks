@@ -4,13 +4,14 @@ const supabaseUrl = "https://wmippjaacispjsltjfof.supabase.co";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
 // 如果没有 service key，我们使用 postgres 连接执行 SQL
+require("dotenv").config({ path: ".env.local" });
 const { Client } = require("pg");
 
 const client = new Client({
-  host: "db.wmippjaacispjsltjfof.supabase.co",
+  host: process.env.DB_HOST || "db.wmippjaacispjsltjfof.supabase.co",
   port: 5432,
   user: "postgres",
-  password: "aOn9h7xgRVtXb9fS",
+  password: process.env.DB_PASSWORD,
   database: "postgres",
   ssl: { rejectUnauthorized: false },
 });

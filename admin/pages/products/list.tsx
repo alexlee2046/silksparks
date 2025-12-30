@@ -3,13 +3,25 @@ import { useList } from "@refinedev/core";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
 
+import { Authenticated } from "@refinedev/core";
+
 export const ProductList: React.FC = () => {
   const { query } = useList({
     resource: "products",
     // syncWithLocation: true, // Optional
   });
   const { data: products, isLoading } = query;
+  return (
+    <Authenticated key="admin-products-auth" fallback={null}>
+      <ProductListContent isLoading={isLoading} products={products} />
+    </Authenticated>
+  );
+};
 
+const ProductListContent: React.FC<{
+  isLoading: boolean;
+  products: any;
+}> = ({ isLoading, products }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">

@@ -3,13 +3,26 @@ import { useList, useGo } from "@refinedev/core";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
 
+import { Authenticated } from "@refinedev/core";
+
 export const ExpertList: React.FC = () => {
   const { query } = useList({
     resource: "experts",
   });
   const { data: experts, isLoading } = query;
   const go = useGo();
+  return (
+    <Authenticated key="admin-experts-auth" fallback={null}>
+      <ExpertListContent isLoading={isLoading} experts={experts} go={go} />
+    </Authenticated>
+  );
+};
 
+const ExpertListContent: React.FC<{
+  isLoading: boolean;
+  experts: any;
+  go: any;
+}> = ({ isLoading, experts, go }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">

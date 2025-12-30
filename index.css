@@ -4,6 +4,9 @@
 @layer base {
   body {
     @apply bg-background-dark text-white font-body antialiased;
+    /* 硬件加速滚动容器 */
+    -webkit-overflow-scrolling: touch;
+    text-rendering: optimizeSpeed;
   }
 }
 
@@ -55,5 +58,17 @@
     animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
     /* Ensures it starts hidden */
+  }
+
+  /* 移除滚动时的层级计算负担 */
+  header,
+  section,
+  canvas {
+    will-change: transform;
+    contain: content;
+  }
+
+  .backdrop-blur-xl {
+    will-change: backdrop-filter;
   }
 }

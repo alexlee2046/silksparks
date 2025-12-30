@@ -472,11 +472,15 @@ export const Layout: React.FC<LayoutProps> = ({
 }) => {
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 0.6,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
+      lerp: 0.15,
+      wheelMultiplier: 1.2,
+      touchMultiplier: 1.5,
+      infinite: false,
     });
 
     function raf(time: number) {

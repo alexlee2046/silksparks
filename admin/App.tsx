@@ -1,5 +1,5 @@
 import React from "react";
-import { Refine } from "@refinedev/core";
+import { Refine, Authenticated } from "@refinedev/core";
 import { dataProvider } from "@refinedev/supabase";
 import routerBindings, {
   NavigateToResource,
@@ -248,7 +248,13 @@ export const AdminApp: React.FC = () => {
       }}
     >
       <Routes>
-        <Route element={<AdminLayout />}>
+        <Route
+          element={
+            <Authenticated key="admin-auth" fallback={null}>
+              <AdminLayout />
+            </Authenticated>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="products">
             <Route index element={<ProductList />} />

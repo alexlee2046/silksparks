@@ -3,6 +3,8 @@ import { useList, useNavigation } from "@refinedev/core";
 import { GlassCard } from "../../components/GlassCard";
 import { GlowButton } from "../../components/GlowButton";
 
+import { Authenticated } from "@refinedev/core";
+
 export const Dashboard: React.FC = () => {
   const { list } = useNavigation();
 
@@ -39,6 +41,35 @@ export const Dashboard: React.FC = () => {
   // Loading state helper
   const isLoading = usersLoading || ordersLoading || appointmentsLoading;
 
+  return (
+    <Authenticated key="admin-dashboard-auth" fallback={null}>
+      <DashboardContent
+        isLoading={isLoading}
+        totalUsers={totalUsers}
+        totalOrders={totalOrders}
+        pendingAppointments={pendingAppointments}
+        ordersData={ordersData}
+        list={list}
+      />
+    </Authenticated>
+  );
+};
+
+const DashboardContent: React.FC<{
+  isLoading: boolean;
+  totalUsers: number;
+  totalOrders: number;
+  pendingAppointments: number;
+  ordersData: any;
+  list: any;
+}> = ({
+  isLoading,
+  totalUsers,
+  totalOrders,
+  pendingAppointments,
+  ordersData,
+  list,
+}) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
