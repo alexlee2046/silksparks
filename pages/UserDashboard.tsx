@@ -343,7 +343,7 @@ export const Archives: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-const ArchiveCard = ({ item }: { item: any }) => {
+const ArchiveCard = ({ item }: { item: any; key?: any }) => {
   const bgImage =
     item.image ||
     (item.type === "Astrology"
