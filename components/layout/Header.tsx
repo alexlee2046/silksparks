@@ -7,6 +7,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useLanguage, LOCALE_NAMES, type Locale } from "../../context/LanguageContext";
 import { GlowButton } from "../GlowButton";
 import { NotificationsDropdown } from "./NotificationsDropdown";
+import { MobileNav } from "./MobileNav";
 import * as m from "../../src/paraglide/messages";
 
 // Theme toggle button component
@@ -18,7 +19,7 @@ const ThemeToggle: React.FC = () => {
     <button
       onClick={toggleTheme}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      className="relative h-8 w-8 rounded-lg bg-surface-border/30 hover:bg-surface-border/30 border border-surface-border hover:border-primary/30 flex items-center justify-center transition-all duration-300 overflow-hidden group"
+      className="relative h-10 w-10 md:h-8 md:w-8 rounded-lg bg-surface-border/30 hover:bg-surface-border/30 border border-surface-border hover:border-primary/30 flex items-center justify-center transition-all duration-300 overflow-hidden group"
     >
       <motion.span
         key={resolvedTheme}
@@ -55,7 +56,7 @@ const LanguageToggle: React.FC = () => {
           setIsOpen(!isOpen);
         }}
         aria-label={`Current language: ${LOCALE_NAMES[locale].english}. Click to switch.`}
-        className="relative h-8 px-2 rounded-lg bg-surface-border/30 hover:bg-surface-border/30 border border-surface-border hover:border-primary/30 flex items-center justify-center gap-1.5 transition-all duration-300 group"
+        className="relative h-10 md:h-8 px-3 md:px-2 rounded-lg bg-surface-border/30 hover:bg-surface-border/30 border border-surface-border hover:border-primary/30 flex items-center justify-center gap-1.5 transition-all duration-300 group"
       >
         <span className="material-symbols-outlined !text-[16px] text-text-muted group-hover:text-primary transition-colors" aria-hidden="true">
           translate
@@ -131,10 +132,11 @@ export const Header: React.FC<HeaderProps> = ({
   const { itemCount, setIsCartOpen } = useCart();
   const { locale } = useLanguage(); // Subscribe to locale changes for re-render
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   // Using locale in key forces re-render when language changes
   void locale;
   const userName =
-    user?.name || session?.user?.email?.split("@")[0] || "Seeker";
+    user?.name || session?.user?.email?.split("@")[0] || m["user.defaultName"]();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-surface-border bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 transition-all duration-500">
@@ -147,14 +149,24 @@ export const Header: React.FC<HeaderProps> = ({
       </a>
       <div className="flex justify-center px-4 md:px-10 py-4">
         <div className="flex w-full max-w-[1440px] items-center justify-between">
-          {/* Logo */}
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label="Go to home page"
-            className="flex items-center gap-3 md:gap-4 text-foreground cursor-pointer group"
-            onClick={() => navigate("/")}
-            onKeyDown={(e) => e.key === "Enter" && navigate("/")}
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Mobile Hamburger Menu */}
+            <button
+              onClick={() => setIsMobileNavOpen(true)}
+              aria-label={m["accessibility.openMenu"]()}
+              className="md:hidden h-11 w-11 flex items-center justify-center rounded-xl text-text-muted hover:text-foreground hover:bg-surface-border/30 transition-colors -ml-2"
+            >
+              <span className="material-symbols-outlined !text-[24px]">menu</span>
+            </button>
+
+            {/* Logo */}
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label="Go to home page"
+              className="flex items-center gap-3 md:gap-4 text-foreground cursor-pointer group"
+              onClick={() => navigate("/")}
+              onKeyDown={(e) => e.key === "Enter" && navigate("/")}
           >
             <div className="size-8 text-primary group-hover:scale-110 transition-transform duration-500">
               <span className="material-symbols-outlined !text-[32px]">
@@ -170,6 +182,7 @@ export const Header: React.FC<HeaderProps> = ({
                   Admin Console
                 </span>
               )}
+            </div>
             </div>
           </div>
 
@@ -250,7 +263,7 @@ export const Header: React.FC<HeaderProps> = ({
                     <button
                       aria-label="My account"
                       onClick={() => navigate("/dashboard")}
-                      className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group hover:border-primary transition-all"
+                      className="h-11 w-11 md:h-9 md:w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group hover:border-primary transition-all"
                     >
                       <span
                         className="material-symbols-outlined text-[20px]"
@@ -303,7 +316,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <button
                   aria-label={`User profile: ${userName}`}
-                  className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary/20 to-amber-500/20 border border-surface-border flex items-center justify-center text-xs font-bold text-foreground cursor-pointer hover:border-primary/40 transition-all group overflow-hidden relative"
+                  className="h-11 w-11 md:h-9 md:w-9 rounded-xl bg-gradient-to-br from-primary/20 to-amber-500/20 border border-surface-border flex items-center justify-center text-sm md:text-xs font-bold text-foreground cursor-pointer hover:border-primary/40 transition-all group overflow-hidden relative"
                   onClick={() => navigate("/dashboard")}
                 >
                   <div
@@ -323,6 +336,13 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Mobile Navigation Drawer */}
+      <MobileNav
+        isOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+        type={type}
+      />
     </header>
   );
 };

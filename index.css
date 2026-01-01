@@ -46,6 +46,8 @@
     /* 硬件加速滚动容器 */
     -webkit-overflow-scrolling: touch;
     text-rendering: optimizeSpeed;
+    /* iPhone X+ 安全区域支持 */
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 

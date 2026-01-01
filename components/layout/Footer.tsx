@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useLanguage } from "../../context/LanguageContext";
+import * as m from "../../src/paraglide/messages";
 
 const SocialIcon: React.FC<{ icon: string; label: string }> = ({
   icon,
@@ -9,7 +11,7 @@ const SocialIcon: React.FC<{ icon: string; label: string }> = ({
   <button
     onClick={() => toast("Social links coming soon!", { icon: "🔗" })}
     aria-label={label}
-    className="size-10 rounded-xl border border-surface-border bg-surface-border/30 flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/30 transition-all hover:-translate-y-1"
+    className="size-11 rounded-xl border border-surface-border bg-surface-border/30 flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/30 transition-all hover:-translate-y-1"
   >
     <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
       {icon}
@@ -33,13 +35,15 @@ const FooterLink: React.FC<{
 );
 
 export const Footer: React.FC = () => {
+  const { locale } = useLanguage();
+  void locale; // 确保语言切换时重渲染
 
   return (
     <footer className="bg-background border-t border-surface-border pt-20 pb-10 text-text-muted relative z-10 overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
 
       <div className="max-w-[1440px] mx-auto px-6 md:px-10">
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-10 md:gap-16 mb-20">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-6 md:gap-10 lg:gap-16 mb-16 md:mb-20">
           {/* Brand Section */}
           <div className="col-span-2 md:col-span-4 space-y-8">
             <Link
@@ -54,12 +58,11 @@ export const Footer: React.FC = () => {
                 auto_awesome
               </span>
               <span className="font-bold text-2xl font-display tracking-tight group-hover:text-primary transition-colors">
-                Silk & Spark
+                {m["common.appName"]()}
               </span>
             </Link>
             <p className="text-sm leading-relaxed max-w-sm font-light">
-              Merging ancient celestial wisdom with cutting-edge intelligence to
-              illuminate your path through the digital age.
+              {m["footer.brandDescription"]()}
             </p>
             <div className="flex gap-4">
               <SocialIcon icon="hub" label="GitHub" />

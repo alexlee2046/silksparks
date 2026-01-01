@@ -62,16 +62,16 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         className="w-full max-w-md relative"
       >
-        <div className="absolute top-0 right-0 -mt-2 -mr-2 z-10">
+        <div className="absolute top-0 right-0 -mt-1 -mr-1 md:-mt-2 md:-mr-2 z-10">
           <button
             onClick={onClose}
-            className="h-10 w-10 rounded-full bg-surface-border/30 border border-surface-border flex items-center justify-center text-text-muted hover:text-foreground hover:bg-surface-border/30 transition-all"
+            className="h-11 w-11 rounded-full bg-surface-border/30 border border-surface-border flex items-center justify-center text-text-muted hover:text-foreground hover:bg-surface-border/50 transition-all"
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="material-symbols-outlined !text-[22px]">close</span>
           </button>
         </div>
 
-        <GlassCard className="p-10 border-surface-border shadow-2xl relative overflow-hidden">
+        <GlassCard className="p-6 md:p-10 border-surface-border shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-amber-600"></div>
 
           <div className="text-center mb-8">

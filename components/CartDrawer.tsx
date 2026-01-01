@@ -101,9 +101,9 @@ export const CartDrawer: React.FC = () => {
               <button
                 onClick={() => setIsCartOpen(false)}
                 aria-label="Close cart"
-                className="text-text-muted hover:text-foreground transition-colors"
+                className="h-11 w-11 flex items-center justify-center rounded-xl text-text-muted hover:text-foreground hover:bg-surface-border/30 transition-colors -mr-2"
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="material-symbols-outlined !text-[24px]">close</span>
               </button>
             </div>
 
@@ -155,19 +155,19 @@ export const CartDrawer: React.FC = () => {
                         ${item.price}
                       </p>
 
-                      <div className="flex items-center gap-3 mt-3">
+                      <div className="flex items-center gap-2 mt-3">
                         <button
                           onClick={() =>
                             updateQuantity(item.id, item.quantity - 1)
                           }
                           aria-label="Decrease quantity"
-                          className="h-6 w-6 rounded-full bg-surface-border/30 flex items-center justify-center text-foreground hover:bg-surface-border/30 transition-colors"
+                          className="h-11 w-11 rounded-full bg-surface-border/30 flex items-center justify-center text-foreground hover:bg-surface-border/50 active:bg-surface-border/70 transition-colors"
                         >
-                          <span className="material-symbols-outlined text-[10px]">
+                          <span className="material-symbols-outlined text-base">
                             remove
                           </span>
                         </button>
-                        <span className="text-xs font-bold text-foreground w-4 text-center">
+                        <span className="text-sm font-bold text-foreground w-6 text-center">
                           {item.quantity}
                         </span>
                         <button
@@ -175,9 +175,9 @@ export const CartDrawer: React.FC = () => {
                             updateQuantity(item.id, item.quantity + 1)
                           }
                           aria-label="Increase quantity"
-                          className="h-6 w-6 rounded-full bg-surface-border/30 flex items-center justify-center text-foreground hover:bg-surface-border/30 transition-colors"
+                          className="h-11 w-11 rounded-full bg-surface-border/30 flex items-center justify-center text-foreground hover:bg-surface-border/50 active:bg-surface-border/70 transition-colors"
                         >
-                          <span className="material-symbols-outlined text-[10px]">
+                          <span className="material-symbols-outlined text-base">
                             add
                           </span>
                         </button>
