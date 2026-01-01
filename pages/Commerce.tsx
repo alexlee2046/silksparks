@@ -11,8 +11,48 @@ import {
 } from "../services/RecommendationEngine";
 import { useUser } from "../context/UserContext";
 
+// Database product type with tags join
+interface DBProduct {
+  id: number;
+  title: string;
+  price: number;
+  description: string | null;
+  image_url: string | null;
+  element: string | null;
+  badge: string | null;
+  created_at: string;
+  product_tags?: Array<{ tags?: { name: string } }>;
+}
+
+// Component prop types
+interface FilterSectionProps {
+  title: string;
+  icon: string;
+  items?: string[];
+  selectedItems?: string[];
+  onToggle?: (item: string) => void;
+}
+
+interface ShopItemProps {
+  title: string;
+  price: string;
+  element?: string | null;
+  image?: string | null;
+  badge?: string | null;
+  onClick: () => void;
+  onQuickAdd: (e: React.MouseEvent) => void;
+  index: number;
+}
+
+interface ExpCardProps {
+  icon: string;
+  title: string;
+  desc: string;
+  delay?: number;
+}
+
 export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<DBProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<string>("newest");
@@ -62,11 +102,11 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
         let filteredData = data;
 
         if (complexFilters.length > 0) {
-          filteredData = data.filter((product: any) => {
+          filteredData = data.filter((product) => {
             // Flatten tags for this product
             // product.product_tags structure depends on the join, typically array of objects
             const productTags =
-              product.product_tags?.map((pt: any) =>
+              product.product_tags?.map((pt) =>
                 pt.tags?.name?.toLowerCase(),
               ) || [];
 
@@ -122,7 +162,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
     );
   };
 
-  const handleQuickAdd = (e: React.MouseEvent, product: any) => {
+  const handleQuickAdd = (e: React.MouseEvent, product: DBProduct) => {
     e.stopPropagation();
     addItem({
       id: product.id,
@@ -335,7 +375,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                     if (setProductId) setProductId(product.id);
                     setScreen(Screen.PRODUCT_DETAIL);
                   }}
-                  onQuickAdd={(e: any) => handleQuickAdd(e, product)}
+                  onQuickAdd={(e) => handleQuickAdd(e, product)}
                 />
               ))
             )}
@@ -346,13 +386,13 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   );
 };
 
-const FilterSection = ({
+const FilterSection: React.FC<FilterSectionProps> = ({
   title,
   icon,
   items,
   selectedItems,
   onToggle,
-}: any) => (
+}) => (
   <div className="space-y-4">
     <button className="flex items-center justify-between w-full group">
       <div className="flex items-center gap-3 text-foreground font-medium text-sm">
@@ -395,7 +435,7 @@ const FilterSection = ({
   </div>
 );
 
-const ShopItem = ({
+const ShopItem: React.FC<ShopItemProps> = ({
   title,
   price,
   element,
@@ -404,7 +444,7 @@ const ShopItem = ({
   onClick,
   onQuickAdd,
   index,
-}: any) => (
+}) => (
   <div
     className="animate-fade-in-up"
     style={{ animationDelay: `${index * 0.1}s` }}
@@ -423,10 +463,12 @@ const ShopItem = ({
             </span>
           </div>
         )}
-        <div
-          className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-700"
-          style={{ backgroundImage: `url("${image}")` }}
-        ></div>
+        <img
+          src={image || ""}
+          alt={title}
+          loading="lazy"
+          className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
 
         {/* Quick Add - visible on mobile, slide-up on desktop hover */}
@@ -574,10 +616,12 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden group shadow-2xl border border-surface-border"
               >
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-all duration-500"
-                  style={{ backgroundImage: `url("${images[selectedImage]}")` }}
-                ></div>
+                <img
+                  src={images[selectedImage]}
+                  alt={product?.title || "Product image"}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
+                />
               </motion.div>
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {images.map((img, index) => (
@@ -687,7 +731,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
   );
 };
 
-const ExpCard = ({ icon, title, desc, delay }: any) => (
+const ExpCard: React.FC<ExpCardProps> = ({ icon, title, desc }) => (
   <GlassCard
     className="flex flex-col gap-6 p-8 items-center text-center hover:border-primary/30"
     intensity="low"

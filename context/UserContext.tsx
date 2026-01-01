@@ -17,7 +17,7 @@
  * 此文件保留以确保向后兼容，将在未来版本移除。
  */
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../services/supabase";
 import { invalidateOrdersCache } from "../hooks/useOrders";
@@ -35,6 +35,13 @@ export interface UserBirthData {
   location: UserLocation | null;
 }
 
+export interface OrderItemMetadata {
+  date?: string | Date;
+  time?: string;
+  expertId?: string;
+  [key: string]: unknown;
+}
+
 export interface Order {
   id: string;
   id_db?: string; // Supabase ID
@@ -45,7 +52,7 @@ export interface Order {
     type: "product" | "service" | "consultation";
     status: string;
     image?: string;
-    metadata?: any;
+    metadata?: OrderItemMetadata;
   }[];
   total: number;
   status: "pending" | "completed" | "delivered";
@@ -58,7 +65,7 @@ export interface ArchiveItem {
   date: Date;
   title: string;
   summary: string;
-  content: string | any;
+  content: string | Record<string, unknown>;
   image?: string;
 }
 
@@ -225,9 +232,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const updateUser = async (updates: Partial<UserProfile>) => {
+  const updateUser = useCallback(async (updates: Partial<UserProfile>) => {
     if (!session) return;
-    const dbUpdates: any = {};
+    const dbUpdates: Record<string, unknown> = {};
     if (updates.name !== undefined) dbUpdates.full_name = updates.name;
     if (updates.points !== undefined) dbUpdates.points = updates.points;
     if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
@@ -240,11 +247,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       .eq("id", session.user.id);
 
     if (!error) setUser((prev) => ({ ...prev, ...updates }));
-  };
+  }, [session]);
 
-  const updateBirthData = async (data: Partial<UserBirthData>) => {
+  const updateBirthData = useCallback(async (data: Partial<UserBirthData>) => {
     if (!session) return;
-    const updates: any = {};
+    const updates: Record<string, unknown> = {};
     if (data.date) updates.birth_date = data.date.toISOString();
     if (data.time) updates.birth_time = data.time;
     if (data.location) {
@@ -264,9 +271,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         birthData: { ...prev.birthData, ...data },
       }));
     }
-  };
+  }, [session]);
 
-  const addOrder = async (order: Order) => {
+  const addOrder = useCallback(async (order: Order) => {
     if (!session) return;
     // 先创建订单
     const { data: oData, error: oError } = await supabase
@@ -295,7 +302,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     // Check for consultations to create appointments
     for (const item of order.items) {
       if (item.type === "consultation" && item.metadata) {
-        const { date, time, expertId, expertName } = item.metadata;
+        const { date, time, expertId } = item.metadata;
         if (date && time && expertId) {
           // Parse date and time to create timestamp
           // date is likely an ISO string or Date object
@@ -303,7 +310,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
           try {
             const baseDate = new Date(date);
             const [timePart, modifier] = time.split(" ");
-            let [hours, minutes] = timePart.split(":").map(Number);
+            const [hoursStr, minutesStr] = timePart.split(":");
+            let hours = Number(hoursStr);
+            const minutes = Number(minutesStr);
 
             if (modifier === "PM" && hours < 12) hours += 12;
             if (modifier === "AM" && hours === 12) hours = 0;
@@ -327,9 +336,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     // 失效订单缓存，下次使用 useOrders() 时会重新加载
     invalidateOrdersCache();
-  };
+  }, [session]);
 
-  const addArchive = async (item: ArchiveItem) => {
+  const addArchive = useCallback(async (item: ArchiveItem) => {
     if (!session) return;
     const { error } = await supabase.from("archives").insert({
       user_id: session.user.id,
@@ -344,24 +353,24 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       // 失效归档缓存，下次使用 useArchives() 时会重新加载
       invalidateArchivesCache();
     }
-  };
+  }, [session]);
 
   /**
    * @deprecated 使用 useFavorites() hook 替代
    * 保留此方法仅为向后兼容，内部不执行任何操作
    */
-  const toggleFavorite = async (_productId: number) => {
+  const toggleFavorite = useCallback(async (_productId: number) => {
     console.warn(
       "[UserContext] toggleFavorite is deprecated. Use useFavorites() hook instead.",
     );
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     // Note: Don't manually setUser(defaultUser) here - it's handled by
     // onAuthStateChange listener when session becomes null.
     // Calling it here would cause a race condition with the listener.
     await supabase.auth.signOut();
-  };
+  }, []);
 
   // Location is optional - only name, date and time are required
   const isBirthDataComplete = !!(
@@ -370,23 +379,38 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     user.birthData.time
   );
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      user,
+      session,
+      loading,
+      updateUser,
+      updateBirthData,
+      addOrder,
+      addArchive,
+      toggleFavorite,
+      signOut,
+      isBirthDataComplete,
+      isAdmin: user.isAdmin,
+      setLocalUser: setUser,
+    }),
+    [
+      user,
+      session,
+      loading,
+      updateUser,
+      updateBirthData,
+      addOrder,
+      addArchive,
+      toggleFavorite,
+      signOut,
+      isBirthDataComplete,
+    ]
+  );
+
   return (
-    <UserContext.Provider
-      value={{
-        user,
-        session,
-        loading,
-        updateUser,
-        updateBirthData,
-        addOrder,
-        addArchive,
-        toggleFavorite,
-        signOut,
-        isBirthDataComplete,
-        isAdmin: user.isAdmin,
-        setLocalUser: setUser,
-      }}
-    >
+    <UserContext.Provider value={contextValue}>
       {children}
     </UserContext.Provider>
   );

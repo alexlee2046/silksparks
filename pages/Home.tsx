@@ -6,6 +6,7 @@ import { BirthDataForm } from "../components/BirthDataForm";
 import { useUser } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useFavorites } from "../hooks/useFavorites";
 import {
   RecommendationEngine,
   Product,
@@ -22,8 +23,9 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   );
   const [showForm, setShowForm] = useState(false);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const { isBirthDataComplete, user, toggleFavorite } = useUser();
+  const { isBirthDataComplete, user } = useUser();
   const { addItem, addToCart } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { locale } = useLanguage(); // Subscribe to locale changes
   void locale; // Ensure re-render on language change
   const [activeCategory, setActiveCategory] = useState("All");
@@ -315,10 +317,8 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                   key={product.id}
                   {...product}
                   index={index}
-                  isFavorited={user.favorites.some(
-                    (f) => f.product_id === product.id,
-                  )}
-                  onToggleFavorite={() => toggleFavorite(product.id)}
+                  isFavorited={isFavorite(Number(product.id))}
+                  onToggleFavorite={() => toggleFavorite(Number(product.id))}
                   onClick={() => {
                     setSelectedProduct(product);
                     setIsModalOpen(true);

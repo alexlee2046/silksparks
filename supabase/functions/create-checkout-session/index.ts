@@ -105,13 +105,85 @@ serve(async (req) => {
       );
     }
 
-    // Get origin for redirect URLs
-    const origin = req.headers.get("origin") || "http://localhost:3000";
-    const finalSuccessUrl = successUrl || `${origin}/dashboard/orders?success=true`;
-    const finalCancelUrl = cancelUrl || `${origin}/shop?canceled=true`;
+    // SECURITY: Verify prices from database to prevent price manipulation
+    const productIds = items
+      .map(item => typeof item.id === "number" ? item.id : parseInt(item.id as string, 10))
+      .filter(id => !isNaN(id));
 
-    // Calculate total
-    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (productIds.length !== items.length) {
+      return new Response(
+        JSON.stringify({ error: "Invalid product IDs in cart" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select("id, price, name, stock")
+      .in("id", productIds);
+
+    if (productsError || !products) {
+      console.error("Failed to fetch products:", productsError);
+      return new Response(
+        JSON.stringify({ error: "Failed to verify product prices" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create a map of verified prices from database
+    const priceMap = new Map(products.map(p => [p.id, { price: p.price, name: p.name, stock: p.stock }]));
+
+    // Validate each item price and stock
+    const validatedItems: CartItem[] = [];
+    for (const item of items) {
+      const productId = typeof item.id === "number" ? item.id : parseInt(item.id as string, 10);
+      const dbProduct = priceMap.get(productId);
+
+      if (!dbProduct) {
+        return new Response(
+          JSON.stringify({ error: `Product not found: ${item.name}` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check if client price matches database price (allow small floating point tolerance)
+      if (Math.abs(dbProduct.price - item.price) > 0.01) {
+        console.warn(`[Checkout] Price mismatch for product ${productId}: client=${item.price}, db=${dbProduct.price}`);
+        return new Response(
+          JSON.stringify({
+            error: "Price has changed. Please refresh your cart.",
+            code: "PRICE_MISMATCH"
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check stock availability
+      if (dbProduct.stock !== null && dbProduct.stock < item.quantity) {
+        return new Response(
+          JSON.stringify({
+            error: `Insufficient stock for ${dbProduct.name}. Available: ${dbProduct.stock}`,
+            code: "INSUFFICIENT_STOCK"
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Use verified price from database
+      validatedItems.push({
+        ...item,
+        price: dbProduct.price, // Use database price, not client price
+        name: dbProduct.name,   // Use database name for consistency
+      });
+    }
+
+    // Get origin for redirect URLs
+    const requestOrigin = req.headers.get("origin") || "http://localhost:3000";
+    const finalSuccessUrl = successUrl || `${requestOrigin}/dashboard/orders?success=true`;
+    const finalCancelUrl = cancelUrl || `${requestOrigin}/shop?canceled=true`;
+
+    // Calculate total using verified prices from database
+    const total = validatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     // Create pending order in database
     const { data: order, error: orderError } = await supabase
@@ -131,11 +203,11 @@ serve(async (req) => {
       throw new Error("Failed to create order");
     }
 
-    // Create order items
-    const orderItems = items.flatMap((item) =>
+    // Create order items using validated items with verified prices
+    const orderItems = validatedItems.flatMap((item) =>
       Array.from({ length: item.quantity }, () => ({
         order_id: order.id,
-        product_id: typeof item.id === "number" ? item.id : null,
+        product_id: typeof item.id === "number" ? item.id : parseInt(item.id as string, 10),
         name: item.name,
         price: item.price,
         image_url: item.image || null,
@@ -154,8 +226,8 @@ serve(async (req) => {
       throw new Error("Failed to create order items");
     }
 
-    // Create Stripe line items
-    const lineItems = items.map((item) => ({
+    // Create Stripe line items using validated prices
+    const lineItems = validatedItems.map((item) => ({
       price_data: {
         currency,
         product_data: {

@@ -1,5 +1,6 @@
 import React from "react";
 import { useUser } from "../context/UserContext";
+import { useFavorites } from "../hooks/useFavorites";
 import { Screen, NavProps } from "../types";
 import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
@@ -8,6 +9,7 @@ import { supabase } from "../services/supabase";
 import toast from "react-hot-toast";
 import { ProductCard } from "./Home";
 import { useCart } from "../context/CartContext";
+import type { Tables } from "../types/database";
 import { useTheme, type Theme } from "../context/ThemeContext";
 import { useLanguage, LOCALE_NAMES, type Locale } from "../context/LanguageContext";
 import { usePerformance, type QualityLevel } from "../context/PerformanceContext";
@@ -763,20 +765,20 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
 };
 
 const Favorites: React.FC<NavProps> = ({ setScreen }) => {
-  const { user, toggleFavorite } = useUser();
+  const { favorites, toggleFavorite } = useFavorites();
   const { addToCart } = useCart();
-  const [products, setProducts] = React.useState<any[]>([]);
+  const [products, setProducts] = React.useState<Tables<"products">[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchFavorites = async () => {
-      if (!user.favorites || user.favorites.length === 0) {
+      if (!favorites || favorites.length === 0) {
         setProducts([]);
         setLoading(false);
         return;
       }
 
-      const ids = user.favorites.map((f) => f.product_id);
+      const ids = favorites.map((f) => f.product_id);
       const { data, error } = await supabase
         .from("products")
         .select("*")
@@ -789,7 +791,7 @@ const Favorites: React.FC<NavProps> = ({ setScreen }) => {
     };
 
     fetchFavorites();
-  }, [user.favorites]);
+  }, [favorites]);
 
   return (
     <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">

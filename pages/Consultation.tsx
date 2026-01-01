@@ -6,9 +6,34 @@ import { GlowButton } from "../components/GlowButton";
 import { useUser } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
 import { supabase } from "../services/supabase";
+import type { Expert } from "../types/database";
+
+// Component prop types
+interface ExpertCardProps {
+  name: string;
+  title: string;
+  rating: number | null;
+  reviews: number;
+  price: string;
+  tags: string[] | null;
+  image: string | null;
+  isOnline?: boolean;
+  onBook: () => void;
+  onProfile: () => void;
+  index: number;
+}
+
+interface DeliveryOptionProps {
+  title: string;
+  icon: string;
+  desc: string;
+  action: string;
+  onClick: () => void;
+  delay: number;
+}
 
 export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
-  const [experts, setExperts] = React.useState<any[]>([]);
+  const [experts, setExperts] = React.useState<Expert[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -159,7 +184,7 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
   );
 };
 
-const ExpertCard = ({
+const ExpertCard: React.FC<ExpertCardProps> = ({
   name,
   title,
   rating,
@@ -171,7 +196,7 @@ const ExpertCard = ({
   onBook,
   onProfile,
   index,
-}: any) => (
+}) => (
   <div
     className="animate-fade-in-up"
     style={{ animationDelay: `${index * 0.1}s` }}
@@ -994,7 +1019,7 @@ export const Delivery: React.FC<NavProps> = ({ setScreen, expertId }) => {
   );
 };
 
-const DeliveryOption = ({ title, icon, desc, action, onClick, delay }: any) => (
+const DeliveryOption: React.FC<DeliveryOptionProps> = ({ title, icon, desc, action, onClick, delay }) => (
   <motion.div
     initial={{ opacity: 0, y: 30 }}
     animate={{ opacity: 1, y: 0 }}

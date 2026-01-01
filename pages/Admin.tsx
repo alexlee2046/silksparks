@@ -5,6 +5,47 @@ import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
 import { supabase } from "../services/supabase";
 import toast from "react-hot-toast";
+import type { Currency, ShippingZoneWithRates, ShippingRate } from "../types/database";
+
+// Component prop types
+interface AdminNavLinkProps {
+  active: boolean;
+  onClick: () => void;
+  icon: string;
+  label: string;
+}
+
+interface StatsMiniProps {
+  label: string;
+  value: string;
+  change: string;
+}
+
+interface ProviderCardProps {
+  name: string;
+  icon: string;
+  connected?: boolean;
+}
+
+interface CurrencyRowProps {
+  name: string;
+  code: string;
+  rate: string;
+  defaultC?: boolean;
+}
+
+interface ShippingZoneProps {
+  name: string;
+  rates: Array<{ name: string; price: string }>;
+}
+
+interface AIConfig {
+  systemPrompt: string;
+  temperature: number;
+  openrouter_key: string;
+  gemini_key: string;
+  model: string;
+}
 
 const AdminLayout: React.FC<{
   title: string;
@@ -139,7 +180,7 @@ const AdminLayout: React.FC<{
   </motion.div>
 );
 
-const AdminNavLink = ({ active, onClick, icon, label }: any) => (
+const AdminNavLink: React.FC<AdminNavLinkProps> = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
     className={`flex items-center gap-4 px-4 py-3.5 text-sm font-bold w-full text-left rounded-xl transition-all duration-300 group ${active ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(244,192,37,0.1)]" : "text-text-muted hover:bg-surface-border/30 hover:text-foreground border border-transparent"}`}
@@ -164,7 +205,11 @@ export const Payments: React.FC<NavProps> = ({ setScreen }) => {
   React.useEffect(() => {
     // Mock stats from real orders if possible, or just mock for now
     const fetchStats = async () => {
-      const { data } = await supabase.from("orders").select("total, status");
+      const { data, error } = await supabase.from("orders").select("total, status");
+      if (error) {
+        console.error("[Admin] Failed to fetch payment stats:", error.message);
+        return;
+      }
       if (data) {
         const total = data.reduce((acc, curr) => acc + (curr.total || 0), 0);
         setStats({ revenue: total, transactions: data.length });
@@ -218,7 +263,7 @@ export const Payments: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-const StatsMini = ({ label, value, change }: any) => (
+const StatsMini: React.FC<StatsMiniProps> = ({ label, value, change }) => (
   <GlassCard className="p-6 border-surface-border" intensity="low">
     <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2">
       {label}
@@ -236,7 +281,7 @@ const StatsMini = ({ label, value, change }: any) => (
   </GlassCard>
 );
 
-const ProviderCard = ({ name, icon, connected }: any) => (
+const ProviderCard: React.FC<ProviderCardProps> = ({ name, icon, connected }) => (
   <div className="bg-surface-border/30 border border-surface-border rounded-2xl p-6 flex justify-between items-center group hover:border-primary/20 transition-all duration-300">
     <div className="flex items-center gap-4">
       <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-white/10 to-transparent border border-surface-border flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
@@ -265,7 +310,7 @@ const ProviderCard = ({ name, icon, connected }: any) => (
 );
 
 export const Currency: React.FC<NavProps> = ({ setScreen }) => {
-  const [currencies, setCurrencies] = React.useState<any[]>([]);
+  const [currencies, setCurrencies] = React.useState<Currency[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -275,7 +320,9 @@ export const Currency: React.FC<NavProps> = ({ setScreen }) => {
         .select("*")
         .order("id", { ascending: true });
 
-      if (!error && data) {
+      if (error) {
+        console.error("[Admin] Failed to fetch currencies:", error.message);
+      } else if (data) {
         setCurrencies(data);
       }
       setLoading(false);
@@ -357,7 +404,7 @@ export const Currency: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-const CurrencyRow = ({ name, code, rate, defaultC }: any) => (
+const CurrencyRow: React.FC<CurrencyRowProps> = ({ name, code, rate, defaultC }) => (
   <div className="grid grid-cols-12 gap-4 px-8 py-5 items-center hover:bg-surface-border/30 transition-all duration-300 group">
     <div className="col-span-5 flex items-center gap-4">
       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center font-bold text-text-muted text-xs">
@@ -387,7 +434,7 @@ const CurrencyRow = ({ name, code, rate, defaultC }: any) => (
 );
 
 export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
-  const [zones, setZones] = React.useState<any[]>([]);
+  const [zones, setZones] = React.useState<ShippingZoneWithRates[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -396,7 +443,9 @@ export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
         .from("shipping_zones")
         .select("*, shipping_rates(*)");
 
-      if (!error && data) {
+      if (error) {
+        console.error("[Admin] Failed to fetch shipping zones:", error.message);
+      } else if (data) {
         setZones(data);
       }
       setLoading(false);
@@ -405,11 +454,22 @@ export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
   }, []);
 
   const handleAddZone = async () => {
-    // Mock creation for now or real insert
-    const { error } = await supabase
+    // Create new shipping zone
+    const { data, error } = await supabase
       .from("shipping_zones")
-      .insert({ name: "New Zone", countries: [] });
-    if (!error) window.location.reload(); // Simple reload for Phase 4
+      .insert({ name: "New Zone", countries: [] })
+      .select("*, shipping_rates(*)")
+      .single();
+
+    if (error) {
+      console.error("[Admin] Failed to create shipping zone:", error.message);
+      return;
+    }
+
+    // Update state instead of reloading page
+    if (data) {
+      setZones((prev) => [...prev, data]);
+    }
   };
 
   return (
@@ -459,7 +519,7 @@ export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
                     key={zone.id}
                     name={zone.name}
                     rates={
-                      zone.shipping_rates?.map((r: any) => ({
+                      zone.shipping_rates?.map((r) => ({
                         name: r.name,
                         price: `$${r.price.toFixed(2)}`,
                       })) || []
@@ -475,7 +535,7 @@ export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-const ShippingZone = ({ name, rates }: any) => (
+const ShippingZone: React.FC<ShippingZoneProps> = ({ name, rates }) => (
   <div className="border border-surface-border rounded-2xl bg-black/20 overflow-hidden group hover:border-primary/20 transition-all duration-300">
     <div className="bg-surface-border/30 px-6 py-4 border-b border-surface-border flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -491,7 +551,7 @@ const ShippingZone = ({ name, rates }: any) => (
       </button>
     </div>
     <div className="divide-y divide-white/5">
-      {rates.map((r: any) => (
+      {rates.map((r) => (
         <div
           key={r.name}
           className="px-6 py-4 flex items-center justify-between hover:bg-surface-border/30 transition-colors"
@@ -527,21 +587,18 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
   }, []);
 
   const fetchSettings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("system_settings")
-        .select("value")
-        .eq("key", "ai_config")
-        .single();
+    const { data, error } = await supabase
+      .from("system_settings")
+      .select("value")
+      .eq("key", "ai_config")
+      .maybeSingle();
 
-      if (data?.value) {
-        setConfig((prev) => ({ ...prev, ...data.value }));
-      }
-    } catch (err) {
-      console.error("Error fetching AI settings:", err);
-    } finally {
-      setLoading(false);
+    if (error) {
+      console.error("[Admin] Failed to fetch AI settings:", error.message);
+    } else if (data?.value) {
+      setConfig((prev) => ({ ...prev, ...data.value }));
     }
+    setLoading(false);
   };
 
   const handleSave = async () => {
@@ -556,13 +613,14 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
 
       if (error) throw error;
       toast.success("AI Configuration saved successfully!");
-    } catch (err: any) {
-      console.error("Error saving settings:", err);
-      toast.error("Failed to save settings: " + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      console.error("Error saving settings:", message);
+      toast.error("Failed to save settings: " + message);
     }
   };
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: keyof AIConfig, value: string | number) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
   };
 

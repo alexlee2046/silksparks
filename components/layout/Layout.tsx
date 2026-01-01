@@ -1,8 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import Lenis from "lenis";
-import { CosmicBackground } from "../CosmicBackground";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+
+// Lazy load Three.js CosmicBackground to improve initial page load
+const CosmicBackground = lazy(() =>
+  import("../CosmicBackground").then((m) => ({ default: m.CosmicBackground }))
+);
 
 export interface LayoutProps {
   children: React.ReactNode;
@@ -42,7 +46,9 @@ export const Layout: React.FC<LayoutProps> = ({
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-display text-foreground relative isolate">
-      <CosmicBackground />
+      <Suspense fallback={null}>
+        <CosmicBackground />
+      </Suspense>
       <Header type={type} onAuthClick={onAuthClick} />
       <main id="main-content" className="flex-1 z-10 relative">
         {children}

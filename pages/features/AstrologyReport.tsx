@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Screen, NavProps } from "../../types";
 import AIService from "../../services/ai";
 import { RateLimitError } from "../../services/ai/SupabaseAIProvider";
@@ -10,8 +10,12 @@ import {
   FiveElementsDistribution,
 } from "../../services/AstrologyEngine";
 import { motion } from "framer-motion";
-import { CosmicBackground } from "../../components/CosmicBackground";
 import { ElementBar } from "./ElementBar";
+
+// Lazy load Three.js CosmicBackground
+const CosmicBackground = lazy(() =>
+  import("../../components/CosmicBackground").then((m) => ({ default: m.CosmicBackground }))
+);
 
 export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
   const { user, isBirthDataComplete, addArchive } = useUser();
@@ -94,7 +98,9 @@ export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center relative overflow-hidden">
-        <CosmicBackground />
+        <Suspense fallback={null}>
+          <CosmicBackground />
+        </Suspense>
         <div className="relative z-10 flex flex-col items-center">
           <motion.div
             animate={{ rotate: 360 }}
