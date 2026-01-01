@@ -400,7 +400,8 @@ export const ProductCard = ({
         className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
         style={{ backgroundImage: `url("${image}")` }}
       ></div>
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 delay-100">
+      {/* Favorite button - always visible on mobile, hover on desktop */}
+      <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -411,10 +412,10 @@ export const ProductCard = ({
               toast("Removed from favorites", { icon: "💔" });
             }
           }}
-          className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors shadow-lg transform hover:scale-105 ${
+          className={`h-11 w-11 rounded-full flex items-center justify-center transition-colors shadow-lg transform active:scale-95 md:hover:scale-105 ${
             isFavorited
               ? "bg-primary text-foreground"
-              : "bg-white/90 text-black hover:bg-primary"
+              : "bg-white/90 text-black md:hover:bg-primary active:bg-primary/80"
           }`}
         >
           <span
@@ -426,11 +427,11 @@ export const ProductCard = ({
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 transition-opacity group-hover:opacity-60"></div>
 
-      {/* Quick Add Overlay */}
-      <div className="absolute bottom-0 inset-x-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+      {/* Quick Add Overlay - visible on mobile, slide-up on desktop hover */}
+      <div className="absolute bottom-0 inset-x-0 p-4 translate-y-0 md:translate-y-full md:group-hover:translate-y-0 transition-transform duration-300">
         <button
           onClick={onAddToCart}
-          className="w-full h-12 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-primary transition-colors"
+          className="w-full h-12 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-2 shadow-lg md:hover:bg-primary active:bg-primary/80 transition-colors"
         >
           Add to Cart - {price}
         </button>

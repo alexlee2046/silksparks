@@ -14,3 +14,18 @@ export { useLocationSearch } from "./useLocationSearch";
 
 // Tarot tracking
 export { useTarotStreak } from "./useTarotStreak";
+
+// Responsive utilities
+export {
+  useMediaQuery,
+  useIsMobile,
+  useIsTablet,
+  useIsDesktop,
+  useIsSmallScreen,
+  useIsTouchDevice,
+  usePrefersReducedMotion,
+  useBreakpoint,
+} from "./useMediaQuery";
+
+// Animation utilities
+export { useAnimationConfig, useAnimationsEnabled } from "./useAnimationConfig";

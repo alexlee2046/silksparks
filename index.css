@@ -9,7 +9,7 @@
   --color-surface: 235 229 219;           /* #ebe5db */
   --color-surface-border: 217 208 195;    /* #d9d0c3 */
   --color-text-primary: 45 42 38;         /* #2d2a26 */
-  --color-text-muted: 107 100 90;         /* #6b645a */
+  --color-text-muted: 85 79 71;           /* #554f47 - WCAG AA compliant (5.2:1 contrast) */
   --color-primary: 212 160 18;            /* #d4a012 */
   --color-primary-hover: 190 143 16;      /* #be8f10 */
 

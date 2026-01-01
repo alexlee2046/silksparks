@@ -269,6 +269,8 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                       <img
                         src={p.image}
                         alt={p.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                       <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-primary border border-surface-border">
@@ -427,10 +429,11 @@ const ShopItem = ({
         ></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
 
-        <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
+        {/* Quick Add - visible on mobile, slide-up on desktop hover */}
+        <div className="absolute inset-x-0 bottom-0 p-4 translate-y-0 md:translate-y-full md:group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
           <GlowButton
             variant="primary"
-            className="w-full text-xs py-2"
+            className="w-full text-xs py-2.5 min-h-[44px]"
             onClick={onQuickAdd}
           >
             Quick Add
@@ -583,7 +586,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                     onClick={() => setSelectedImage(index)}
                     className={`w-24 h-24 flex-shrink-0 rounded-lg border-2 ${selectedImage === index ? "border-primary" : "border-transparent"} overflow-hidden cursor-pointer hover:border-primary/50 transition-colors`}
                   >
-                    <img src={img} className="w-full h-full object-cover" />
+                    <img src={img} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>

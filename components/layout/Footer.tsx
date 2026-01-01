@@ -11,7 +11,7 @@ const SocialIcon: React.FC<{ icon: string; label: string }> = ({
   <button
     onClick={() => toast("Social links coming soon!", { icon: "🔗" })}
     aria-label={label}
-    className="size-11 rounded-xl border border-surface-border bg-surface-border/30 flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/30 transition-all hover:-translate-y-1"
+    className="size-11 rounded-xl border border-surface-border bg-surface-border/30 flex items-center justify-center text-text-muted hover:text-primary active:text-primary hover:border-primary/30 transition-all md:hover:-translate-y-1 active:scale-95"
   >
     <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
       {icon}
@@ -43,7 +43,7 @@ export const Footer: React.FC = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
 
       <div className="max-w-[1440px] mx-auto px-6 md:px-10">
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-6 md:gap-10 lg:gap-16 mb-16 md:mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-10 lg:gap-16 mb-16 md:mb-20">
           {/* Brand Section */}
           <div className="col-span-2 md:col-span-4 space-y-8">
             <Link
@@ -169,7 +169,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-surface-border flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-widest">
+        <div className="pt-8 border-t border-surface-border flex flex-col md:flex-row justify-between items-center gap-6 text-xs md:text-[10px] font-bold uppercase tracking-widest">
           <p className="text-text-muted italic">
             © 2025 Silk & Spark. Transcending the physical.
           </p>

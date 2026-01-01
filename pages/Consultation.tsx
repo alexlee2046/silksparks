@@ -82,7 +82,7 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="hidden md:flex flex-col w-72 shrink-0 gap-8 h-fit sticky top-24"
+          className="hidden md:flex flex-col w-56 lg:w-72 shrink-0 gap-6 lg:gap-8 h-fit sticky top-24"
         >
           <div className="flex items-center justify-between border-b border-surface-border pb-4">
             <h3 className="text-foreground text-xl font-bold font-display">
@@ -297,6 +297,8 @@ export const ExpertProfile: React.FC<NavProps> = ({
             src={expert.image_url}
             className="w-full h-full object-cover"
             alt={expert.name}
+            loading="eager"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
         </div>
@@ -548,6 +550,8 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                 alt="Expert Avatar"
                 className="h-full w-full object-cover"
                 src={expert.image_url}
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>

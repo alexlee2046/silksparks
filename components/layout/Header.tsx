@@ -19,7 +19,7 @@ const ThemeToggle: React.FC = () => {
     <button
       onClick={toggleTheme}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      className="relative h-10 w-10 md:h-8 md:w-8 rounded-lg bg-surface-border/30 hover:bg-surface-border/30 border border-surface-border hover:border-primary/30 flex items-center justify-center transition-all duration-300 overflow-hidden group"
+      className="relative h-11 w-11 md:h-9 md:w-9 rounded-lg bg-surface-border/30 hover:bg-surface-border/30 border border-surface-border hover:border-primary/30 flex items-center justify-center transition-all duration-300 overflow-hidden group active:scale-95"
     >
       <motion.span
         key={resolvedTheme}
@@ -56,7 +56,7 @@ const LanguageToggle: React.FC = () => {
           setIsOpen(!isOpen);
         }}
         aria-label={`Current language: ${LOCALE_NAMES[locale].english}. Click to switch.`}
-        className="relative h-10 md:h-8 px-3 md:px-2 rounded-lg bg-surface-border/30 hover:bg-surface-border/30 border border-surface-border hover:border-primary/30 flex items-center justify-center gap-1.5 transition-all duration-300 group"
+        className="relative h-11 md:h-9 px-3 md:px-2 rounded-lg bg-surface-border/30 hover:bg-surface-border/30 border border-surface-border hover:border-primary/30 flex items-center justify-center gap-1.5 transition-all duration-300 group active:scale-95"
       >
         <span className="material-symbols-outlined !text-[16px] text-text-muted group-hover:text-primary transition-colors" aria-hidden="true">
           translate

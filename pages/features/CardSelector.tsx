@@ -77,12 +77,12 @@ export const CardSelector: React.FC<CardSelectorProps> = ({
   // 洗牌动画
   if (isShuffling) {
     return (
-      <div className="relative w-full h-[450px] flex flex-col items-center justify-center">
-        <div className="relative w-64 h-[380px]">
+      <div className="relative w-full h-[450px] flex flex-col items-center justify-center px-4">
+        <div className="relative w-full max-w-64 aspect-[256/380] mx-auto">
           {[0, 1, 2, 3, 4].map((i) => (
             <motion.div
               key={i}
-              className="absolute inset-0 w-64 h-[380px]"
+              className="absolute inset-0 w-full h-full"
               initial={{ x: 0, y: 0, rotate: 0 }}
               animate={{
                 x: [0, (i - 2) * 50, 0],

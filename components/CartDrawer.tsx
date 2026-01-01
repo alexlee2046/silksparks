@@ -133,6 +133,8 @@ export const CartDrawer: React.FC = () => {
                       <img
                         src={item.image}
                         alt={item.name}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover opacity-80"
                       />
                     </div>

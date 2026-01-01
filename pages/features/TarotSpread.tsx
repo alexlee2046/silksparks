@@ -188,7 +188,7 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
             >
               <div
                 onClick={handleStartSession}
-                className="relative cursor-pointer group w-64 h-[400px] perspective-1000"
+                className="relative cursor-pointer group w-full max-w-64 aspect-[256/400] perspective-1000 mx-auto"
               >
                 {/* Stack Effect */}
                 <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-4 translate-y-4 -z-20"></div>

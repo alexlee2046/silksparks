@@ -192,9 +192,9 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
               >
                 <div
                   onClick={handleStartReading}
-                  className="cursor-pointer group relative"
+                  className="cursor-pointer group relative w-full max-w-64 mx-auto"
                 >
-                  <div className="relative w-64 h-[380px] perspective-1000">
+                  <div className="relative w-full aspect-[256/380] perspective-1000">
                     {/* 卡牌堆效果 */}
                     <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-3 translate-y-3 -z-20"></div>
                     <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-1.5 translate-y-1.5 -z-10"></div>
@@ -255,7 +255,7 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
             {readingState === "drawing" && card && (
               <motion.div
                 key="drawing"
-                className="relative w-64 h-[400px] perspective-1000"
+                className="relative w-full max-w-64 aspect-[256/400] perspective-1000 mx-auto"
                 initial={{ rotateY: 0, scale: 0.9 }}
                 animate={{ rotateY: 180, scale: 1.1 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}

@@ -28,7 +28,7 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
       <motion.aside
         initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="hidden lg:flex w-72 flex-col justify-between border-r border-surface-border bg-surface p-6 sticky top-0 h-screen overflow-y-auto z-10"
+        className="hidden md:flex w-56 lg:w-72 flex-col justify-between border-r border-surface-border bg-surface p-4 lg:p-6 sticky top-0 h-screen overflow-y-auto z-10"
       >
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-3 px-2">
