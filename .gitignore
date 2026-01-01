@@ -37,3 +37,4 @@ test-results/
 
 # Supabase local temp files
 supabase/.temp/
+lighthouse-reports/
