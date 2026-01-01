@@ -42,6 +42,8 @@ export interface AIResponseMeta {
   latencyMs: number;
   /** 是否来自缓存 */
   cached: boolean;
+  /** 是否使用了 fallback 提供商 */
+  isFallback?: boolean;
 }
 
 // ============ 命理分析类型 ============
@@ -116,18 +118,42 @@ export interface TarotCard {
   position?: TarotPosition;
 }
 
+/** 用户星盘摘要（用于个性化解读） */
+export interface UserBirthDataSummary {
+  sunSign?: string;
+  moonSign?: string;
+  risingSign?: string;
+}
+
 /** 塔罗解读请求 */
 export interface TarotReadingRequest {
   cards: TarotCard[];
   question: string;
   spreadType: "single" | "three-card" | "celtic-cross";
   locale?: "zh-CN" | "en-US";
+  /** 用户星盘数据（可选，用于个性化解读） */
+  userBirthData?: UserBirthDataSummary;
+  /** 历史抽牌上下文（可选，用于连续解读） */
+  historyContext?: string;
+}
+
+/** 幸运元素 */
+export interface LuckyElements {
+  color: string;
+  number: number;
+  direction: string;
+  /** 推荐水晶（可选） */
+  crystal?: string;
 }
 
 /** 塔罗解读响应 */
 export interface TarotReadingResponse {
   /** 综合解读 */
   interpretation: string;
+  /** 核心信息（一句话，20字内） */
+  coreMessage?: string;
+  /** 详细解读 */
+  detailedReading?: string;
   /** 每张牌的个别解读 */
   cardInterpretations: Array<{
     cardId: string;
@@ -136,7 +162,29 @@ export interface TarotReadingResponse {
   }>;
   /** 行动建议 */
   actionAdvice: string;
+  /** 幸运元素 */
+  luckyElements?: LuckyElements;
   /** 元数据 */
+  meta: AIResponseMeta;
+}
+
+/** 塔罗追问请求 */
+export interface TarotFollowUpRequest {
+  cards: TarotCard[];
+  /** 原始解读内容 */
+  originalInterpretation: string;
+  /** 对话历史（问答记录） */
+  conversationHistory: Array<{ role: "user" | "assistant"; content: string }>;
+  /** 当前追问问题 */
+  followUpQuestion: string;
+  /** 用户星盘数据（可选） */
+  userBirthData?: UserBirthDataSummary;
+  locale?: "zh-CN" | "en-US";
+}
+
+/** 塔罗追问响应 */
+export interface TarotFollowUpResponse {
+  answer: string;
   meta: AIResponseMeta;
 }
 
@@ -176,6 +224,11 @@ export interface IAIService {
   generateTarotReading(
     request: TarotReadingRequest,
   ): Promise<TarotReadingResponse>;
+
+  /** 生成塔罗追问回答 */
+  generateTarotFollowUp?(
+    request: TarotFollowUpRequest,
+  ): Promise<TarotFollowUpResponse>;
 
   /** 生成每日灵感 */
   generateDailySpark(request: DailySparkRequest): Promise<DailySparkResponse>;

@@ -9,21 +9,36 @@
 
 const { Client } = require("pg");
 const { createClient } = require("@supabase/supabase-js");
+require("dotenv").config({ path: ".env.test" });
+
+// Validate required environment variables
+const requiredEnvVars = [
+  "SUPABASE_URL",
+  "SUPABASE_ANON_KEY",
+  "SUPABASE_DB_HOST",
+  "SUPABASE_DB_PASSWORD",
+];
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`Missing required environment variable: ${envVar}`);
+    console.error("Please copy .env.test.example to .env.test and fill in your values");
+    process.exit(1);
+  }
+}
 
 const dbClient = new Client({
-  host: "db.wmippjaacispjsltjfof.supabase.co",
-  port: 5432,
-  user: "postgres",
-  password: "aOn9h7xgRVtXb9fS",
-  database: "postgres",
+  host: process.env.SUPABASE_DB_HOST,
+  port: parseInt(process.env.SUPABASE_DB_PORT || "5432"),
+  user: process.env.SUPABASE_DB_USER || "postgres",
+  password: process.env.SUPABASE_DB_PASSWORD,
+  database: process.env.SUPABASE_DB_NAME || "postgres",
   ssl: { rejectUnauthorized: false },
 });
 
-const supabaseUrl = "https://wmippjaacispjsltjfof.supabase.co";
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtaXBwamFhY2lzcGpzbHRqZm9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5NTQ0MDIsImV4cCI6MjA4MjUzMDQwMn0.R97-dN_1KkwPcA9hgKyciMPMGGQnimIty9iy9PHWDkI";
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 const results = {
   passed: 0,

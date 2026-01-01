@@ -15,7 +15,7 @@ export const OrderList: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-white/40 font-display animate-pulse">
+        <div className="text-text-muted font-display animate-pulse">
           Retrieving Cosmic Transactions...
         </div>
       </div>
@@ -31,21 +31,21 @@ export const OrderList: React.FC = () => {
       case "cancelled":
         return "bg-red-500/10 border-red-500/20 text-red-400";
       default:
-        return "bg-white/5 border-white/10 text-white/40";
+        return "bg-surface-border/30 border-surface-border text-text-muted";
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-display font-light text-white tracking-tight">
+        <h1 className="text-3xl font-display font-light text-foreground tracking-tight">
           Orders
         </h1>
       </div>
 
-      <GlassCard className="p-0 border-white/5 overflow-hidden" intensity="low">
+      <GlassCard className="p-0 border-surface-border overflow-hidden" intensity="low">
         <table className="w-full text-left">
-          <thead className="bg-white/5 border-b border-white/5 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+          <thead className="bg-surface-border/30 border-b border-surface-border text-[10px] font-bold text-text-muted uppercase tracking-widest">
             <tr>
               <th className="px-6 py-4">Order ID</th>
               <th className="px-6 py-4">Customer</th>
@@ -59,12 +59,12 @@ export const OrderList: React.FC = () => {
             {orders?.data.map((order: any) => (
               <tr
                 key={order.id}
-                className="hover:bg-white/5 transition-colors group"
+                className="hover:bg-surface-border/30 transition-colors group"
               >
-                <td className="px-6 py-4 text-sm font-mono text-white/60">
+                <td className="px-6 py-4 text-sm font-mono text-text-muted">
                   #{order.id.slice(0, 8)}
                 </td>
-                <td className="px-6 py-4 text-sm text-white">
+                <td className="px-6 py-4 text-sm text-foreground">
                   {order.profiles?.email || "Unknown"}
                 </td>
                 <td className="px-6 py-4 text-sm font-mono text-primary font-bold">
@@ -77,7 +77,7 @@ export const OrderList: React.FC = () => {
                     {order.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-white/40">
+                <td className="px-6 py-4 text-sm text-text-muted">
                   {new Date(order.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 text-right">
@@ -91,7 +91,7 @@ export const OrderList: React.FC = () => {
                         },
                       })
                     }
-                    className="text-white/20 hover:text-white transition-colors"
+                    className="text-text-muted hover:text-foreground transition-colors"
                   >
                     <span className="material-symbols-outlined text-[18px]">
                       visibility

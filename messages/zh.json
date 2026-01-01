@@ -1,0 +1,201 @@
+{
+  "common": {
+    "appName": "丝与光",
+    "tagline": "探索你的宇宙之路",
+    "loading": "加载中...",
+    "error": "出了点问题",
+    "retry": "重试",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "view": "查看",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "submit": "提交",
+    "confirm": "确认",
+    "signIn": "登录",
+    "signOut": "退出",
+    "signUp": "注册"
+  },
+  "nav": {
+    "home": "首页",
+    "shop": "商店",
+    "experts": "专家",
+    "horoscope": "星盘",
+    "tarot": "塔罗",
+    "aiChat": "AI对话",
+    "dashboard": "个人中心",
+    "archives": "档案",
+    "orders": "订单",
+    "consultations": "咨询",
+    "settings": "设置"
+  },
+  "home": {
+    "hero": {
+      "title1": "古老智慧",
+      "title2": "人工智能",
+      "subtitle": "进入星火引擎。借助我们的AI占星解读器，即刻解码你的星象，连接神秘主义与科技的桥梁。",
+      "cta": "揭示我的星盘",
+      "ctaExisting": "查看我的星盘",
+      "inputPlaceholder": "输入你的出生信息...",
+      "privacyNote": "加密且私密"
+    },
+    "dailySpark": {
+      "label": "每日星火",
+      "loading": "与宇宙对齐中...",
+      "viewHoroscope": "查看星座运势"
+    },
+    "features": {
+      "tarot": {
+        "title": "AI塔罗解读",
+        "description": "提出任何问题，获得由神秘语言模型驱动的三牌阵详细解读。",
+        "action": "开始解读"
+      },
+      "experts": {
+        "title": "专家咨询",
+        "description": "当AI洞见激发更多问题时，与真正的占星师进行深度交流。",
+        "action": "预约专家"
+      },
+      "shop": {
+        "title": "精选神器",
+        "description": "探索我们的「丝」系列——道德采购的水晶、塔罗牌和仪式工具。",
+        "action": "进入商店"
+      }
+    },
+    "products": {
+      "sectionLabel": "丝之收藏",
+      "sectionTitle": "旅途中的神器",
+      "viewAll": "查看全部商品",
+      "addToCart": "加入购物车",
+      "loading": "召唤神器中..."
+    }
+  },
+  "birthChart": {
+    "title": "星盘分析",
+    "subtitle": "输入你的出生信息，揭示你的宇宙蓝图",
+    "form": {
+      "name": "姓名",
+      "birthDate": "出生日期",
+      "birthTime": "出生时间",
+      "birthPlace": "出生地点",
+      "generate": "生成星盘"
+    }
+  },
+  "tarot": {
+    "daily": {
+      "title": "每日一卡",
+      "subtitle": "抽取今日指引卡牌",
+      "draw": "抽牌",
+      "newCard": "再抽一张"
+    },
+    "spread": {
+      "title": "AI塔罗牌阵",
+      "subtitle": "提出问题，获得个性化解读",
+      "placeholder": "你想获得什么方面的指引？",
+      "generate": "生成解读"
+    }
+  },
+  "shop": {
+    "title": "宇宙商店",
+    "subtitle": "精选灵性健康产品",
+    "filter": {
+      "all": "全部商品",
+      "crystals": "水晶",
+      "candles": "蜡烛",
+      "tools": "工具",
+      "books": "书籍"
+    },
+    "addToCart": "加入购物车",
+    "outOfStock": "缺货",
+    "viewDetails": "查看详情"
+  },
+  "cart": {
+    "title": "宇宙购物车",
+    "empty": "购物车是空的",
+    "explore": "探索商品",
+    "subtotal": "小计",
+    "shipping": "运费",
+    "shippingNote": "结算时计算",
+    "total": "总计",
+    "checkout": "使用Stripe结账",
+    "processing": "处理中...",
+    "securedBy": "由Stripe安全保障"
+  },
+  "auth": {
+    "welcome": "欢迎回来",
+    "createAccount": "创建账号",
+    "email": "邮箱",
+    "password": "密码",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "还没有账号？",
+    "hasAccount": "已有账号？",
+    "signInWith": "使用{provider}登录",
+    "orContinueWith": "或使用以下方式"
+  },
+  "dashboard": {
+    "welcome": "欢迎，{name}",
+    "recentReadings": "最近的解读",
+    "quickActions": "快捷操作",
+    "viewAll": "查看全部"
+  },
+  "footer": {
+    "copyright": "版权所有",
+    "explore": "探索",
+    "support": "支持",
+    "legal": "法律",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "contact": "联系我们",
+    "faq": "常见问题"
+  },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
+  "language": {
+    "select": "选择语言",
+    "en": "英文",
+    "zh": "中文"
+  },
+  "settings": {
+    "title": "账户设置",
+    "subtitle": "管理你的偏好和隐私设置。",
+    "backToDashboard": "返回个人中心",
+    "appearance": {
+      "title": "外观",
+      "description": "选择你喜欢的视觉主题。",
+      "theme": "主题"
+    },
+    "language": {
+      "title": "语言",
+      "description": "选择你偏好的语言。"
+    },
+    "performance": {
+      "title": "视觉质量",
+      "description": "调整3D背景质量以在旧设备上获得更好的性能。",
+      "high": "高",
+      "highDesc": "完整效果 (5000颗星)",
+      "medium": "中",
+      "mediumDesc": "减少效果 (2000颗星)",
+      "low": "低",
+      "lowDesc": "最小效果 (500颗星)",
+      "off": "关闭",
+      "offDesc": "仅静态背景"
+    },
+    "marketing": {
+      "title": "营销通讯",
+      "description": "接收关于新神器和天象事件的更新。"
+    },
+    "save": "保存更改",
+    "saving": "保存中..."
+  },
+  "accessibility": {
+    "skipToContent": "跳到主要内容",
+    "openMenu": "打开菜单",
+    "closeMenu": "关闭菜单",
+    "toggleTheme": "切换主题"
+  }
+}

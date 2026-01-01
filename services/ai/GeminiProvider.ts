@@ -22,6 +22,17 @@ import { PROMPTS, buildPrompt } from "./prompts";
 // ============ 配置 ============
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const IS_PRODUCTION = import.meta.env.PROD;
+
+// SECURITY: Warn if API key is configured in production
+// Direct frontend API usage is only safe in development
+if (IS_PRODUCTION && API_KEY) {
+  console.error(
+    "[GeminiProvider] SECURITY WARNING: Direct Gemini API usage is disabled in production. " +
+    "API keys should not be exposed in frontend code. " +
+    "Please use VITE_AI_PROVIDER=supabase to route requests through Edge Functions."
+  );
+}
 
 /** 默认配置 */
 const DEFAULT_CONFIG: AIRequestConfig = {
@@ -44,9 +55,15 @@ class GeminiProviderImpl implements IAIService {
   private lastConfigFetch = 0;
 
   constructor() {
-    this.genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
+    // SECURITY: Only initialize in development with API key
+    // In production, this provider should not be used directly
+    const canUseDirect = !IS_PRODUCTION && API_KEY;
+    this.genAI = canUseDirect ? new GoogleGenerativeAI(API_KEY) : null;
 
-    if (!API_KEY) {
+    if (IS_PRODUCTION && API_KEY) {
+      // Already logged at module level, genAI is null so requests will use mock
+      console.warn("[GeminiProvider] Production mode: Direct API disabled, using Mock mode.");
+    } else if (!API_KEY) {
       console.warn("[GeminiProvider] API Key 未配置，将使用 Mock 模式。");
     }
   }

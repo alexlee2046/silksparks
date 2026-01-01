@@ -8,6 +8,10 @@ import { supabase } from "../services/supabase";
 import toast from "react-hot-toast";
 import { ProductCard } from "./Home";
 import { useCart } from "../context/CartContext";
+import { useTheme, type Theme } from "../context/ThemeContext";
+import { useLanguage, LOCALE_NAMES, type Locale } from "../context/LanguageContext";
+import { usePerformance, type QualityLevel } from "../context/PerformanceContext";
+import * as m from "../src/paraglide/messages";
 
 export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
   const { user, signOut } = useUser();
@@ -20,11 +24,11 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-row bg-background-light dark:bg-background-dark">
+    <div className="flex min-h-screen w-full flex-row bg-background">
       <motion.aside
         initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="hidden lg:flex w-72 flex-col justify-between border-r border-white/5 bg-background-dark p-6 sticky top-0 h-screen overflow-y-auto z-10"
+        className="hidden lg:flex w-72 flex-col justify-between border-r border-surface-border bg-surface p-6 sticky top-0 h-screen overflow-y-auto z-10"
       >
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-3 px-2">
@@ -33,22 +37,22 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
                 auto_awesome
               </span>
             </div>
-            <span className="text-xl font-bold tracking-tight text-white font-display">
+            <span className="text-xl font-bold tracking-tight text-foreground font-display">
               Silk & Spark
             </span>
           </div>
 
           <GlassCard
-            className="flex flex-col gap-4 p-4 border-white/5"
+            className="flex flex-col gap-4 p-4 border-surface-border"
             intensity="low"
           >
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-cover bg-center ring-2 ring-primary/20 flex items-center justify-center bg-surface-border text-white font-bold text-lg relative overflow-hidden">
+              <div className="h-12 w-12 rounded-full bg-cover bg-center ring-2 ring-primary/20 flex items-center justify-center bg-surface-border text-foreground font-bold text-lg relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-tr from-primary to-amber-500 opacity-20"></div>
                 {userName.charAt(0)}
               </div>
               <div className="flex flex-col">
-                <h3 className="text-sm font-bold text-white">{userName}</h3>
+                <h3 className="text-sm font-bold text-foreground">{userName}</h3>
                 <span className="text-xs text-primary font-medium tracking-wide flex items-center gap-1">
                   Premium Member{" "}
                   <span className="material-symbols-outlined text-[10px]">
@@ -59,12 +63,12 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
             </div>
             <button
               onClick={() => setScreen(Screen.BIRTH_CHART)}
-              className="flex items-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 px-3 py-2 transition-colors group w-full border border-white/5"
+              className="flex items-center gap-2 rounded-lg bg-surface-border/30 hover:bg-surface-border/50 px-3 py-2 transition-colors group w-full border border-surface-border"
             >
               <span className="material-symbols-outlined text-[18px] text-primary group-hover:rotate-45 transition-transform">
                 star
               </span>
-              <span className="text-xs font-medium text-white">
+              <span className="text-xs font-medium text-foreground">
                 Unlock Full Chart
               </span>
             </button>
@@ -109,13 +113,13 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
         </div>
       </motion.aside>
 
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-background-dark p-4 md:p-8 lg:p-12 relative">
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-background p-4 md:p-8 lg:p-12 relative">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none"></div>
         <div className="flex flex-col gap-1 mb-10 relative z-10">
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-white text-3xl md:text-4xl font-bold tracking-tight font-display"
+            className="text-foreground text-3xl md:text-4xl font-bold tracking-tight font-display"
           >
             My Cosmic Space
           </motion.h1>
@@ -145,34 +149,34 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative z-10 h-full">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col">
-                    <span className="text-white/60 text-xs uppercase tracking-widest font-medium mb-1">
+                    <span className="text-text-muted text-xs uppercase tracking-widest font-medium mb-1">
                       Current Tier
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary text-xl">
                         verified
                       </span>
-                      <span className="text-2xl text-white font-bold font-display">
+                      <span className="text-2xl text-foreground font-bold font-display">
                         {user.tier || "Star Walker"}
                       </span>
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-white/60 text-xs uppercase tracking-widest font-medium mb-1">
+                    <span className="text-text-muted text-xs uppercase tracking-widest font-medium mb-1">
                       Spark Points
                     </span>
                     <span className="text-3xl text-primary font-bold font-display">
                       {user.points?.toLocaleString() || 0}
                     </span>
                   </div>
-                  <p className="text-white/60 text-sm max-w-sm">
+                  <p className="text-text-muted text-sm max-w-sm">
                     You are{" "}
-                    <span className="text-white font-bold">
+                    <span className="text-foreground font-bold">
                       {1000 - (user.points || 0)} points
                     </span>{" "}
                     away from ascending to the "Nebula Navigator" tier.
                   </p>
-                  <div className="w-full bg-white/10 rounded-full h-2 mt-4">
+                  <div className="w-full bg-surface-border rounded-full h-2 mt-4">
                     <div
                       className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-full transition-all duration-1000"
                       style={{
@@ -180,7 +184,7 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
                       }}
                     ></div>
                   </div>
-                  <div className="flex justify-between text-xs text-white/40 mt-2 font-medium">
+                  <div className="flex justify-between text-xs text-text-muted mt-2 font-medium">
                     <span>{user.points || 0} / 1000 to next tier</span>
                     <span>Nebula Navigator</span>
                   </div>
@@ -210,31 +214,31 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
             className="md:col-span-12 lg:col-span-4"
           >
             <GlassCard
-              className="p-8 h-full flex flex-col justify-between bg-gradient-to-br from-surface-dark to-black border-white/5"
+              className="p-8 h-full flex flex-col justify-between bg-gradient-to-br from-surface to-background border-surface-border"
               hoverEffect
               interactive
             >
               <div>
                 <div className="flex justify-between items-start mb-6">
-                  <h3 className="text-white font-bold text-lg uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-foreground font-bold text-lg uppercase tracking-wider flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary">
                       auto_awesome
                     </span>{" "}
                     Daily Insight
                   </h3>
                 </div>
-                <p className="text-white/90 text-lg leading-relaxed italic font-light">
+                <p className="text-foreground/90 text-lg leading-relaxed italic font-light">
                   "The alignment today favors bold communication. Speak your
                   truth, but temper it with empathy."
                 </p>
               </div>
-              <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-4">
-                <span className="text-xs text-white/40 font-bold uppercase tracking-widest">
+              <div className="mt-8 flex items-center justify-between border-t border-surface-border pt-4">
+                <span className="text-xs text-text-muted font-bold uppercase tracking-widest">
                   TODAY
                 </span>
                 <button
                   onClick={() => setScreen(Screen.REPORT)}
-                  className="text-primary text-sm font-bold hover:text-white flex items-center gap-1 transition-colors"
+                  className="text-primary text-sm font-bold hover:text-foreground flex items-center gap-1 transition-colors"
                 >
                   Read Full{" "}
                   <span className="material-symbols-outlined text-[16px]">
@@ -268,10 +272,10 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
 
 export const Orders: React.FC<NavProps> = ({ setScreen }) => {
   return (
-    <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
+    <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <button
         onClick={() => setScreen(Screen.USER_DASHBOARD)}
-        className="text-white/50 hover:text-white mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
+        className="text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
           arrow_back
@@ -284,7 +288,7 @@ export const Orders: React.FC<NavProps> = ({ setScreen }) => {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-2 mb-10"
       >
-        <h1 className="text-3xl md:text-4xl font-light font-display text-white">
+        <h1 className="text-3xl md:text-4xl font-light font-display text-foreground">
           Order <span className="font-bold text-primary">History</span>
         </h1>
         <p className="text-text-muted font-light">
@@ -292,8 +296,8 @@ export const Orders: React.FC<NavProps> = ({ setScreen }) => {
         </p>
       </motion.div>
 
-      <GlassCard className="text-center py-20 border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center">
-        <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center text-white/20 mb-4">
+      <GlassCard className="text-center py-20 border-dashed border-surface-border bg-transparent flex flex-col items-center justify-center">
+        <div className="h-16 w-16 rounded-full bg-surface-border/30 flex items-center justify-center text-text-muted mb-4">
           <span className="material-symbols-outlined text-3xl">
             local_shipping
           </span>
@@ -301,7 +305,7 @@ export const Orders: React.FC<NavProps> = ({ setScreen }) => {
         <p className="text-text-muted">No orders placed yet.</p>
         <button
           onClick={() => setScreen(Screen.SHOP_LIST)}
-          className="text-primary mt-4 hover:text-white font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-white transition-all"
+          className="text-primary mt-4 hover:text-foreground font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-foreground transition-all"
         >
           Browse Shop
         </button>
@@ -314,7 +318,7 @@ function NavBtn({ icon, label, active, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300 ${active ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(244,192,37,0.1)]" : "text-text-muted hover:bg-white/5 hover:text-white border border-transparent"}`}
+      className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300 ${active ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(244,192,37,0.1)]" : "text-text-muted hover:bg-surface-border/30 hover:text-foreground border border-transparent"}`}
     >
       <span className="material-symbols-outlined text-[20px]">{icon}</span>
       <span className="text-sm font-bold">{label}</span>
@@ -335,12 +339,12 @@ export const Archives: React.FC<NavProps> = ({ setScreen }) => {
   };
 
   return (
-    <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
+    <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
 
       <button
         onClick={() => setScreen(Screen.USER_DASHBOARD)}
-        className="relative z-10 text-white/50 hover:text-white mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
+        className="relative z-10 text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
           arrow_back
@@ -353,13 +357,13 @@ export const Archives: React.FC<NavProps> = ({ setScreen }) => {
         animate={{ opacity: 1, y: 0 }}
         className="relative z-10 flex flex-col gap-3 mb-10 text-center md:text-left"
       >
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-primary w-fit mx-auto md:mx-0">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-border/30 border border-surface-border text-xs font-bold uppercase tracking-widest text-primary w-fit mx-auto md:mx-0">
           <span className="material-symbols-outlined text-[14px]">
             history_edu
           </span>{" "}
           Journal
         </div>
-        <h1 className="text-4xl md:text-5xl font-light font-display text-white">
+        <h1 className="text-4xl md:text-5xl font-light font-display text-foreground">
           Digital{" "}
           <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-200">
             Archives
@@ -371,13 +375,13 @@ export const Archives: React.FC<NavProps> = ({ setScreen }) => {
       </motion.div>
 
       {archives.length === 0 ? (
-        <GlassCard className="text-center py-24 flex flex-col items-center justify-center gap-4 border-dashed border-white/10 bg-transparent">
-          <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center text-white/20 mb-2">
+        <GlassCard className="text-center py-24 flex flex-col items-center justify-center gap-4 border-dashed border-surface-border bg-transparent">
+          <div className="h-20 w-20 rounded-full bg-surface-border/30 flex items-center justify-center text-text-muted mb-2">
             <span className="material-symbols-outlined text-4xl">
               auto_stories
             </span>
           </div>
-          <h3 className="text-white font-bold text-lg">
+          <h3 className="text-foreground font-bold text-lg">
             Your spiritual journal is empty
           </h3>
           <p className="text-text-muted max-w-sm">
@@ -417,24 +421,24 @@ const ArchiveCard = ({ item }: { item: any; key?: any }) => {
       <GlassCard
         hoverEffect
         interactive
-        className="flex flex-col h-full overflow-hidden p-0 border-white/10 group"
+        className="flex flex-col h-full overflow-hidden p-0 border-surface-border group"
       >
         <div
           className="h-48 bg-cover bg-center relative group-hover:scale-105 transition-transform duration-700"
           style={{ backgroundImage: `url('${bgImage}')` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-transparent to-transparent opacity-90"></div>
-          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-lg">
+          <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
+          <div className="absolute top-4 left-4 bg-surface/80 backdrop-blur-md px-3 py-1 rounded-full border border-surface-border flex items-center gap-2 shadow-lg">
             <span className="material-symbols-outlined text-primary text-[14px]">
               {item.type === "Tarot" ? "style" : "auto_awesome"}
             </span>
-            <span className="text-[10px] font-bold text-white uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">
               {item.type}
             </span>
           </div>
         </div>
-        <div className="p-6 flex flex-col flex-1 relative bg-surface-dark border-t border-white/5">
-          <h3 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors line-clamp-2 font-display">
+        <div className="p-6 flex flex-col flex-1 relative bg-surface border-t border-surface-border">
+          <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2 font-display">
             {item.title}
           </h3>
           <p className="text-xs text-text-muted mb-4 font-bold uppercase tracking-wider flex items-center gap-1">
@@ -446,8 +450,8 @@ const ArchiveCard = ({ item }: { item: any; key?: any }) => {
           <p className="text-sm text-text-muted mb-6 line-clamp-3 leading-relaxed font-light">
             {item.summary}
           </p>
-          <div className="mt-auto pt-4 border-t border-white/5">
-            <button className="w-full text-white text-sm font-bold flex items-center justify-between group/btn hover:text-primary transition-colors">
+          <div className="mt-auto pt-4 border-t border-surface-border">
+            <button className="w-full text-foreground text-sm font-bold flex items-center justify-between group/btn hover:text-primary transition-colors">
               Read Full Entry
               <span className="material-symbols-outlined text-[18px] group-hover/btn:translate-x-1 transition-transform">
                 arrow_forward
@@ -462,6 +466,9 @@ const ArchiveCard = ({ item }: { item: any; key?: any }) => {
 
 export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
   const { user, updateUser } = useUser();
+  const { theme, setTheme } = useTheme();
+  const { locale, setLocale, locales } = useLanguage();
+  const { qualityLevel, setQualityLevel } = usePerformance();
   const [marketing, setMarketing] = React.useState(
     user.preferences?.marketingConsent || false,
   );
@@ -473,19 +480,32 @@ export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
       preferences: { ...user.preferences, marketingConsent: marketing },
     });
     setLoading(false);
-    toast.success("Settings saved!");
+    toast.success(m["settings.save"]());
   };
 
+  const themeOptions: { value: Theme; label: string; icon: string }[] = [
+    { value: "light", label: m["theme.light"](), icon: "light_mode" },
+    { value: "dark", label: m["theme.dark"](), icon: "dark_mode" },
+    { value: "system", label: m["theme.system"](), icon: "devices" },
+  ];
+
+  const qualityOptions: { value: QualityLevel; label: string; desc: string }[] = [
+    { value: "high", label: m["settings.performance.high"](), desc: m["settings.performance.highDesc"]() },
+    { value: "medium", label: m["settings.performance.medium"](), desc: m["settings.performance.mediumDesc"]() },
+    { value: "low", label: m["settings.performance.low"](), desc: m["settings.performance.lowDesc"]() },
+    { value: "off", label: m["settings.performance.off"](), desc: m["settings.performance.offDesc"]() },
+  ];
+
   return (
-    <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
+    <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <button
         onClick={() => setScreen(Screen.USER_DASHBOARD)}
-        className="text-white/50 hover:text-white mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
+        className="text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
           arrow_back
         </span>{" "}
-        Back to Dashboard
+        {m["settings.backToDashboard"]()}
       </button>
 
       <motion.div
@@ -493,23 +513,112 @@ export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-2 mb-10"
       >
-        <h1 className="text-3xl md:text-4xl font-light font-display text-white">
-          Account <span className="font-bold text-primary">Settings</span>
+        <h1 className="text-3xl md:text-4xl font-light font-display text-foreground">
+          {m["settings.title"]()}
         </h1>
         <p className="text-text-muted font-light">
-          Manage your preferences and privacy.
+          {m["settings.subtitle"]()}
         </p>
       </motion.div>
 
-      <GlassCard className="max-w-2xl p-8 border-white/10">
-        <div className="space-y-6">
+      <div className="max-w-2xl space-y-6">
+        {/* Theme Settings */}
+        <GlassCard className="p-6 border-surface-border">
+          <div className="mb-4">
+            <h3 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary">palette</span>
+              {m["settings.appearance.title"]()}
+            </h3>
+            <p className="text-text-muted text-sm mt-1">
+              {m["settings.appearance.description"]()}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            {themeOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setTheme(opt.value)}
+                className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                  theme === opt.value
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "bg-surface-border/30 border-surface-border text-text-muted hover:border-foreground/30"
+                }`}
+              >
+                <span className="material-symbols-outlined text-2xl">{opt.icon}</span>
+                <span className="text-sm font-medium">{opt.label}</span>
+              </button>
+            ))}
+          </div>
+        </GlassCard>
+
+        {/* Language Settings */}
+        <GlassCard className="p-6 border-surface-border">
+          <div className="mb-4">
+            <h3 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary">translate</span>
+              {m["settings.language.title"]()}
+            </h3>
+            <p className="text-text-muted text-sm mt-1">
+              {m["settings.language.description"]()}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            {locales.map((loc) => (
+              <button
+                key={loc}
+                onClick={() => setLocale(loc as Locale)}
+                className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                  locale === loc
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "bg-surface-border/30 border-surface-border text-text-muted hover:border-foreground/30"
+                }`}
+              >
+                <span className="text-2xl">{loc === "en" ? "🇺🇸" : "🇨🇳"}</span>
+                <span className="text-sm font-medium">{LOCALE_NAMES[loc as Locale].native}</span>
+              </button>
+            ))}
+          </div>
+        </GlassCard>
+
+        {/* Performance Settings */}
+        <GlassCard className="p-6 border-surface-border">
+          <div className="mb-4">
+            <h3 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary">speed</span>
+              {m["settings.performance.title"]()}
+            </h3>
+            <p className="text-text-muted text-sm mt-1">
+              {m["settings.performance.description"]()}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {qualityOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setQualityLevel(opt.value)}
+                className={`flex flex-col items-center gap-1 p-4 rounded-xl border transition-all ${
+                  qualityLevel === opt.value
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "bg-surface-border/30 border-surface-border text-text-muted hover:border-foreground/30"
+                }`}
+              >
+                <span className="text-sm font-bold">{opt.label}</span>
+                <span className="text-[10px] text-center opacity-60">{opt.desc}</span>
+              </button>
+            ))}
+          </div>
+        </GlassCard>
+
+        {/* Marketing Settings */}
+        <GlassCard className="p-6 border-surface-border">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-white font-bold text-lg">
-                Marketing Communications
+              <h3 className="text-foreground font-bold text-lg flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">mail</span>
+                {m["settings.marketing.title"]()}
               </h3>
               <p className="text-text-muted text-sm mt-1">
-                Receive updates about new artifacts and celestial events.
+                {m["settings.marketing.description"]()}
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -519,17 +628,18 @@ export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
                 checked={marketing}
                 onChange={(e) => setMarketing(e.target.checked)}
               />
-              <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              <div className="w-11 h-6 bg-surface-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
+        </GlassCard>
 
-          <div className="pt-6 border-t border-white/10">
-            <GlowButton onClick={handleSave} disabled={loading}>
-              {loading ? "Saving..." : "Save Changes"}
-            </GlowButton>
-          </div>
+        {/* Save Button */}
+        <div className="pt-4">
+          <GlowButton onClick={handleSave} disabled={loading}>
+            {loading ? m["settings.saving"]() : m["settings.save"]()}
+          </GlowButton>
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 };
@@ -569,10 +679,10 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
   }, [user.id]);
 
   return (
-    <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
+    <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <button
         onClick={() => setScreen(Screen.USER_DASHBOARD)}
-        className="text-white/50 hover:text-white mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
+        className="text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
           arrow_back
@@ -585,7 +695,7 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-2 mb-10"
       >
-        <h1 className="text-3xl md:text-4xl font-light font-display text-white">
+        <h1 className="text-3xl md:text-4xl font-light font-display text-foreground">
           My <span className="font-bold text-primary">Consultations</span>
         </h1>
         <p className="text-text-muted font-light">
@@ -594,8 +704,8 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
       </motion.div>
 
       {consultations.length === 0 ? (
-        <GlassCard className="text-center py-20 border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center">
-          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center text-white/20 mb-4">
+        <GlassCard className="text-center py-20 border-dashed border-surface-border bg-transparent flex flex-col items-center justify-center">
+          <div className="h-16 w-16 rounded-full bg-surface-border/30 flex items-center justify-center text-text-muted mb-4">
             <span className="material-symbols-outlined text-3xl">
               calendar_month
             </span>
@@ -603,7 +713,7 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
           <p className="text-text-muted">No consultations booked yet.</p>
           <button
             onClick={() => setScreen(Screen.BOOKING)}
-            className="text-primary mt-4 hover:text-white font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-white transition-all"
+            className="text-primary mt-4 hover:text-foreground font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-foreground transition-all"
           >
             Book a Session
           </button>
@@ -613,14 +723,14 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
           {consultations.map((c) => (
             <GlassCard
               key={c.id}
-              className="p-6 border-white/10 flex flex-col md:flex-row gap-6 items-start md:items-center"
+              className="p-6 border-surface-border flex flex-col md:flex-row gap-6 items-start md:items-center"
             >
               <div
-                className="h-16 w-16 rounded-full bg-cover bg-center border border-white/10"
+                className="h-16 w-16 rounded-full bg-cover bg-center border border-surface-border"
                 style={{ backgroundImage: `url('${c.experts?.image_url}')` }}
               ></div>
               <div className="flex-1">
-                <h3 className="text-white font-bold text-lg">
+                <h3 className="text-foreground font-bold text-lg">
                   {c.consultations?.name || "Consultation"} with{" "}
                   {c.experts?.name}
                 </h3>
@@ -641,7 +751,7 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
                   </a>
                 )}
               </div>
-              <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-white/60">
+              <div className="px-3 py-1 rounded-full bg-surface-border/30 border border-surface-border text-xs font-bold uppercase tracking-widest text-text-muted">
                 {c.status}
               </div>
             </GlassCard>
@@ -682,10 +792,10 @@ const Favorites: React.FC<NavProps> = ({ setScreen }) => {
   }, [user.favorites]);
 
   return (
-    <div className="flex-1 p-4 md:p-10 bg-background-dark min-h-screen relative">
+    <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <button
         onClick={() => setScreen(Screen.USER_DASHBOARD)}
-        className="text-white/50 hover:text-white mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
+        className="text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
           arrow_back
@@ -698,21 +808,21 @@ const Favorites: React.FC<NavProps> = ({ setScreen }) => {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-2 mb-10"
       >
-        <h1 className="text-3xl md:text-4xl font-light font-display text-white">
+        <h1 className="text-3xl md:text-4xl font-light font-display text-foreground">
           My <span className="font-bold text-primary">Favorites</span>
         </h1>
         <p className="text-text-muted font-light">Saved artifacts and tools.</p>
       </motion.div>
 
       {products.length === 0 && !loading ? (
-        <GlassCard className="text-center py-20 border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center">
-          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center text-white/20 mb-4">
+        <GlassCard className="text-center py-20 border-dashed border-surface-border bg-transparent flex flex-col items-center justify-center">
+          <div className="h-16 w-16 rounded-full bg-surface-border/30 flex items-center justify-center text-text-muted mb-4">
             <span className="material-symbols-outlined text-3xl">favorite</span>
           </div>
           <p className="text-text-muted">No favorites yet.</p>
           <button
             onClick={() => setScreen(Screen.SHOP_LIST)}
-            className="text-primary mt-4 hover:text-white font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-white transition-all"
+            className="text-primary mt-4 hover:text-foreground font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-foreground transition-all"
           >
             Browse Shop
           </button>
@@ -763,16 +873,16 @@ function DashboardCard({
       className="md:col-span-6 lg:col-span-4 cursor-pointer"
       onClick={onClick}
     >
-      <GlassCard className="p-6 h-full flex flex-col justify-between border-white/5 hover:border-primary/30 transition-colors group">
+      <GlassCard className="p-6 h-full flex flex-col justify-between border-surface-border hover:border-primary/30 transition-colors group">
         <div className="flex justify-between items-start mb-4">
           <div
             className={`p-3 rounded-xl bg-gradient-to-br ${color} bg-opacity-10`}
           >
-            <span className="material-symbols-outlined text-white text-xl">
+            <span className="material-symbols-outlined text-foreground text-xl">
               {icon}
             </span>
           </div>
-          <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors">
+          <div className="h-8 w-8 rounded-full bg-surface-border/30 flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors">
             <span className="material-symbols-outlined text-sm">
               arrow_forward
             </span>
@@ -783,10 +893,10 @@ function DashboardCard({
             {title}
           </h3>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-white font-display">
+            <span className="text-3xl font-bold text-foreground font-display">
               {value}
             </span>
-            <span className="text-xs text-white/40">{label}</span>
+            <span className="text-xs text-text-muted">{label}</span>
           </div>
         </div>
       </GlassCard>

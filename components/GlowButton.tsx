@@ -29,10 +29,10 @@ export const GlowButton: React.FC<GlowButtonProps> = ({
     primary:
       "bg-primary text-background-dark hover:bg-white hover:text-black shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]",
     secondary:
-      "bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/30 backdrop-blur-md",
-    ghost: "bg-transparent text-text-muted hover:text-white hover:bg-white/5",
+      "bg-surface-border/30 border border-surface-border text-foreground hover:bg-surface-border/30 hover:border-white/30 backdrop-blur-md",
+    ghost: "bg-transparent text-text-muted hover:text-foreground hover:bg-surface-border/30",
     cosmic:
-      "bg-gradient-to-r from-primary via-amber-400 to-primary bg-[length:200%_auto] animate-gradient text-background-dark shadow-[0_0_20px_rgba(244,192,37,0.5)] border border-white/20",
+      "bg-gradient-to-r from-primary via-amber-400 to-primary bg-[length:200%_auto] animate-gradient text-background-dark shadow-[0_0_20px_rgba(244,192,37,0.5)] border border-surface-border",
   };
 
   return (

@@ -1,5 +1,27 @@
+/**
+ * UserContext - 向后兼容的用户状态管理
+ *
+ * @deprecated 此 Context 已拆分为更小的单一职责 Context:
+ * - AuthContext: 认证状态 (session, signOut)
+ * - ProfileContext: 用户资料 (name, email, birthData, points, tier, isAdmin)
+ *
+ * 新代码请使用:
+ * ```ts
+ * import { useAuth } from "./context/AuthContext";
+ * import { useProfile } from "./context/ProfileContext";
+ *
+ * const { session, signOut } = useAuth();
+ * const { profile, updateBirthData } = useProfile();
+ * ```
+ *
+ * 此文件保留以确保向后兼容，将在未来版本移除。
+ */
+
 import React, { createContext, useContext, useState, useEffect } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../services/supabase";
+import { invalidateOrdersCache } from "../hooks/useOrders";
+import { invalidateArchivesCache } from "../hooks/useArchives";
 
 export interface UserLocation {
   name: string;
@@ -64,7 +86,7 @@ export interface UserProfile {
 
 interface UserContextType {
   user: UserProfile;
-  session: any;
+  session: Session | null;
   loading: boolean;
   updateUser: (updates: Partial<UserProfile>) => Promise<void>;
   updateBirthData: (data: Partial<UserBirthData>) => Promise<void>;
@@ -74,6 +96,7 @@ interface UserContextType {
   signOut: () => Promise<void>;
   isBirthDataComplete: boolean;
   isAdmin: boolean; // Direct access helper
+  setLocalUser?: React.Dispatch<React.SetStateAction<UserProfile>>; // For local state updates without auth
 }
 
 const defaultUser: UserProfile = {
@@ -101,7 +124,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<UserProfile>(defaultUser);
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   // 1. 监听 Auth 状态变化
@@ -127,7 +150,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => subscription.unsubscribe();
   }, []);
 
-  // 2. 从数据库获取用户资料
+  // 2. 从数据库获取用户资料 (只加载核心 profile，其他数据延迟加载)
   const fetchUserProfile = async (userId: string) => {
     try {
       setLoading(true);
@@ -174,25 +197,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (pError) throw pError;
 
-      // 获取 archives
-      const { data: archives } = await supabase
-        .from("archives")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
-
-      // 获取 orders
-      const { data: orders } = await supabase
-        .from("orders")
-        .select("*, order_items(*)")
-        .eq("user_id", userId);
-
-      // 获取 favorites
-      const { data: favorites } = await supabase
-        .from("favorites")
-        .select("*")
-        .eq("user_id", userId);
-
+      // 只加载 profile 数据，archives/orders/favorites 由专用 hooks 延迟加载
       setUser({
         id: userId,
         name: profile?.full_name || "",
@@ -205,39 +210,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
             : null,
         },
         preferences: profile?.preferences || { marketingConsent: false },
-        archives:
-          archives?.map((a) => ({
-            id: a.id,
-            type: a.type,
-            date: new Date(a.created_at),
-            title: a.title,
-            summary: a.summary,
-            content: a.content,
-            image: a.image_url,
-          })) || [],
-        orders:
-          orders?.map((o) => ({
-            id: o.id,
-            date: new Date(o.created_at),
-            items:
-              o.order_items?.map((oi: any) => ({
-                name: oi.name,
-                price: oi.price,
-                type: oi.type,
-                status: o.status,
-              })) || [],
-            total: o.total,
-            status: o.status as any,
-          })) || [],
+        // 这些字段现在由 useArchives/useOrders/useFavorites hooks 管理
+        archives: [],
+        orders: [],
+        favorites: [],
         points: profile?.points || 0,
         tier: profile?.tier || "Star Walker",
-        isAdmin: !!profile?.is_admin, // Populate
-        favorites:
-          favorites?.map((f) => ({
-            id: f.id,
-            product_id: f.product_id,
-            created_at: new Date(f.created_at),
-          })) || [],
+        isAdmin: !!profile?.is_admin,
       });
     } catch (error) {
       console.error("Error fetching user profile:", error);
@@ -346,7 +325,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
     }
-    fetchUserProfile(session.user.id); // 刷新
+    // 失效订单缓存，下次使用 useOrders() 时会重新加载
+    invalidateOrdersCache();
   };
 
   const addArchive = async (item: ArchiveItem) => {
@@ -360,63 +340,34 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       image_url: item.image,
     });
 
-    if (!error) fetchUserProfile(session.user.id);
-  };
-
-  const toggleFavorite = async (productId: number) => {
-    if (!session) return;
-
-    const existing = user.favorites.find((f) => f.product_id === productId);
-
-    if (existing) {
-      // Remove
-      const { error } = await supabase
-        .from("favorites")
-        .delete()
-        .eq("id", existing.id);
-
-      if (!error) {
-        setUser((prev) => ({
-          ...prev,
-          favorites: prev.favorites.filter((f) => f.id !== existing.id),
-        }));
-      }
-    } else {
-      // Add
-      const { data, error } = await supabase
-        .from("favorites")
-        .insert({
-          user_id: session.user.id,
-          product_id: productId,
-        })
-        .select()
-        .single();
-
-      if (!error && data) {
-        setUser((prev) => ({
-          ...prev,
-          favorites: [
-            ...prev.favorites,
-            {
-              id: data.id,
-              product_id: data.product_id,
-              created_at: new Date(data.created_at),
-            },
-          ],
-        }));
-      }
+    if (!error) {
+      // 失效归档缓存，下次使用 useArchives() 时会重新加载
+      invalidateArchivesCache();
     }
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(defaultUser);
+  /**
+   * @deprecated 使用 useFavorites() hook 替代
+   * 保留此方法仅为向后兼容，内部不执行任何操作
+   */
+  const toggleFavorite = async (_productId: number) => {
+    console.warn(
+      "[UserContext] toggleFavorite is deprecated. Use useFavorites() hook instead.",
+    );
   };
 
+  const signOut = async () => {
+    // Note: Don't manually setUser(defaultUser) here - it's handled by
+    // onAuthStateChange listener when session becomes null.
+    // Calling it here would cause a race condition with the listener.
+    await supabase.auth.signOut();
+  };
+
+  // Location is optional - only name, date and time are required
   const isBirthDataComplete = !!(
     user.name &&
     user.birthData.date &&
-    user.birthData.location
+    user.birthData.time
   );
 
   return (
@@ -433,6 +384,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         signOut,
         isBirthDataComplete,
         isAdmin: user.isAdmin,
+        setLocalUser: setUser,
       }}
     >
       {children}

@@ -149,11 +149,11 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   };
 
   return (
-    <div className="flex-1 w-full max-w-[1440px] mx-auto p-4 lg:p-10 flex flex-col gap-8 bg-background-dark min-h-screen">
+    <div className="flex-1 w-full max-w-[1440px] mx-auto p-4 lg:p-10 flex flex-col gap-8 bg-background min-h-screen">
       {/* Back Button */}
       <button
         onClick={() => setScreen(Screen.HOME)}
-        className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group w-fit"
+        className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group w-fit"
       >
         <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
           arrow_back
@@ -163,7 +163,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative w-full rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center border border-white/10 shadow-2xl"
+        className="relative w-full rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center border border-surface-border shadow-2xl"
       >
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 hover:scale-105"
@@ -177,20 +177,20 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold uppercase tracking-widest text-primary mb-4"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-border/30 backdrop-blur-md border border-surface-border text-xs font-bold uppercase tracking-widest text-primary mb-4"
           >
             <span className="material-symbols-outlined text-[14px]">
               diamond
             </span>{" "}
             Curated Collection
           </motion.div>
-          <h1 className="text-white text-4xl md:text-6xl font-display font-light leading-tight mb-4">
+          <h1 className="text-foreground text-4xl md:text-6xl font-display font-light leading-tight mb-4">
             Curated Tools for{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-200 font-bold">
               Your Journey
             </span>
           </h1>
-          <p className="text-white/80 text-lg font-light max-w-xl mx-auto">
+          <p className="text-text-muted text-lg font-light max-w-xl mx-auto">
             Discover artifacts aligned with your intent, element, and spirit.
             Hand-picked for the modern mystic.
           </p>
@@ -202,10 +202,10 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className="w-full lg:w-72 flex-shrink-0 space-y-8 p-6 rounded-2xl border border-white/5 bg-surface-dark/40 backdrop-blur-xl lg:sticky lg:top-24"
+          className="w-full lg:w-72 flex-shrink-0 space-y-8 p-6 rounded-2xl border border-surface-border bg-surface/40 backdrop-blur-xl lg:sticky lg:top-24"
         >
           <div>
-            <h3 className="text-white text-lg font-bold flex items-center gap-2">
+            <h3 className="text-foreground text-lg font-bold flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">
                 filter_list
               </span>{" "}
@@ -227,7 +227,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
             selectedItems={filters}
             onToggle={toggleFilter}
           />
-          <div className="h-px bg-white/5 w-full"></div>
+          <div className="h-px bg-surface-border w-full"></div>
           <FilterSection
             title="Elements"
             icon="local_fire_department"
@@ -235,7 +235,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
             selectedItems={filters}
             onToggle={toggleFilter}
           />
-          <div className="h-px bg-white/5 w-full"></div>
+          <div className="h-px bg-surface-border w-full"></div>
           <FilterSection
             title="Zodiac"
             icon="star"
@@ -249,7 +249,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
           {/* Recommendations Section */}
           {recs.length > 0 && (
             <div className="mb-12">
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+              <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">
                   auto_awesome
                 </span>
@@ -259,7 +259,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                 {recs.map((p) => (
                   <div
                     key={p.id}
-                    className="group relative bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-primary/30 transition-all cursor-pointer"
+                    className="group relative bg-surface-border/30 border border-surface-border rounded-xl overflow-hidden hover:border-primary/30 transition-all cursor-pointer"
                     onClick={() => {
                       if (setProductId) setProductId(p.id);
                       setScreen(Screen.PRODUCT_DETAIL);
@@ -271,22 +271,22 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                         alt={p.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
-                      <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-primary border border-white/10">
+                      <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-primary border border-surface-border">
                         RECOMMENDED
                       </div>
                     </div>
                     <div className="p-4">
-                      <h3 className="text-white font-bold text-sm truncate">
+                      <h3 className="text-foreground font-bold text-sm truncate">
                         {p.name}
                       </h3>
-                      <p className="text-white/40 text-xs mt-1 truncate">
+                      <p className="text-text-muted text-xs mt-1 truncate">
                         {p.description}
                       </p>
                       <div className="mt-3 flex items-center justify-between">
                         <span className="text-primary font-bold text-sm">
                           ${p.price}
                         </span>
-                        <button className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-primary hover:text-background-dark transition-colors">
+                        <button className="h-6 w-6 rounded-full bg-surface-border/30 flex items-center justify-center text-foreground hover:bg-primary hover:text-background transition-colors">
                           <span className="material-symbols-outlined text-[14px]">
                             arrow_forward
                           </span>
@@ -301,11 +301,11 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
 
           <div className="flex justify-between items-center mb-6">
             <p className="text-text-muted text-sm">
-              <span className="text-white font-bold">{products.length}</span>{" "}
+              <span className="text-foreground font-bold">{products.length}</span>{" "}
               artifacts found
             </p>
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-surface-dark/50 border border-white/10 rounded-full text-sm text-white hover:bg-white/5 transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-surface/50 border border-surface-border rounded-full text-sm text-foreground hover:bg-surface-border/30 transition-colors">
                 <span>Sort: {sortOrder}</span>
                 <span className="material-symbols-outlined text-[18px]">
                   expand_more
@@ -316,7 +316,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
 
           <motion.div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {loading ? (
-              <div className="col-span-full py-20 text-center text-white/20 tracking-widest uppercase">
+              <div className="col-span-full py-20 text-center text-text-muted tracking-widest uppercase">
                 Summoning mystical artifacts...
               </div>
             ) : (
@@ -353,7 +353,7 @@ const FilterSection = ({
 }: any) => (
   <div className="space-y-4">
     <button className="flex items-center justify-between w-full group">
-      <div className="flex items-center gap-3 text-white font-medium text-sm">
+      <div className="flex items-center gap-3 text-foreground font-medium text-sm">
         <span
           className={`material-symbols-outlined text-primary text-[20px] ${items ? "fill" : ""}`}
         >
@@ -361,7 +361,7 @@ const FilterSection = ({
         </span>{" "}
         {title}
       </div>
-      <span className="material-symbols-outlined text-text-muted text-[20px] group-hover:text-white transition-colors">
+      <span className="material-symbols-outlined text-text-muted text-[20px] group-hover:text-foreground transition-colors">
         expand_more
       </span>
     </button>
@@ -375,7 +375,7 @@ const FilterSection = ({
             <div className="relative flex items-center">
               <input
                 type="checkbox"
-                className="peer appearance-none h-4 w-4 border border-white/20 rounded bg-white/5 checked:bg-primary checked:border-primary transition-all cursor-pointer"
+                className="peer appearance-none h-4 w-4 border border-surface-border rounded bg-surface-border/30 checked:bg-primary checked:border-primary transition-all cursor-pointer"
                 checked={selectedItems?.includes(item)}
                 onChange={() => onToggle && onToggle(item)}
               />
@@ -383,7 +383,7 @@ const FilterSection = ({
                 check
               </span>
             </div>
-            <span className="text-text-muted text-sm group-hover:text-white transition-colors">
+            <span className="text-text-muted text-sm group-hover:text-foreground transition-colors">
               {item}
             </span>
           </label>
@@ -413,10 +413,10 @@ const ShopItem = ({
       interactive
       className="flex flex-col gap-3 group h-full"
     >
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-surface-dark border border-white/5">
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-surface border border-surface-border">
         {badge && (
           <div className="absolute top-3 left-3 z-10">
-            <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-bold text-white border border-primary/30 uppercase tracking-widest shadow-lg">
+            <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-bold text-foreground border border-primary/30 uppercase tracking-widest shadow-lg">
               {badge}
             </span>
           </div>
@@ -439,7 +439,7 @@ const ShopItem = ({
       </div>
       <div className="flex flex-col gap-1 p-2">
         <div className="flex justify-between items-start">
-          <h3 className="text-white font-bold text-base leading-tight group-hover:text-primary transition-colors">
+          <h3 className="text-foreground font-bold text-base leading-tight group-hover:text-primary transition-colors">
             {title}
           </h3>
           <span className="text-primary font-bold">{price}</span>
@@ -500,11 +500,11 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-white/40 tracking-widest uppercase text-xs"
+          className="text-text-muted tracking-widest uppercase text-xs"
         >
           Consulting the stars...
         </motion.div>
@@ -514,11 +514,11 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-background-dark flex items-center justify-center flex-col gap-4">
-        <p className="text-white/40">Artifact not found in this dimension.</p>
+      <div className="min-h-screen bg-background flex items-center justify-center flex-col gap-4">
+        <p className="text-text-muted">Artifact not found in this dimension.</p>
         <button
           onClick={() => setScreen(Screen.SHOP_LIST)}
-          className="text-primary hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"
+          className="text-primary hover:text-foreground transition-colors text-sm font-bold uppercase tracking-widest"
         >
           Return to Shop
         </button>
@@ -534,13 +534,13 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
   ];
 
   return (
-    <div className="flex h-full grow flex-col bg-background-dark min-h-screen">
+    <div className="flex h-full grow flex-col bg-background min-h-screen">
       <div className="px-4 lg:px-20 xl:px-40 flex flex-1 justify-center py-10">
         <div className="flex flex-col max-w-[1200px] flex-1">
           {/* Back Button */}
           <button
             onClick={() => setScreen(Screen.SHOP_LIST)}
-            className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group w-fit mb-4"
+            className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group w-fit mb-4"
           >
             <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
               arrow_back
@@ -555,12 +555,12 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
           >
             <span
               onClick={() => setScreen(Screen.SHOP_LIST)}
-              className="text-text-muted hover:text-white cursor-pointer transition-colors"
+              className="text-text-muted hover:text-foreground cursor-pointer transition-colors"
             >
               Shop
             </span>
             <span className="text-text-muted">/</span>
-            <span className="text-white font-medium">{product.title}</span>
+            <span className="text-foreground font-medium">{product.title}</span>
           </motion.div>
 
           <div className="flex flex-col lg:flex-row gap-10 px-4 py-4">
@@ -569,7 +569,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden group shadow-2xl border border-white/5"
+                className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden group shadow-2xl border border-surface-border"
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center transition-all duration-500"
@@ -598,7 +598,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
             >
               <div className="flex flex-col gap-4 text-left">
                 <div>
-                  <h1 className="text-white text-4xl md:text-5xl font-display font-light leading-tight tracking-[-0.02em]">
+                  <h1 className="text-foreground text-4xl md:text-5xl font-display font-light leading-tight tracking-[-0.02em]">
                     {product.title}
                   </h1>
                   <p className="text-primary font-bold mt-2 text-lg">
@@ -606,11 +606,11 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4 border-b border-white/10 pb-6">
-                  <span className="text-white text-3xl font-bold">
+                <div className="flex items-center gap-4 border-b border-surface-border pb-6">
+                  <span className="text-foreground text-3xl font-bold">
                     ${product.price.toFixed(2)}
                   </span>
-                  <div className="h-8 w-px bg-white/10"></div>
+                  <div className="h-8 w-px bg-surface-border"></div>
                   <div className="flex flex-col">
                     <div className="flex text-[#F4C025] text-[16px]">
                       {[1, 2, 3, 4, 5].map((i) => (
@@ -622,7 +622,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                         </span>
                       ))}
                     </div>
-                    <span className="text-text-muted text-xs hover:text-white cursor-pointer transition-colors">
+                    <span className="text-text-muted text-xs hover:text-foreground cursor-pointer transition-colors">
                       Verified Reviews
                     </span>
                   </div>
@@ -635,10 +635,10 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-white text-sm font-bold mb-1 uppercase tracking-wider">
+                    <h3 className="text-foreground text-sm font-bold mb-1 uppercase tracking-wider">
                       Cosmic Resonance
                     </h3>
-                    <p className="text-white/80 text-sm font-light leading-relaxed">
+                    <p className="text-text-muted text-sm font-light leading-relaxed">
                       This item aligns with the{" "}
                       <strong>{product.element || "Ether"}</strong> element,
                       enhancing your natural energies.
@@ -646,7 +646,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                   </div>
                 </GlassCard>
 
-                <p className="text-white/80 text-lg font-light leading-relaxed mt-2">
+                <p className="text-text-muted text-lg font-light leading-relaxed mt-2">
                   {product.description}
                 </p>
               </div>
@@ -663,7 +663,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                   </GlowButton>
                   <button
                     onClick={toggleFavorite}
-                    className={`h-14 w-14 rounded-full border border-white/10 flex items-center justify-center transition-colors ${isFavorite ? "text-primary border-primary/50" : "text-white/50 hover:text-primary hover:border-primary/50"}`}
+                    className={`h-14 w-14 rounded-full border border-surface-border flex items-center justify-center transition-colors ${isFavorite ? "text-primary border-primary/50" : "text-text-muted hover:text-primary hover:border-primary/50"}`}
                   >
                     <span
                       className={`material-symbols-outlined ${isFavorite ? "fill" : ""}`}
@@ -672,7 +672,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                     </span>
                   </button>
                 </div>
-                <p className="text-center text-xs text-white/40">
+                <p className="text-center text-xs text-text-muted">
                   Free shipping on orders over $100 • 30-day spirit guarantee
                 </p>
               </div>
@@ -694,7 +694,7 @@ const ExpCard = ({ icon, title, desc, delay }: any) => (
       <span className="material-symbols-outlined text-3xl">{icon}</span>
     </div>
     <div className="flex flex-col gap-3">
-      <h3 className="text-white text-xl font-bold font-display">{title}</h3>
+      <h3 className="text-foreground text-xl font-bold font-display">{title}</h3>
       <p className="text-text-muted text-sm leading-relaxed">{desc}</p>
     </div>
   </GlassCard>

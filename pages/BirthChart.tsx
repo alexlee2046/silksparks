@@ -7,19 +7,24 @@ import {
   FiveElementsDistribution,
 } from "../services/AstrologyEngine";
 import AIService from "../services/ai";
+import { RateLimitError } from "../services/ai/SupabaseAIProvider";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
   const { user, isBirthDataComplete } = useUser();
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
   const [loadingAI, setLoadingAI] = useState(false);
 
+  // Default to (0,0) if no location provided - affects accuracy but allows chart generation
   const planets = React.useMemo(() => {
-    if (user.birthData.date && user.birthData.location) {
+    if (user.birthData.date) {
+      const lat = user.birthData.location?.lat ?? 0;
+      const lng = user.birthData.location?.lng ?? 0;
       return AstrologyEngine.calculatePlanetaryPositions(
         user.birthData.date,
-        user.birthData.location.lat,
-        user.birthData.location.lng,
+        lat,
+        lng,
       );
     }
     return null;
@@ -45,6 +50,25 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
           elements,
         });
         setAiAnalysis(response.analysis);
+
+        // 显示 fallback 状态提示
+        if (response.meta?.isFallback) {
+          toast("AI temporarily unavailable, using backup response", {
+            icon: "⚠️",
+            duration: 4000,
+          });
+        }
+      } catch (error) {
+        if (error instanceof RateLimitError) {
+          toast.error("Daily AI request limit reached. Try again tomorrow.", {
+            duration: 5000,
+          });
+        } else {
+          toast.error("Failed to generate analysis. Please try again.", {
+            duration: 4000,
+          });
+        }
+        console.error("[BirthChart] AI analysis error:", error);
       } finally {
         setLoadingAI(false);
       }
@@ -55,7 +79,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
 
   if (!isBirthDataComplete) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-white p-8">
+      <div className="flex flex-col items-center justify-center min-h-screen text-foreground p-8">
         <motion.span
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -83,16 +107,16 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
       <div className="w-full flex justify-between items-center mb-8">
         <button
           onClick={() => setScreen(Screen.HOME)}
-          className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group"
+          className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group"
         >
           <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
             arrow_back
           </span>{" "}
           Back
         </button>
-        <div className="flex items-center gap-2 px-3 py-1 bg-surface-dark border border-white/10 rounded-full shadow-lg backdrop-blur-sm">
+        <div className="flex items-center gap-2 px-3 py-1 bg-surface border border-surface-border rounded-full shadow-lg backdrop-blur-sm">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-          <span className="text-xs font-bold uppercase text-white tracking-wider">
+          <span className="text-xs font-bold uppercase text-foreground tracking-wider">
             Live Engine
           </span>
         </div>
@@ -105,7 +129,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
         className="max-w-5xl mx-auto w-full flex flex-col gap-10"
       >
         {/* Profile Header */}
-        <div className="relative overflow-hidden rounded-3xl bg-surface-dark/40 border border-white/10 backdrop-blur-xl p-8 md:p-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)]">
+        <div className="relative overflow-hidden rounded-3xl bg-surface/40 border border-surface-border backdrop-blur-xl p-8 md:p-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)]">
           <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
             <span className="material-symbols-outlined text-[300px]">
               auto_awesome
@@ -119,8 +143,8 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
               transition={{ delay: 0.2, type: "spring" }}
               className="w-28 h-28 rounded-full bg-gradient-to-br from-primary via-amber-500 to-orange-600 p-[3px] shadow-[0_0_30px_rgba(244,192,37,0.3)]"
             >
-              <div className="w-full h-full rounded-full bg-surface-dark flex items-center justify-center border border-black/50">
-                <span className="text-4xl font-display font-bold text-white tracking-tighter">
+              <div className="w-full h-full rounded-full bg-surface flex items-center justify-center border border-black/50">
+                <span className="text-4xl font-display font-bold text-foreground tracking-tighter">
                   {user.name.charAt(0)}
                 </span>
               </div>
@@ -131,7 +155,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-4xl md:text-6xl font-display font-light text-white mb-2 tracking-tight"
+                className="text-4xl md:text-6xl font-display font-light text-foreground mb-2 tracking-tight"
               >
                 {user.name}
               </motion.h1>
@@ -157,7 +181,9 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                   <span className="material-symbols-outlined text-[18px] text-primary">
                     location_on
                   </span>{" "}
-                  {user.birthData.location?.name}
+                  {user.birthData.location?.name || (
+                    <span className="text-text-muted italic">Not specified</span>
+                  )}
                 </span>
               </motion.div>
             </div>
@@ -167,7 +193,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 }}
-                className="flex gap-8 bg-black/20 p-4 rounded-2xl border border-white/5 backdrop-blur-sm"
+                className="flex gap-8 bg-black/20 p-4 rounded-2xl border border-surface-border backdrop-blur-sm"
               >
                 <div className="text-center">
                   <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1 font-bold">
@@ -177,12 +203,12 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                     {planets.Sun}
                   </div>
                 </div>
-                <div className="w-px h-12 bg-white/10"></div>
+                <div className="w-px h-12 bg-surface-border/30"></div>
                 <div className="text-center">
                   <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1 font-bold">
                     Moon
                   </div>
-                  <div className="text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                  <div className="text-2xl font-bold text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
                     {planets.Moon}
                   </div>
                 </div>
@@ -194,8 +220,8 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Planetary Positions */}
-          <div className="bg-surface-dark/40 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
-            <h3 className="text-xl font-bold text-white flex items-center gap-3 mb-6">
+          <div className="bg-surface/40 border border-surface-border rounded-3xl p-8 backdrop-blur-md">
+            <h3 className="text-xl font-bold text-foreground flex items-center gap-3 mb-6">
               <span className="p-2 rounded-lg bg-primary/10 text-primary material-symbols-outlined">
                 public
               </span>
@@ -210,7 +236,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.6 + index * 0.1 }}
-                    className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors group cursor-default border border-transparent hover:border-white/5"
+                    className="flex items-center justify-between p-4 bg-surface-border/30 rounded-xl hover:bg-surface-border/30 transition-colors group cursor-default border border-transparent hover:border-surface-border"
                   >
                     <div className="flex items-center gap-4 w-1/3">
                       <span
@@ -228,11 +254,11 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                       >
                         {body.substring(0, 2)}
                       </span>
-                      <span className="text-white font-medium">{body}</span>
+                      <span className="text-foreground font-medium">{body}</span>
                     </div>
-                    <div className="flex-1 h-px bg-white/5 group-hover:bg-primary/30 transition-colors mx-4"></div>
+                    <div className="flex-1 h-px bg-surface-border/30 group-hover:bg-primary/30 transition-colors mx-4"></div>
                     <div className="w-1/3 text-right">
-                      <span className="text-primary font-display font-bold group-hover:text-white transition-colors">
+                      <span className="text-primary font-display font-bold group-hover:text-foreground transition-colors">
                         {sign}
                       </span>
                     </div>
@@ -244,7 +270,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className="h-12 bg-white/5 rounded-lg w-full"
+                    className="h-12 bg-surface-border/30 rounded-lg w-full"
                   ></div>
                 ))}
               </div>
@@ -252,15 +278,15 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
           </div>
 
           {/* Right: Five Elements */}
-          <div className="bg-surface-dark/40 border border-white/10 rounded-3xl p-8 backdrop-blur-md flex flex-col">
+          <div className="bg-surface/40 border border-surface-border rounded-3xl p-8 backdrop-blur-md flex flex-col">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-bold text-white flex items-center gap-3">
+              <h3 className="text-xl font-bold text-foreground flex items-center gap-3">
                 <span className="p-2 rounded-lg bg-blue-500/10 text-blue-400 material-symbols-outlined">
                   water_drop
                 </span>
                 Element Balance
               </h3>
-              <span className="text-[10px] font-bold tracking-widest text-text-muted px-2 py-1 rounded border border-white/10">
+              <span className="text-[10px] font-bold tracking-widest text-text-muted px-2 py-1 rounded border border-surface-border">
                 WU XING
               </span>
             </div>
@@ -284,10 +310,10 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
 
                     return (
                       <div key={el} className="flex items-center gap-4">
-                        <div className="w-16 text-right text-xs font-bold text-white/60 uppercase tracking-wider">
+                        <div className="w-16 text-right text-xs font-bold text-text-muted uppercase tracking-wider">
                           {el}
                         </div>
-                        <div className="flex-1 h-3 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                        <div className="flex-1 h-3 bg-black/40 rounded-full overflow-hidden border border-surface-border">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${val}%` }}
@@ -299,7 +325,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                             className={`h-full ${color} rounded-full`}
                           ></motion.div>
                         </div>
-                        <div className="w-8 text-xs font-bold text-white">
+                        <div className="w-8 text-xs font-bold text-foreground">
                           {val}%
                         </div>
                       </div>
@@ -323,7 +349,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className="h-8 bg-white/5 rounded-lg w-full"
+                    className="h-8 bg-surface-border/30 rounded-lg w-full"
                   ></div>
                 ))}
               </div>
@@ -336,15 +362,15 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1 }}
-          className="w-full p-10 rounded-3xl bg-gradient-to-r from-primary/10 via-purple-500/5 to-primary/10 border border-white/10 text-center relative overflow-hidden group"
+          className="w-full p-10 rounded-3xl bg-gradient-to-r from-primary/10 via-purple-500/5 to-primary/10 border border-surface-border text-center relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
 
-          <h2 className="text-3xl font-display font-bold text-white mb-3 relative z-10">
+          <h2 className="text-3xl font-display font-bold text-foreground mb-3 relative z-10">
             Ready for the Deep Dive?
           </h2>
-          <p className="text-white/60 mb-8 max-w-xl mx-auto relative z-10 text-lg font-light">
+          <p className="text-text-muted mb-8 max-w-xl mx-auto relative z-10 text-lg font-light">
             Unlock a comprehensive 20-page astrological analysis generated by
             our Spark Engine, combining Western Transits with Eastern Elemental
             theory.

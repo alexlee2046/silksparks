@@ -1,9 +1,48 @@
 @import "tailwindcss";
 @config "./tailwind.config.js";
 
+/* CSS Variables for Theme System */
+:root {
+  /* Light theme - 温暖米色系 */
+  --color-background: 250 248 245;        /* #faf8f5 */
+  --color-background-alt: 245 240 232;    /* #f5f0e8 */
+  --color-surface: 235 229 219;           /* #ebe5db */
+  --color-surface-border: 217 208 195;    /* #d9d0c3 */
+  --color-text-primary: 45 42 38;         /* #2d2a26 */
+  --color-text-muted: 107 100 90;         /* #6b645a */
+  --color-primary: 212 160 18;            /* #d4a012 */
+  --color-primary-hover: 190 143 16;      /* #be8f10 */
+
+  /* Cosmic background colors (light) */
+  --cosmic-bg: #f5f0e8;
+  --cosmic-fog: #ebe5db;
+  --cosmic-stars-opacity: 0.3;
+  --cosmic-sparkle-gold: #c49a0a;
+  --cosmic-sparkle-secondary: #a88508;
+}
+
+.dark {
+  /* Dark theme - 保持现有深色 */
+  --color-background: 24 22 17;           /* #181611 */
+  --color-background-alt: 39 36 27;       /* #27241b */
+  --color-surface: 39 36 27;              /* #27241b */
+  --color-surface-border: 57 53 40;       /* #393528 */
+  --color-text-primary: 255 255 255;      /* #ffffff */
+  --color-text-muted: 186 178 156;        /* #bab29c */
+  --color-primary: 244 192 37;            /* #f4c025 */
+  --color-primary-hover: 224 175 31;      /* #e0af1f */
+
+  /* Cosmic background colors (dark) */
+  --cosmic-bg: #181611;
+  --cosmic-fog: #181611;
+  --cosmic-stars-opacity: 1;
+  --cosmic-sparkle-gold: #f4c025;
+  --cosmic-sparkle-secondary: #e0af1f;
+}
+
 @layer base {
   body {
-    @apply bg-background-dark text-white font-body antialiased;
+    @apply bg-background text-foreground font-body antialiased;
     /* 硬件加速滚动容器 */
     -webkit-overflow-scrolling: touch;
     text-rendering: optimizeSpeed;

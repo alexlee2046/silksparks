@@ -9,13 +9,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#f4c025",
-        "primary-hover": "#e0af1f",
-        "background-light": "#f8f8f5",
-        "background-dark": "#181611",
-        "surface-dark": "#27241b",
-        "surface-border": "#393528",
-        "text-muted": "#bab29c",
+        // CSS variable-based colors for theme support
+        background: "rgb(var(--color-background) / <alpha-value>)",
+        "background-alt": "rgb(var(--color-background-alt) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        "surface-border": "rgb(var(--color-surface-border) / <alpha-value>)",
+        foreground: "rgb(var(--color-text-primary) / <alpha-value>)",
+        "text-muted": "rgb(var(--color-text-muted) / <alpha-value>)",
+        primary: "rgb(var(--color-primary) / <alpha-value>)",
+        "primary-hover": "rgb(var(--color-primary-hover) / <alpha-value>)",
+        // Legacy aliases for backward compatibility
+        "background-dark": "rgb(var(--color-background) / <alpha-value>)",
+        "surface-dark": "rgb(var(--color-surface) / <alpha-value>)",
+        // Status colors (theme-independent)
         success: "#10b981",
         error: "#ef4444",
       },

@@ -36,7 +36,7 @@ export const AdminLayout: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex-1 bg-background-dark min-h-screen relative overflow-hidden flex flex-col md:flex-row">
+    <div className="flex-1 bg-background min-h-screen relative overflow-hidden flex flex-col md:flex-row">
       {/* Background Decorative Element */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
@@ -53,7 +53,7 @@ export const AdminLayout: React.FC = () => {
             </span>{" "}
             Admin
           </div>
-          <h1 className="text-2xl font-display font-light text-white tracking-tight">
+          <h1 className="text-2xl font-display font-light text-foreground tracking-tight">
             Silk &{" "}
             <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-200">
               Spark
@@ -62,7 +62,7 @@ export const AdminLayout: React.FC = () => {
         </div>
 
         <GlassCard
-          className="flex-1 p-4 border-white/5 flex flex-col"
+          className="flex-1 p-4 border-surface-border flex flex-col"
           intensity="low"
         >
           <nav className="space-y-2 overflow-y-auto no-scrollbar flex-1">
@@ -73,7 +73,7 @@ export const AdminLayout: React.FC = () => {
                 className={`flex items-center gap-3 px-3 py-2.5 text-xs font-bold w-full text-left rounded-lg transition-all duration-300 group ${
                   selectedKey === item.key
                     ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(244,192,37,0.1)]"
-                    : "text-white/50 hover:bg-white/5 hover:text-white border border-transparent"
+                    : "text-text-muted hover:bg-surface-border/30 hover:text-foreground border border-transparent"
                 }`}
               >
                 <span
@@ -86,10 +86,10 @@ export const AdminLayout: React.FC = () => {
             ))}
           </nav>
 
-          <div className="mt-6 pt-6 border-t border-white/5">
+          <div className="mt-6 pt-6 border-t border-surface-border">
             <button
               onClick={() => logout()}
-              className="flex items-center gap-3 px-3 py-2.5 text-xs font-bold w-full text-left rounded-lg text-white/50 hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-300"
+              className="flex items-center gap-3 px-3 py-2.5 text-xs font-bold w-full text-left rounded-lg text-text-muted hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-300"
             >
               <span className="material-symbols-outlined text-[18px]">
                 logout

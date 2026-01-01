@@ -37,7 +37,7 @@ const ProductListContent: React.FC<{
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-white/40 font-display animate-pulse">
+        <div className="text-text-muted font-display animate-pulse">
           Loading Cosmic Artifacts...
         </div>
       </div>
@@ -47,7 +47,7 @@ const ProductListContent: React.FC<{
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-display font-light text-white tracking-tight">
+        <h1 className="text-3xl font-display font-light text-foreground tracking-tight">
           Products
         </h1>
         <GlowButton
@@ -59,9 +59,9 @@ const ProductListContent: React.FC<{
         </GlowButton>
       </div>
 
-      <GlassCard className="p-0 border-white/5 overflow-hidden" intensity="low">
+      <GlassCard className="p-0 border-surface-border overflow-hidden" intensity="low">
         <table className="w-full text-left">
-          <thead className="bg-white/5 border-b border-white/5 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+          <thead className="bg-surface-border/30 border-b border-surface-border text-[10px] font-bold text-text-muted uppercase tracking-widest">
             <tr>
               <th className="px-6 py-4">Title</th>
               <th className="px-6 py-4">Price</th>
@@ -73,7 +73,7 @@ const ProductListContent: React.FC<{
             {products?.data.map((product: any) => (
               <tr
                 key={product.id}
-                className="hover:bg-white/5 transition-colors group"
+                className="hover:bg-surface-border/30 transition-colors group"
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -81,10 +81,10 @@ const ProductListContent: React.FC<{
                       <img
                         src={product.image_url}
                         alt={product.title}
-                        className="w-8 h-8 rounded-lg object-cover border border-white/10"
+                        className="w-8 h-8 rounded-lg object-cover border border-surface-border"
                       />
                     )}
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-foreground">
                       {product.title}
                     </span>
                   </div>
@@ -93,7 +93,7 @@ const ProductListContent: React.FC<{
                   ${product.price}
                 </td>
                 <td className="px-6 py-4">
-                  <span className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 uppercase tracking-wider">
+                  <span className="px-2 py-1 rounded-full bg-surface-border/30 border border-surface-border text-[10px] font-bold text-text-muted uppercase tracking-wider">
                     {product.category}
                   </span>
                 </td>
@@ -109,7 +109,7 @@ const ProductListContent: React.FC<{
                           },
                         })
                       }
-                      className="text-white/20 hover:text-white transition-colors"
+                      className="text-text-muted hover:text-foreground transition-colors"
                       title="Edit"
                     >
                       <span className="material-symbols-outlined text-[18px]">
@@ -122,7 +122,7 @@ const ProductListContent: React.FC<{
                           onDelete(product.id);
                         }
                       }}
-                      className="text-white/20 hover:text-rose-400 transition-colors"
+                      className="text-text-muted hover:text-rose-400 transition-colors"
                       title="Delete"
                     >
                       <span className="material-symbols-outlined text-[18px]">

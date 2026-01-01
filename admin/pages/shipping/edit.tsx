@@ -86,7 +86,7 @@ export const ShippingEdit: React.FC = () => {
   if (formLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-white/40 font-display animate-pulse">
+        <div className="text-text-muted font-display animate-pulse">
           Loading Configuration...
         </div>
       </div>
@@ -98,11 +98,11 @@ export const ShippingEdit: React.FC = () => {
       <div className="flex items-center gap-4">
         <button
           onClick={() => window.history.back()}
-          className="text-white/50 hover:text-white transition-colors"
+          className="text-text-muted hover:text-foreground transition-colors"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
-        <h1 className="text-3xl font-display font-light text-white tracking-tight">
+        <h1 className="text-3xl font-display font-light text-foreground tracking-tight">
           Edit Zone:{" "}
           <span className="font-bold text-primary">{zone?.name}</span>
         </h1>
@@ -111,32 +111,32 @@ export const ShippingEdit: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: Zone Settings */}
         <div className="lg:col-span-1">
-          <GlassCard className="p-6 border-white/5 space-y-6" intensity="low">
-            <h3 className="text-lg font-bold text-white border-b border-white/5 pb-4">
+          <GlassCard className="p-6 border-surface-border space-y-6" intensity="low">
+            <h3 className="text-lg font-bold text-foreground border-b border-surface-border pb-4">
               Zone Details
             </h3>
             <form onSubmit={onSubmitZone} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-white/40 uppercase tracking-widest">
+                <label className="text-xs font-bold text-text-muted uppercase tracking-widest">
                   Zone Name
                 </label>
                 <input
                   name="name"
                   defaultValue={zone?.name}
                   required
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 outline-none transition-colors"
+                  className="w-full bg-black/40 border border-surface-border rounded-xl px-4 py-3 text-foreground focus:border-primary/50 outline-none transition-colors"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-white/40 uppercase tracking-widest">
+                <label className="text-xs font-bold text-text-muted uppercase tracking-widest">
                   Region
                 </label>
                 <input
                   name="region"
                   defaultValue={zone?.region}
                   required
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 outline-none transition-colors"
+                  className="w-full bg-black/40 border border-surface-border rounded-xl px-4 py-3 text-foreground focus:border-primary/50 outline-none transition-colors"
                 />
               </div>
 
@@ -155,31 +155,31 @@ export const ShippingEdit: React.FC = () => {
         {/* Right: Rates Management */}
         <div className="lg:col-span-2 space-y-6">
           <GlassCard
-            className="p-0 overflow-hidden border-white/5"
+            className="p-0 overflow-hidden border-surface-border"
             intensity="low"
           >
-            <div className="p-6 border-b border-white/5 bg-white/[0.02] flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white">Shipping Rates</h3>
+            <div className="p-6 border-b border-surface-border bg-white/[0.02] flex justify-between items-center">
+              <h3 className="text-lg font-bold text-foreground">Shipping Rates</h3>
             </div>
 
             {/* List Existing Rates */}
             <div className="divide-y divide-white/5">
               {ratesLoading ? (
-                <div className="p-8 text-center text-white/40">
+                <div className="p-8 text-center text-text-muted">
                   Loading rates...
                 </div>
               ) : ratesData?.data.length === 0 ? (
-                <div className="p-8 text-center text-white/40">
+                <div className="p-8 text-center text-text-muted">
                   No rates configured for this zone yet.
                 </div>
               ) : (
                 ratesData?.data.map((rate: any) => (
                   <div
                     key={rate.id}
-                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors group"
+                    className="p-4 flex items-center justify-between hover:bg-surface-border/30 transition-colors group"
                   >
                     <div className="flex flex-col">
-                      <span className="font-bold text-white">{rate.name}</span>
+                      <span className="font-bold text-foreground">{rate.name}</span>
                       <span className="text-xs text-text-muted">
                         {rate.description}
                       </span>
@@ -195,7 +195,7 @@ export const ShippingEdit: React.FC = () => {
                             id: rate.id,
                           })
                         }
-                        className="text-white/20 hover:text-red-400 transition-colors p-2"
+                        className="text-text-muted hover:text-red-400 transition-colors p-2"
                       >
                         <span className="material-symbols-outlined text-[18px]">
                           delete
@@ -208,8 +208,8 @@ export const ShippingEdit: React.FC = () => {
             </div>
 
             {/* Add Rate Form */}
-            <div className="p-6 bg-black/20 border-t border-white/5">
-              <h4 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
+            <div className="p-6 bg-black/20 border-t border-surface-border">
+              <h4 className="text-xs font-bold text-text-muted uppercase tracking-widest mb-4">
                 Add New Rate
               </h4>
               <form onSubmit={handleAddRate} className="flex flex-col gap-4">
@@ -221,7 +221,7 @@ export const ShippingEdit: React.FC = () => {
                       setNewRate({ ...newRate, name: e.target.value })
                     }
                     required
-                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-primary/50 outline-none"
+                    className="bg-black/40 border border-surface-border rounded-lg px-3 py-2 text-foreground text-sm focus:border-primary/50 outline-none"
                   />
                   <input
                     placeholder="Price (e.g. 5.99)"
@@ -232,7 +232,7 @@ export const ShippingEdit: React.FC = () => {
                       setNewRate({ ...newRate, price: e.target.value })
                     }
                     required
-                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-primary/50 outline-none"
+                    className="bg-black/40 border border-surface-border rounded-lg px-3 py-2 text-foreground text-sm focus:border-primary/50 outline-none"
                   />
                 </div>
                 <input
@@ -241,7 +241,7 @@ export const ShippingEdit: React.FC = () => {
                   onChange={(e) =>
                     setNewRate({ ...newRate, description: e.target.value })
                   }
-                  className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-primary/50 outline-none"
+                  className="bg-black/40 border border-surface-border rounded-lg px-3 py-2 text-foreground text-sm focus:border-primary/50 outline-none"
                 />
                 <GlowButton
                   variant="secondary"

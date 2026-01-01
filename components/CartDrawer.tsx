@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useUser } from "../context/UserContext";
-import { supabase } from "../services/supabase";
 import { GlowButton } from "./GlowButton";
 import { PaymentService } from "../services/PaymentService";
 import toast from "react-hot-toast";
@@ -26,72 +25,46 @@ export const CartDrawer: React.FC = () => {
       return;
     }
 
+    // Check if Stripe is configured
+    if (!PaymentService.isConfigured()) {
+      toast.error("Payment system is not configured. Please contact support.");
+      return;
+    }
+
     setProcessing(true);
     try {
       // 1. Inventory Check
       const inventoryCheck = await PaymentService.checkInventory(items);
       if (!inventoryCheck.available) {
         toast.error(
-          `Some items are out of stock: ${inventoryCheck.failedItems.join(", ")}`,
+          `Some items are unavailable: ${inventoryCheck.failedItems.join(", ")}`
         );
         setProcessing(false);
         return;
       }
 
-      // 2. Payment Processing
-      const paymentResult = await PaymentService.processPayment(cartTotal);
-      if (!paymentResult.success) {
-        throw new Error(paymentResult.error || "Payment failed");
+      // 2. Create Stripe Checkout Session
+      const result = await PaymentService.createCheckoutSession(items);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create checkout session");
       }
 
-      // 3. Create Order
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: session.user.id,
-          total: cartTotal,
-          status: "paid", // Direct to paid since we "processed" it
-          payment_intent: paymentResult.transactionId,
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // 4. Create Order Items
-      const flattenedItems = [];
-      for (const item of items) {
-        for (let i = 0; i < item.quantity; i++) {
-          flattenedItems.push({
-            order_id: order.id,
-            product_id: item.id,
-            name: item.name,
-            price: item.price,
-            image_url: item.image,
-            type: "product",
-          });
-        }
-      }
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(flattenedItems);
-
-      if (itemsError) throw itemsError;
-
-      // 5. Update Inventory (Simulated for Shell Repair)
-      // In real app: await supabase.rpc('decrement_inventory', { items })
-      console.log(
-        "[CartDrawer] Inventory deducted for items:",
-        items.map((i) => i.id),
-      );
-
+      // 3. Clear cart and redirect to Stripe
       clearCart();
       setIsCartOpen(false);
-      toast.success(`Order placed successfully! ID: ${order.id}`);
-    } catch (error: any) {
+
+      // Redirect to Stripe Checkout
+      if (result.url) {
+        window.location.href = result.url;
+      } else if (result.sessionId) {
+        // Fallback: use Stripe.js redirect
+        await PaymentService.redirectToCheckout(result.sessionId);
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Checkout failed";
       console.error("Checkout error:", error);
-      toast.error("Order failed: " + error.message);
+      toast.error("Checkout failed: " + message);
     } finally {
       setProcessing(false);
     }
@@ -116,10 +89,10 @@ export const CartDrawer: React.FC = () => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-background-dark border-l border-white/10 shadow-2xl z-[70] p-6 flex flex-col"
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-background border-l border-surface-border shadow-2xl z-[70] p-6 flex flex-col"
           >
-            <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
-              <h2 className="text-xl font-display font-bold text-white flex items-center gap-2">
+            <div className="flex items-center justify-between mb-8 border-b border-surface-border pb-4">
+              <h2 className="text-xl font-display font-bold text-foreground flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">
                   shopping_bag
                 </span>
@@ -127,7 +100,8 @@ export const CartDrawer: React.FC = () => {
               </h2>
               <button
                 onClick={() => setIsCartOpen(false)}
-                className="text-white/40 hover:text-white transition-colors"
+                aria-label="Close cart"
+                className="text-text-muted hover:text-foreground transition-colors"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -135,7 +109,7 @@ export const CartDrawer: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto space-y-4">
               {items.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-white/30 gap-4">
+                <div className="h-full flex flex-col items-center justify-center text-text-muted gap-4">
                   <span className="material-symbols-outlined text-4xl">
                     remove_shopping_cart
                   </span>
@@ -153,7 +127,7 @@ export const CartDrawer: React.FC = () => {
                 items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex gap-4 p-4 bg-white/5 rounded-xl border border-white/5 relative group"
+                    className="flex gap-4 p-4 bg-surface-border/30 rounded-xl border border-surface-border relative group"
                   >
                     <div className="h-20 w-20 bg-black/40 rounded-lg overflow-hidden shrink-0">
                       <img
@@ -164,12 +138,13 @@ export const CartDrawer: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
-                        <h4 className="text-sm font-bold text-white line-clamp-1">
+                        <h4 className="text-sm font-bold text-foreground line-clamp-1">
                           {item.name}
                         </h4>
                         <button
                           onClick={() => removeItem(item.id)}
-                          className="text-white/20 hover:text-rose-400 transition-colors"
+                          aria-label={`Remove ${item.name} from cart`}
+                          className="text-text-muted hover:text-rose-400 transition-colors"
                         >
                           <span className="material-symbols-outlined text-sm">
                             delete
@@ -185,20 +160,22 @@ export const CartDrawer: React.FC = () => {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity - 1)
                           }
-                          className="h-6 w-6 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                          aria-label="Decrease quantity"
+                          className="h-6 w-6 rounded-full bg-surface-border/30 flex items-center justify-center text-foreground hover:bg-surface-border/30 transition-colors"
                         >
                           <span className="material-symbols-outlined text-[10px]">
                             remove
                           </span>
                         </button>
-                        <span className="text-xs font-bold text-white w-4 text-center">
+                        <span className="text-xs font-bold text-foreground w-4 text-center">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() =>
                             updateQuantity(item.id, item.quantity + 1)
                           }
-                          className="h-6 w-6 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                          aria-label="Increase quantity"
+                          className="h-6 w-6 rounded-full bg-surface-border/30 flex items-center justify-center text-foreground hover:bg-surface-border/30 transition-colors"
                         >
                           <span className="material-symbols-outlined text-[10px]">
                             add
@@ -212,33 +189,39 @@ export const CartDrawer: React.FC = () => {
             </div>
 
             {items.length > 0 && (
-              <div className="border-t border-white/10 pt-6 mt-4 space-y-4">
-                <div className="flex justify-between items-center text-white/50 text-sm">
+              <div className="border-t border-surface-border pt-6 mt-4 space-y-4">
+                <div className="flex justify-between items-center text-text-muted text-sm">
                   <span>Subtotal</span>
-                  <span className="font-mono text-white">
+                  <span className="font-mono text-foreground">
                     ${cartTotal.toFixed(2)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-white/50 text-sm">
+                <div className="flex justify-between items-center text-text-muted text-sm">
                   <span>Shipping</span>
-                  <span className="font-mono text-white">
+                  <span className="font-mono text-foreground">
                     Calculated at checkout
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-white text-lg font-bold pt-2 border-t border-white/5">
+                <div className="flex justify-between items-center text-foreground text-lg font-bold pt-2 border-t border-surface-border">
                   <span>Total</span>
                   <span className="font-mono text-primary">
                     ${cartTotal.toFixed(2)}
                   </span>
                 </div>
 
+                {/* Stripe badge */}
+                <div className="flex items-center justify-center gap-2 text-text-muted text-[10px] uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-[12px]">lock</span>
+                  <span>Secured by Stripe</span>
+                </div>
+
                 <GlowButton
                   className="w-full justify-center"
-                  icon={processing ? "hourglass_empty" : "payments"}
+                  icon={processing ? "hourglass_empty" : "credit_card"}
                   onClick={handleCheckout}
                   disabled={processing}
                 >
-                  {processing ? "Processing..." : "Proceed to Checkout"}
+                  {processing ? "Processing..." : "Checkout with Stripe"}
                 </GlowButton>
               </div>
             )}

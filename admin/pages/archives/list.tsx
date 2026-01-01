@@ -26,7 +26,7 @@ export const ArchiveList: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-white/40 font-display animate-pulse">
+        <div className="text-text-muted font-display animate-pulse">
           Loading Digital Archives...
         </div>
       </div>
@@ -36,7 +36,7 @@ export const ArchiveList: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-display font-light text-white tracking-tight">
+        <h1 className="text-3xl font-display font-light text-foreground tracking-tight">
           Digital Archives (CMS)
         </h1>
         <GlowButton
@@ -48,9 +48,9 @@ export const ArchiveList: React.FC = () => {
         </GlowButton>
       </div>
 
-      <GlassCard className="p-0 border-white/5 overflow-hidden" intensity="low">
+      <GlassCard className="p-0 border-surface-border overflow-hidden" intensity="low">
         <table className="w-full text-left">
-          <thead className="bg-white/5 border-b border-white/5 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+          <thead className="bg-surface-border/30 border-b border-surface-border text-[10px] font-bold text-text-muted uppercase tracking-widest">
             <tr>
               <th className="px-6 py-4">Title</th>
               <th className="px-6 py-4">Type</th>
@@ -63,17 +63,17 @@ export const ArchiveList: React.FC = () => {
             {archives?.data.map((item: any) => (
               <tr
                 key={item.id}
-                className="hover:bg-white/5 transition-colors group"
+                className="hover:bg-surface-border/30 transition-colors group"
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     {item.image_url && (
                       <img
                         src={item.image_url}
-                        className="w-8 h-8 rounded-lg object-cover border border-white/10"
+                        className="w-8 h-8 rounded-lg object-cover border border-surface-border"
                       />
                     )}
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-foreground">
                       {item.title}
                     </span>
                   </div>
@@ -91,15 +91,15 @@ export const ArchiveList: React.FC = () => {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="text-sm text-white">
+                    <span className="text-sm text-foreground">
                       {item.profiles?.full_name || "Unknown"}
                     </span>
-                    <span className="text-xs text-white/40">
+                    <span className="text-xs text-text-muted">
                       {item.profiles?.email}
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-white/40">
+                <td className="px-6 py-4 text-sm text-text-muted">
                   {new Date(item.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4">
@@ -114,7 +114,7 @@ export const ArchiveList: React.FC = () => {
                           },
                         })
                       }
-                      className="text-white/20 hover:text-white transition-colors"
+                      className="text-text-muted hover:text-foreground transition-colors"
                       title="Edit"
                     >
                       <span className="material-symbols-outlined text-[18px]">
@@ -123,7 +123,7 @@ export const ArchiveList: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(item.id, item.title)}
-                      className="text-white/20 hover:text-rose-400 transition-colors"
+                      className="text-text-muted hover:text-rose-400 transition-colors"
                       title="Delete"
                     >
                       <span className="material-symbols-outlined text-[18px]">

@@ -35,11 +35,11 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
   };
 
   return (
-    <div className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-10 py-10 bg-background-dark min-h-screen">
+    <div className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-10 py-10 bg-background min-h-screen">
       {/* Back Button */}
       <button
         onClick={() => setScreen(Screen.HOME)}
-        className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group w-fit mb-8"
+        className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group w-fit mb-8"
       >
         <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
           arrow_back
@@ -58,7 +58,7 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
             </span>{" "}
             Expert Guidance
           </div>
-          <h1 className="text-white text-5xl md:text-6xl font-display font-light leading-tight tracking-[-0.033em]">
+          <h1 className="text-foreground text-5xl md:text-6xl font-display font-light leading-tight tracking-[-0.033em]">
             Connect with{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-200 font-bold">
               a Guide
@@ -69,7 +69,7 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
             readers, and feng shui masters.
           </p>
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface-dark border border-white/10 text-sm font-medium hover:bg-white/5 transition-colors md:hidden text-white">
+        <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface border border-surface-border text-sm font-medium hover:bg-surface-border/30 transition-colors md:hidden text-foreground">
           <span className="material-symbols-outlined text-[20px]">
             filter_list
           </span>{" "}
@@ -84,8 +84,8 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
           transition={{ delay: 0.2 }}
           className="hidden md:flex flex-col w-72 shrink-0 gap-8 h-fit sticky top-24"
         >
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <h3 className="text-white text-xl font-bold font-display">
+          <div className="flex items-center justify-between border-b border-surface-border pb-4">
+            <h3 className="text-foreground text-xl font-bold font-display">
               Filters
             </h3>
             <button className="text-xs text-primary font-bold uppercase tracking-wider hover:text-primary-hover transition-colors">
@@ -93,7 +93,7 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
             </button>
           </div>
           <div className="flex flex-col gap-5">
-            <p className="text-white/50 text-xs font-bold uppercase tracking-widest">
+            <p className="text-text-muted text-xs font-bold uppercase tracking-widest">
               Expertise
             </p>
             {[
@@ -110,13 +110,13 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
                 <div className="relative flex items-center">
                   <input
                     type="checkbox"
-                    className="peer appearance-none h-4 w-4 border border-white/20 rounded bg-white/5 checked:bg-primary checked:border-primary transition-all"
+                    className="peer appearance-none h-4 w-4 border border-surface-border rounded bg-surface-border/30 checked:bg-primary checked:border-primary transition-all"
                   />
                   <span className="absolute inset-0 flex items-center justify-center text-black opacity-0 peer-checked:opacity-100 material-symbols-outlined text-[12px] pointer-events-none">
                     check
                   </span>
                 </div>
-                <span className="text-white/70 text-sm group-hover:text-white transition-colors">
+                <span className="text-text-muted text-sm group-hover:text-foreground transition-colors">
                   {e}
                 </span>
               </label>
@@ -126,7 +126,7 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
 
         <motion.div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
-            <div className="col-span-full py-20 text-center text-white/20 tracking-widest uppercase italic">
+            <div className="col-span-full py-20 text-center text-text-muted tracking-widest uppercase italic">
               Searching the cosmos for available guides...
             </div>
           ) : (
@@ -179,15 +179,15 @@ const ExpertCard = ({
     <GlassCard
       hoverEffect
       interactive
-      className="flex flex-col h-full group p-0 overflow-hidden bg-surface-dark/40"
+      className="flex flex-col h-full group p-0 overflow-hidden bg-surface/40"
     >
       <div
         className="relative aspect-[4/3] w-full bg-cover bg-top group-hover:scale-105 transition-transform duration-700"
         style={{ backgroundImage: `url('${image}')` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-transparent to-transparent opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
         {isOnline && (
-          <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+          <div className="absolute top-3 left-3 flex items-center gap-2 bg-surface/80 backdrop-blur-md px-3 py-1 rounded-full border border-surface-border">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
@@ -197,17 +197,17 @@ const ExpertCard = ({
             </span>
           </div>
         )}
-        <div className="absolute bottom-3 right-3 bg-primary text-background-dark font-bold text-xs px-2 py-1 rounded shadow-lg shadow-black/50">
+        <div className="absolute bottom-3 right-3 bg-primary text-background font-bold text-xs px-2 py-1 rounded shadow-lg shadow-black/50">
           {price}
         </div>
       </div>
 
-      <div className="p-5 flex flex-col gap-4 flex-1 relative bg-surface-dark/80 backdrop-blur-xl border-t border-white/5">
+      <div className="p-5 flex flex-col gap-4 flex-1 relative bg-surface/80 backdrop-blur-xl border-t border-surface-border">
         <div className="space-y-1">
-          <h3 className="text-white text-xl font-bold font-display group-hover:text-primary transition-colors">
+          <h3 className="text-foreground text-xl font-bold font-display group-hover:text-primary transition-colors">
             {name}
           </h3>
-          <p className="text-white/60 text-sm font-medium">{title}</p>
+          <p className="text-text-muted text-sm font-medium">{title}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -218,15 +218,15 @@ const ExpertCard = ({
             <span className="material-symbols-outlined fill">star</span>
             <span className="material-symbols-outlined fill">star</span>
           </div>
-          <span className="text-white font-bold text-sm">{rating}</span>
-          <span className="text-white/40 text-xs">({reviews} reviews)</span>
+          <span className="text-foreground font-bold text-sm">{rating}</span>
+          <span className="text-text-muted text-xs">({reviews} reviews)</span>
         </div>
 
         <div className="flex flex-wrap gap-2">
           {tags.map((t: string) => (
             <span
               key={t}
-              className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-wider group-hover:border-primary/20 transition-colors"
+              className="px-2 py-1 rounded-md bg-surface-border/30 border border-surface-border text-text-muted text-[10px] font-bold uppercase tracking-wider group-hover:border-primary/20 transition-colors"
             >
               {t}
             </span>
@@ -236,13 +236,13 @@ const ExpertCard = ({
         <div className="mt-auto pt-4 flex gap-3">
           <button
             onClick={() => onProfile && onProfile()}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-white text-sm font-bold hover:bg-white/5 transition-colors"
+            className="flex-1 px-4 py-2.5 rounded-xl border border-surface-border text-foreground text-sm font-bold hover:bg-surface-border/30 transition-colors"
           >
             Profile
           </button>
           <button
             onClick={onBook}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-background-dark text-sm font-bold hover:bg-white hover:text-black transition-colors shadow-[0_0_15px_-3px_rgba(244,192,37,0.3)]"
+            className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-background text-sm font-bold hover:bg-primary-hover transition-colors shadow-[0_0_15px_-3px_rgba(244,192,37,0.3)]"
           >
             Book
           </button>
@@ -279,8 +279,8 @@ export const ExpertProfile: React.FC<NavProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-dark flex items-center justify-center">
-        <div className="text-white/40 tracking-widest uppercase text-xs animate-pulse">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-text-muted tracking-widest uppercase text-xs animate-pulse">
           Communing with the guide...
         </div>
       </div>
@@ -290,7 +290,7 @@ export const ExpertProfile: React.FC<NavProps> = ({
   if (!expert) return <div>Expert not found</div>;
 
   return (
-    <div className="flex-1 bg-silk-pattern relative bg-background-dark min-h-screen pb-20">
+    <div className="flex-1 bg-silk-pattern relative bg-background min-h-screen pb-20">
       <div className="relative h-[40vh] min-h-[400px]">
         <div className="absolute inset-0">
           <img
@@ -298,14 +298,14 @@ export const ExpertProfile: React.FC<NavProps> = ({
             className="w-full h-full object-cover"
             alt={expert.name}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
         </div>
 
         <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col md:flex-row items-end justify-between gap-8 max-w-7xl mx-auto">
           <div className="flex flex-col gap-4">
             <button
               onClick={() => setScreen(Screen.EXPERTS)}
-              className="text-white/60 hover:text-white flex items-center gap-2 text-sm transition-colors w-fit mb-2"
+              className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors w-fit mb-2"
             >
               <span className="material-symbols-outlined text-[16px]">
                 arrow_back
@@ -316,13 +316,13 @@ export const ExpertProfile: React.FC<NavProps> = ({
               {expert.tags?.map((t: string) => (
                 <span
                   key={t}
-                  className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-md"
+                  className="px-3 py-1 rounded-full bg-surface/50 border border-surface-border text-foreground text-xs font-bold uppercase tracking-wider backdrop-blur-md"
                 >
                   {t}
                 </span>
               ))}
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-light text-white leading-none">
+            <h1 className="text-5xl md:text-7xl font-display font-light text-foreground leading-none">
               {expert.name}
             </h1>
             <p className="text-xl md:text-2xl text-primary font-serif italic">
@@ -330,7 +330,7 @@ export const ExpertProfile: React.FC<NavProps> = ({
             </p>
           </div>
 
-          <div className="glass-card p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md min-w-[300px]">
+          <div className="glass-card p-6 rounded-2xl bg-surface/50 border border-surface-border backdrop-blur-md min-w-[300px]">
             <div className="flex items-center justify-between mb-2">
               <div className="flex text-[#F4C025]">
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -342,11 +342,11 @@ export const ExpertProfile: React.FC<NavProps> = ({
                   </span>
                 ))}
               </div>
-              <span className="text-white font-bold text-lg">
+              <span className="text-foreground font-bold text-lg">
                 {expert.rating.toFixed(1)}
               </span>
             </div>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="text-text-muted text-sm mb-6">
               {expert.review_count} consultations completed
             </p>
             <GlowButton
@@ -362,18 +362,18 @@ export const ExpertProfile: React.FC<NavProps> = ({
 
       <div className="max-w-4xl mx-auto px-6 mt-16 space-y-16">
         <section>
-          <h2 className="text-2xl font-display font-bold text-white mb-6 border-l-4 border-primary pl-4">
+          <h2 className="text-2xl font-display font-bold text-foreground mb-6 border-l-4 border-primary pl-4">
             About
           </h2>
           <div className="prose prose-invert prose-lg max-w-none">
-            <p className="text-white/80 leading-relaxed font-light text-lg">
+            <p className="text-foreground/80 leading-relaxed font-light text-lg">
               {expert.bio || "No biography available."}
             </p>
           </div>
         </section>
 
         <section>
-          <h2 className="text-2xl font-display font-bold text-white mb-6 border-l-4 border-primary pl-4">
+          <h2 className="text-2xl font-display font-bold text-foreground mb-6 border-l-4 border-primary pl-4">
             Specialties
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -386,14 +386,14 @@ export const ExpertProfile: React.FC<NavProps> = ({
             ).map((s: string, i: number) => (
               <div
                 key={i}
-                className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/5"
+                className="flex items-start gap-4 p-4 rounded-xl bg-surface-border/30 border border-surface-border"
               >
                 <span className="material-symbols-outlined text-primary mt-1">
                   auto_awesome
                 </span>
                 <div>
-                  <h4 className="text-white font-bold mb-1">{s}</h4>
-                  <p className="text-white/50 text-sm">
+                  <h4 className="text-foreground font-bold mb-1">{s}</h4>
+                  <p className="text-text-muted text-sm">
                     Deep insight and actionable guidance in this area.
                   </p>
                 </div>
@@ -513,8 +513,8 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-dark flex items-center justify-center">
-        <div className="text-white/40 tracking-widest uppercase text-xs animate-pulse">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-text-muted tracking-widest uppercase text-xs animate-pulse">
           Aligning schedules...
         </div>
       </div>
@@ -524,12 +524,12 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
   if (!expert) return <div>Expert not found</div>;
 
   return (
-    <div className="flex-1 bg-silk-pattern relative bg-background-dark min-h-screen">
+    <div className="flex-1 bg-silk-pattern relative bg-background min-h-screen">
       <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-12 md:py-16">
         {/* Back Button */}
         <button
           onClick={() => setScreen(Screen.EXPERTS)}
-          className="text-text-muted hover:text-white flex items-center gap-2 text-sm transition-colors group w-fit mb-8"
+          className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group w-fit mb-8"
         >
           <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
             arrow_back
@@ -543,7 +543,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
         >
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary via-amber-300 to-primary rounded-full opacity-50 group-hover:opacity-100 blur transition duration-500 animate-gradient bg-[length:200%_auto]"></div>
-            <div className="relative h-24 w-24 md:h-32 md:w-32 rounded-full overflow-hidden border-2 border-background-dark">
+            <div className="relative h-24 w-24 md:h-32 md:w-32 rounded-full overflow-hidden border-2 border-background">
               <img
                 alt="Expert Avatar"
                 className="h-full w-full object-cover"
@@ -553,7 +553,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
           </div>
           <div className="text-center md:text-left flex-1 space-y-2">
             <div className="flex flex-col md:flex-row md:items-center gap-3 justify-center md:justify-start">
-              <h1 className="text-4xl md:text-5xl font-light text-white font-display">
+              <h1 className="text-4xl md:text-5xl font-light text-foreground font-display">
                 {expert.name}
               </h1>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest w-fit mx-auto md:mx-0 shadow-[0_0_10px_rgba(244,192,37,0.2)]">
@@ -577,26 +577,26 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
             className="lg:col-span-4"
           >
             <GlassCard className="p-6 h-full">
-              <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
+              <h3 className="text-foreground font-bold text-lg mb-6 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">
                   auto_awesome
                 </span>
                 Selected Service
               </h3>
-              <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-primary/30 transition-all cursor-pointer group">
+              <div className="bg-surface-border/30 rounded-2xl p-6 border border-surface-border hover:border-primary/30 transition-all cursor-pointer group">
                 <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-bold text-white text-xl group-hover:text-primary transition-colors">
+                  <h4 className="font-bold text-foreground text-xl group-hover:text-primary transition-colors">
                     Standard Consultation
                   </h4>
                   <span className="text-primary font-bold text-xl">
                     ${(expert.price_per_min * 30).toFixed(2)}
                   </span>
                 </div>
-                <p className="text-sm text-white/50 mb-6 font-light leading-relaxed truncate-2-lines">
+                <p className="text-sm text-text-muted mb-6 font-light leading-relaxed truncate-2-lines">
                   30-minute deep dive session focusing on your specific
                   questions and chart analysis.
                 </p>
-                <div className="flex items-center gap-4 text-xs text-white/40 font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-4 text-xs text-text-muted font-bold uppercase tracking-widest">
                   <span className="flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-[16px] text-primary">
                       schedule
@@ -617,9 +617,9 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
             <GlassCard className="p-0 overflow-hidden h-full">
               <div className="flex flex-col md:flex-row h-full min-h-[500px]">
                 {/* DATE SELECTOR */}
-                <div className="p-8 md:w-1/2 md:border-r border-white/10 flex flex-col bg-surface-dark/30">
+                <div className="p-8 md:w-1/2 md:border-r border-surface-border flex flex-col bg-surface/30">
                   <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl font-bold text-white font-display">
+                    <h2 className="text-2xl font-bold text-foreground font-display">
                       Select Date
                     </h2>
                   </div>
@@ -636,8 +636,8 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                             aspect-square w-full flex flex-col items-center justify-center rounded-xl text-sm transition-all relative group
                             ${
                               isSelected
-                                ? "bg-primary text-background-dark font-bold shadow-[0_0_20px_rgba(244,192,37,0.4)]"
-                                : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/5"
+                                ? "bg-primary text-background font-bold shadow-[0_0_20px_rgba(244,192,37,0.4)]"
+                                : "bg-surface-border/30 text-text-muted hover:bg-surface-border/50 hover:text-foreground border border-surface-border"
                             }
                           `}
                         >
@@ -654,9 +654,9 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                 </div>
 
                 {/* SLOT SELECTOR */}
-                <div className="p-8 md:w-1/2 bg-black/40 flex flex-col">
+                <div className="p-8 md:w-1/2 bg-surface/50 flex flex-col">
                   <div className="mb-10">
-                    <h3 className="text-2xl font-bold text-white mb-2 font-display tracking-tight">
+                    <h3 className="text-2xl font-bold text-foreground mb-2 font-display tracking-tight">
                       {selectedDate.toLocaleDateString("en-US", {
                         weekday: "long",
                         month: "short",
@@ -681,12 +681,12 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                              ${
                                selectedSlot === slot
                                  ? "border-primary/50 bg-primary/10 shadow-[0_0_15px_rgba(244,192,37,0.1)]"
-                                 : "border-white/5 bg-white/5 hover:bg-white/10"
+                                 : "border-surface-border bg-surface-border/30 hover:bg-surface-border/50"
                              }
                             `}
                         >
                           <span
-                            className={`text-sm font-bold ${selectedSlot === slot ? "text-white" : "text-white/60"}`}
+                            className={`text-sm font-bold ${selectedSlot === slot ? "text-foreground" : "text-text-muted"}`}
                           >
                             {slot}
                           </span>
@@ -698,13 +698,13 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                         </button>
                       ))
                     ) : (
-                      <p className="text-white/30 text-sm">
+                      <p className="text-text-muted text-sm">
                         No availability on this day.
                       </p>
                     )}
                   </div>
 
-                  <div className="mt-8 pt-8 border-t border-white/10">
+                  <div className="mt-8 pt-8 border-t border-surface-border">
                     <GlowButton
                       disabled={!selectedSlot}
                       onClick={handleConfirm}
@@ -713,7 +713,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                     >
                       Confirm Time
                     </GlowButton>
-                    <p className="text-[10px] text-center text-white/20 mt-4 uppercase font-bold tracking-widest">
+                    <p className="text-[10px] text-center text-text-muted mt-4 uppercase font-bold tracking-widest">
                       Step 1 of 3: Selection
                     </p>
                   </div>
@@ -744,7 +744,7 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
   };
 
   return (
-    <div className="flex-1 bg-background-dark bg-silk-pattern py-16 min-h-screen">
+    <div className="flex-1 bg-background bg-silk-pattern py-16 min-h-screen">
       <div className="max-w-4xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -758,13 +758,13 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
             </span>
             Step 2 of 3: Consultation Details
           </div>
-          <h1 className="text-5xl md:text-6xl font-display font-light text-white mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-display font-light text-foreground mb-6 leading-tight">
             Consultation{" "}
             <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-200">
               Intake
             </span>
           </h1>
-          <p className="text-white/50 text-xl font-light max-w-2xl mx-auto">
+          <p className="text-text-muted text-xl font-light max-w-2xl mx-auto">
             Help your guide prepare for your session by sharing your current
             energy and intent.
           </p>
@@ -775,11 +775,11 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <GlassCard className="p-0 overflow-hidden border-white/5 shadow-2xl">
+          <GlassCard className="p-0 overflow-hidden border-surface-border shadow-2xl">
             <form className="relative" onSubmit={handleSubmit}>
               <div className="p-8 md:p-12 space-y-12">
                 <section className="space-y-8">
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-3 font-display">
+                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 font-display">
                     <span className="h-8 w-1 bg-primary rounded-full"></span>
                     What is your focus today?
                   </h2>
@@ -802,7 +802,7 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
                           onChange={(e) => setFocus(e.target.value)}
                           required
                         />
-                        <div className="h-full rounded-2xl border border-white/5 bg-white/[0.02] p-6 text-center group-hover:border-primary/30 group-hover:bg-white/[0.05] peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary transition-all flex flex-col items-center gap-4 justify-center min-h-[140px] relative overflow-hidden">
+                        <div className="h-full rounded-2xl border border-surface-border bg-surface-border/10 p-6 text-center group-hover:border-primary/30 group-hover:bg-surface-border/30 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary transition-all flex flex-col items-center gap-4 justify-center min-h-[140px] relative overflow-hidden">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 peer-checked:opacity-100 transition-opacity" />
                           <span className="material-symbols-outlined text-[32px] opacity-30 group-hover:opacity-60 peer-checked:opacity-100 transition-all transform group-hover:scale-110">
                             {f.i}
@@ -818,33 +818,33 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
 
                 <section className="space-y-6">
                   <div className="flex justify-between items-end">
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-3 font-display">
+                    <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 font-display">
                       <span className="h-8 w-1 bg-primary rounded-full"></span>
                       Your Questions
                     </h2>
-                    <span className="text-[10px] text-white/30 uppercase font-black tracking-widest">
+                    <span className="text-[10px] text-text-muted uppercase font-black tracking-widest">
                       Optional but recommended
                     </span>
                   </div>
                   <div className="relative group">
                     <textarea
-                      className="block w-full rounded-2xl border border-white/5 bg-white/[0.02] px-6 py-5 text-white placeholder-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none shadow-inner min-h-[160px] text-lg font-light leading-relaxed"
+                      className="block w-full rounded-2xl border border-surface-border bg-surface-border/10 px-6 py-5 text-foreground placeholder-text-muted focus:border-primary/50 focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none shadow-inner min-h-[160px] text-lg font-light leading-relaxed"
                       placeholder="Share your specific questions or areas where you feel blocked..."
                       value={questions}
                       onChange={(e) => setQuestions(e.target.value)}
                     ></textarea>
-                    <div className="absolute bottom-4 right-4 text-[10px] text-white/20 uppercase font-bold tracking-widest pointer-events-none group-focus-within:text-primary/40 transition-colors">
+                    <div className="absolute bottom-4 right-4 text-[10px] text-text-muted uppercase font-bold tracking-widest pointer-events-none group-focus-within:text-primary/40 transition-colors">
                       Max 1000 characters
                     </div>
                   </div>
                 </section>
               </div>
 
-              <div className="bg-black/40 border-t border-white/5 p-8 flex flex-col md:flex-row justify-between items-center gap-6">
+              <div className="bg-surface/50 border-t border-surface-border p-8 flex flex-col md:flex-row justify-between items-center gap-6">
                 <button
                   type="button"
                   onClick={() => setScreen(Screen.BOOKING)}
-                  className="text-white/40 hover:text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition-colors"
+                  className="text-text-muted hover:text-foreground text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition-colors"
                 >
                   <span className="material-symbols-outlined text-lg">
                     arrow_back
@@ -936,25 +936,25 @@ export const Delivery: React.FC<NavProps> = ({ setScreen, expertId }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center py-16 px-6 bg-background-dark bg-silk-pattern min-h-screen">
+    <div className="flex-1 flex flex-col items-center justify-center py-16 px-6 bg-background bg-silk-pattern min-h-screen">
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-5xl w-full flex flex-col gap-12"
       >
         <div className="text-center space-y-6">
-          <div className="inline-flex items-center gap-3 rounded-full border border-white/5 bg-white/[0.02] px-6 py-2 backdrop-blur-md mb-2 shadow-xl">
+          <div className="inline-flex items-center gap-3 rounded-full border border-surface-border bg-surface-border/10 px-6 py-2 backdrop-blur-md mb-2 shadow-xl">
             <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
               Step 3 of 3: Completion
             </span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-light tracking-tight text-white font-display leading-tight">
+          <h1 className="text-5xl md:text-7xl font-light tracking-tight text-foreground font-display leading-tight">
             Choose Your <br />
             <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-200">
               Delivery Method
             </span>
           </h1>
-          <p className="text-white/40 text-xl font-light max-w-xl mx-auto">
+          <p className="text-text-muted text-xl font-light max-w-xl mx-auto">
             Select how you would like to receive your personalized guidance.
           </p>
         </div>
@@ -980,7 +980,7 @@ export const Delivery: React.FC<NavProps> = ({ setScreen, expertId }) => {
 
         <button
           onClick={() => setScreen(Screen.INTAKE)}
-          className="mx-auto text-white/30 hover:text-white text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all mt-4"
+          className="mx-auto text-text-muted hover:text-foreground text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all mt-4"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Refine Intake Details
@@ -1001,7 +1001,7 @@ const DeliveryOption = ({ title, icon, desc, action, onClick, delay }: any) => (
     <GlassCard
       hoverEffect
       interactive
-      className="flex flex-col flex-1 bg-white/[0.02] border-white/5 group overflow-hidden p-0 rounded-3xl"
+      className="flex flex-col flex-1 bg-surface-border/10 border-surface-border group overflow-hidden p-0 rounded-3xl"
     >
       <div className="flex flex-col flex-1 h-full">
         <div className="p-10 flex flex-col items-center text-center flex-1">
@@ -1010,15 +1010,15 @@ const DeliveryOption = ({ title, icon, desc, action, onClick, delay }: any) => (
               {icon}
             </span>
           </div>
-          <h3 className="text-3xl font-bold text-white mb-4 font-display">
+          <h3 className="text-3xl font-bold text-foreground mb-4 font-display">
             {title}
           </h3>
-          <p className="text-white/40 leading-relaxed mb-8 flex-1 font-light text-lg">
+          <p className="text-text-muted leading-relaxed mb-8 flex-1 font-light text-lg">
             {desc}
           </p>
         </div>
         <div className="p-8 pt-0 w-full mt-auto">
-          <button className="w-full py-5 px-8 rounded-2xl bg-white/5 border border-white/10 group-hover:border-primary/50 group-hover:bg-primary/10 text-white font-bold transition-all flex items-center justify-center gap-3 text-sm uppercase tracking-[0.2em] group-hover:text-primary shadow-xl">
+          <button className="w-full py-5 px-8 rounded-2xl bg-surface-border/30 border border-surface-border group-hover:border-primary/50 group-hover:bg-primary/10 text-foreground font-bold transition-all flex items-center justify-center gap-3 text-sm uppercase tracking-[0.2em] group-hover:text-primary shadow-xl">
             {action}
             <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
               arrow_forward

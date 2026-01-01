@@ -65,13 +65,13 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
         <div className="absolute top-0 right-0 -mt-2 -mr-2 z-10">
           <button
             onClick={onClose}
-            className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
+            className="h-10 w-10 rounded-full bg-surface-border/30 border border-surface-border flex items-center justify-center text-text-muted hover:text-foreground hover:bg-surface-border/30 transition-all"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <GlassCard className="p-10 border-white/10 shadow-2xl relative overflow-hidden">
+        <GlassCard className="p-10 border-surface-border shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-amber-600"></div>
 
           <div className="text-center mb-8">
@@ -80,10 +80,10 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
                 auto_awesome
               </span>
             </div>
-            <h2 className="text-3xl font-display font-bold text-white mb-2">
+            <h2 className="text-3xl font-display font-bold text-foreground mb-2">
               {isLogin ? "Welcome Back" : "Join the Cosmos"}
             </h2>
-            <p className="text-white/40 text-sm">
+            <p className="text-text-muted text-sm">
               {isLogin
                 ? "Continue your celestial journey."
                 : "Create your astral profile today."}
@@ -99,7 +99,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-2"
                 >
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">
                     Full Name
                   </label>
                   <input
@@ -107,7 +107,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+                    className="w-full bg-surface-border/30 border border-surface-border rounded-xl px-4 py-3 text-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
                     placeholder="Arjun Sharma"
                   />
                 </motion.div>
@@ -115,7 +115,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
             </AnimatePresence>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">
                 Email Address
               </label>
               <input
@@ -123,13 +123,13 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+                className="w-full bg-surface-border/30 border border-surface-border rounded-xl px-4 py-3 text-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
                 placeholder="seeker@silkspark.com"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">
                 Password
               </label>
               <input
@@ -137,7 +137,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+                className="w-full bg-surface-border/30 border border-surface-border rounded-xl px-4 py-3 text-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
                 placeholder="••••••••"
               />
             </div>
@@ -170,7 +170,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
           <div className="mt-8 text-center">
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-xs text-white/40 hover:text-primary transition-colors font-medium"
+              className="text-xs text-text-muted hover:text-primary transition-colors font-medium"
             >
               {isLogin
                 ? "Don't have an account? Sign Up"

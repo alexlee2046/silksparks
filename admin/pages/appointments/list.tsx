@@ -26,7 +26,7 @@ export const AppointmentList: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-white/40 font-display animate-pulse">
+        <div className="text-text-muted font-display animate-pulse">
           Loading Appointments...
         </div>
       </div>
@@ -42,14 +42,14 @@ export const AppointmentList: React.FC = () => {
       case "cancelled":
         return "bg-red-500/10 border-red-500/20 text-red-400";
       default:
-        return "bg-white/5 border-white/10 text-white/40";
+        return "bg-surface-border/30 border-surface-border text-text-muted";
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-display font-light text-white tracking-tight">
+        <h1 className="text-3xl font-display font-light text-foreground tracking-tight">
           Appointments
         </h1>
         <GlowButton
@@ -61,9 +61,9 @@ export const AppointmentList: React.FC = () => {
         </GlowButton>
       </div>
 
-      <GlassCard className="p-0 border-white/5 overflow-hidden" intensity="low">
+      <GlassCard className="p-0 border-surface-border overflow-hidden" intensity="low">
         <table className="w-full text-left">
-          <thead className="bg-white/5 border-b border-white/5 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+          <thead className="bg-surface-border/30 border-b border-surface-border text-[10px] font-bold text-text-muted uppercase tracking-widest">
             <tr>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4">User</th>
@@ -76,7 +76,7 @@ export const AppointmentList: React.FC = () => {
             {appointments?.data.map((item: any) => (
               <tr
                 key={item.id}
-                className="hover:bg-white/5 transition-colors group"
+                className="hover:bg-surface-border/30 transition-colors group"
               >
                 <td className="px-6 py-4">
                   <span
@@ -87,20 +87,20 @@ export const AppointmentList: React.FC = () => {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-foreground">
                       {item.profiles?.full_name || "Unknown"}
                     </span>
-                    <span className="text-xs text-white/40">
+                    <span className="text-xs text-text-muted">
                       {item.profiles?.email}
                     </span>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-white">
+                  <span className="text-sm text-foreground">
                     {item.experts?.name || "Unassigned"}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-white/60">
+                <td className="px-6 py-4 text-sm text-text-muted">
                   {new Date(item.booked_at).toLocaleString()}
                 </td>
                 <td className="px-6 py-4">
@@ -115,7 +115,7 @@ export const AppointmentList: React.FC = () => {
                           },
                         })
                       }
-                      className="text-white/20 hover:text-white transition-colors"
+                      className="text-text-muted hover:text-foreground transition-colors"
                       title="Edit"
                     >
                       <span className="material-symbols-outlined text-[18px]">
@@ -124,7 +124,7 @@ export const AppointmentList: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-white/20 hover:text-rose-400 transition-colors"
+                      className="text-text-muted hover:text-rose-400 transition-colors"
                       title="Delete"
                     >
                       <span className="material-symbols-outlined text-[18px]">

@@ -12,11 +12,14 @@ import {
   type BirthChartAnalysisResponse,
   type TarotReadingRequest,
   type TarotReadingResponse,
+  type TarotFollowUpRequest,
+  type TarotFollowUpResponse,
   type DailySparkRequest,
   type DailySparkResponse,
   type PlanetaryPositions,
   type FiveElements,
   type TarotCard,
+  type LuckyElements,
 } from "./types";
 
 // ============ 服务注册 ============
@@ -72,7 +75,6 @@ export function setAIProvider(provider: AIProvider): void {
     return;
   }
   currentProvider = provider;
-  currentProvider = provider;
 }
 
 /**
@@ -118,6 +120,27 @@ export async function generateTarotReading(
 }
 
 /**
+ * 生成塔罗追问回答
+ *
+ * @example
+ * const result = await generateTarotFollowUp({
+ *   cards: [{ id: "m01", name: "The Fool", isReversed: false, ... }],
+ *   originalInterpretation: "...",
+ *   conversationHistory: [{ role: "user", content: "..." }],
+ *   followUpQuestion: "What about my career?"
+ * });
+ */
+export async function generateTarotFollowUp(
+  request: TarotFollowUpRequest,
+): Promise<TarotFollowUpResponse> {
+  const service = getService();
+  if (!service.generateTarotFollowUp) {
+    throw new Error("当前 AI 提供商不支持塔罗追问功能");
+  }
+  return service.generateTarotFollowUp(request);
+}
+
+/**
  * 生成每日灵感
  *
  * @example
@@ -136,59 +159,6 @@ export function clearAICache(): void {
   getService().clearCache();
 }
 
-// ============ 兼容层 (保持旧 API 兼容) ============
-
-/**
- * @deprecated 使用 generateBirthChartAnalysis 替代
- * 保持与旧 GeminiService API 的兼容性
- */
-export async function legacyGenerateBirthChartAnalysis(
-  name: string,
-  planets: PlanetaryPositions,
-  elements: FiveElements,
-): Promise<string> {
-  const result = await generateBirthChartAnalysis({
-    name,
-    birthDate: new Date(),
-    planets,
-    elements,
-  });
-  return result.analysis;
-}
-
-/**
- * @deprecated 使用 generateTarotReading 替代
- */
-export async function legacyGenerateTarotInterpretation(
-  cardName: string,
-  question: string,
-): Promise<string> {
-  const result = await generateTarotReading({
-    cards: [
-      {
-        id: "legacy",
-        name: cardName,
-        arcana: "Major",
-        image: "",
-        isReversed: false,
-      },
-    ],
-    question,
-    spreadType: "single",
-  });
-  return result.interpretation;
-}
-
-/**
- * @deprecated 使用 generateDailySpark 替代
- */
-export async function legacyGenerateDailySpark(
-  sign: string = "General",
-): Promise<string> {
-  const result = await generateDailySpark({ sign });
-  return result.message;
-}
-
 // ============ 类型导出 ============
 
 export type {
@@ -198,31 +168,29 @@ export type {
   BirthChartAnalysisResponse,
   TarotReadingRequest,
   TarotReadingResponse,
+  TarotFollowUpRequest,
+  TarotFollowUpResponse,
   DailySparkRequest,
   DailySparkResponse,
   PlanetaryPositions,
   FiveElements,
   TarotCard,
+  LuckyElements,
 };
 
 // ============ 默认导出 ============
 
 /**
- * AI 服务对象 (保持与 GeminiService 的 API 兼容)
+ * AI 服务对象
  */
 export const AIService = {
-  // 新 API
   generateBirthChartAnalysis,
   generateTarotReading,
+  generateTarotFollowUp,
   generateDailySpark,
   clearCache: clearAICache,
   setProvider: setAIProvider,
   getProvider: getCurrentProvider,
-
-  // 兼容 API (deprecated)
-  generateBirthChartAnalysisLegacy: legacyGenerateBirthChartAnalysis,
-  generateTarotInterpretation: legacyGenerateTarotInterpretation,
-  generateDailySparkLegacy: legacyGenerateDailySpark,
 };
 
 export default AIService;

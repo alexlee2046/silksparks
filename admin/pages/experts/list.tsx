@@ -37,7 +37,7 @@ const ExpertListContent: React.FC<{
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-white/40 font-display animate-pulse">
+        <div className="text-text-muted font-display animate-pulse">
           Summoning Experts...
         </div>
       </div>
@@ -47,7 +47,7 @@ const ExpertListContent: React.FC<{
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-display font-light text-white tracking-tight">
+        <h1 className="text-3xl font-display font-light text-foreground tracking-tight">
           Experts
         </h1>
         <GlowButton
@@ -59,9 +59,9 @@ const ExpertListContent: React.FC<{
         </GlowButton>
       </div>
 
-      <GlassCard className="p-0 border-white/5 overflow-hidden" intensity="low">
+      <GlassCard className="p-0 border-surface-border overflow-hidden" intensity="low">
         <table className="w-full text-left">
-          <thead className="bg-white/5 border-b border-white/5 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+          <thead className="bg-surface-border/30 border-b border-surface-border text-[10px] font-bold text-text-muted uppercase tracking-widest">
             <tr>
               <th className="px-6 py-4">Name / Title</th>
               <th className="px-6 py-4">Rate (min)</th>
@@ -74,7 +74,7 @@ const ExpertListContent: React.FC<{
             {experts?.data.map((expert: any) => (
               <tr
                 key={expert.id}
-                className="hover:bg-white/5 transition-colors group"
+                className="hover:bg-surface-border/30 transition-colors group"
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -82,7 +82,7 @@ const ExpertListContent: React.FC<{
                       <img
                         src={expert.image_url}
                         alt={expert.name}
-                        className="w-10 h-10 rounded-full object-cover border border-white/10"
+                        className="w-10 h-10 rounded-full object-cover border border-surface-border"
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
@@ -90,10 +90,10 @@ const ExpertListContent: React.FC<{
                       </div>
                     )}
                     <div>
-                      <div className="text-sm font-bold text-white">
+                      <div className="text-sm font-bold text-foreground">
                         {expert.name}
                       </div>
-                      <div className="text-xs text-white/40">
+                      <div className="text-xs text-text-muted">
                         {expert.title}
                       </div>
                     </div>
@@ -109,7 +109,7 @@ const ExpertListContent: React.FC<{
                       Online
                     </span>
                   ) : (
-                    <span className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/40 uppercase tracking-wider">
+                    <span className="px-2 py-1 rounded-full bg-surface-border/30 border border-surface-border text-[10px] font-bold text-text-muted uppercase tracking-wider">
                       Offline
                     </span>
                   )}
@@ -119,7 +119,7 @@ const ExpertListContent: React.FC<{
                     star
                   </span>
                   <span className="font-bold">{expert.rating}</span>
-                  <span className="text-white/20 text-xs ml-1">
+                  <span className="text-text-muted text-xs ml-1">
                     ({expert.review_count})
                   </span>
                 </td>
@@ -135,7 +135,7 @@ const ExpertListContent: React.FC<{
                           },
                         })
                       }
-                      className="text-white/20 hover:text-white transition-colors"
+                      className="text-text-muted hover:text-foreground transition-colors"
                       title="Edit"
                     >
                       <span className="material-symbols-outlined text-[18px]">
@@ -148,7 +148,7 @@ const ExpertListContent: React.FC<{
                           onDelete(expert.id);
                         }
                       }}
-                      className="text-white/20 hover:text-rose-400 transition-colors"
+                      className="text-text-muted hover:text-rose-400 transition-colors"
                       title="Delete"
                     >
                       <span className="material-symbols-outlined text-[18px]">

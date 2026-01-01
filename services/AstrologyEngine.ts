@@ -1,5 +1,5 @@
 import * as Astronomy from "astronomy-engine";
-import { Observer } from "astronomy-engine";
+import { getZodiacFromLongitude, type ZodiacSign } from "../lib/ZodiacUtils";
 
 export interface BirthData {
   date: Date;
@@ -8,13 +8,13 @@ export interface BirthData {
 }
 
 export interface PlanetaryPositions {
-  Sun: string;
-  Moon: string;
-  Mercury: string;
-  Venus: string;
-  Mars: string;
-  Jupiter: string;
-  Saturn: string;
+  Sun: ZodiacSign;
+  Moon: ZodiacSign;
+  Mercury: ZodiacSign;
+  Venus: ZodiacSign;
+  Mars: ZodiacSign;
+  Jupiter: ZodiacSign;
+  Saturn: ZodiacSign;
 }
 
 export interface FiveElementsDistribution {
@@ -25,30 +25,13 @@ export interface FiveElementsDistribution {
   Water: number;
 }
 
-const ZODIAC_SIGNS = [
-  "Aries",
-  "Taurus",
-  "Gemini",
-  "Cancer",
-  "Leo",
-  "Virgo",
-  "Libra",
-  "Scorpio",
-  "Sagittarius",
-  "Capricorn",
-  "Aquarius",
-  "Pisces",
-];
-
 export const AstrologyEngine = {
   /**
    * Calculates the Zodiac sign for a given celestial body's longitude.
-   * 0 = Aries, 30 = Taurus, etc.
+   * @deprecated Use getZodiacFromLongitude from lib/ZodiacUtils instead
    */
-  getZodiacSign(longitude: number): string {
-    const normalize = (longitude + 360) % 360;
-    const index = Math.floor(normalize / 30);
-    return ZODIAC_SIGNS[index];
+  getZodiacSign(longitude: number): ZodiacSign {
+    return getZodiacFromLongitude(longitude);
   },
 
   /**

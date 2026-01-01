@@ -73,7 +73,7 @@ const DashboardContent: React.FC<{
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-white/40 font-display animate-pulse">
+        <div className="text-text-muted font-display animate-pulse">
           Loading Dashboard...
         </div>
       </div>
@@ -82,7 +82,7 @@ const DashboardContent: React.FC<{
 
   return (
     <div className="space-y-8">
-      <h1 className="text-4xl font-display font-light text-white tracking-tight">
+      <h1 className="text-4xl font-display font-light text-foreground tracking-tight">
         Dashboard
       </h1>
 
@@ -110,11 +110,11 @@ const DashboardContent: React.FC<{
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
         <GlassCard
-          className="p-0 border-white/5 overflow-hidden min-h-[400px]"
+          className="p-0 border-surface-border overflow-hidden min-h-[400px]"
           intensity="low"
         >
-          <div className="p-6 border-b border-white/5 flex justify-between items-center">
-            <h3 className="text-lg font-bold text-white font-display">
+          <div className="p-6 border-b border-surface-border flex justify-between items-center">
+            <h3 className="text-lg font-bold text-foreground font-display">
               Recent Orders
             </h3>
             <GlowButton variant="secondary" onClick={() => list("orders")}>
@@ -123,20 +123,20 @@ const DashboardContent: React.FC<{
           </div>
           <div className="divide-y divide-white/5">
             {ordersData?.data.length === 0 ? (
-              <div className="p-8 text-center text-white/40">
+              <div className="p-8 text-center text-text-muted">
                 No orders found.
               </div>
             ) : (
               ordersData?.data.map((order: any) => (
                 <div
                   key={order.id}
-                  className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                  className="p-4 flex items-center justify-between hover:bg-surface-border/30 transition-colors"
                 >
                   <div className="flex flex-col">
-                    <span className="text-white font-bold text-sm">
+                    <span className="text-foreground font-bold text-sm">
                       Order #{order.id.slice(0, 8)}
                     </span>
-                    <span className="text-white/40 text-xs">
+                    <span className="text-text-muted text-xs">
                       {order.profiles?.email || "Guest"}
                     </span>
                   </div>
@@ -144,7 +144,7 @@ const DashboardContent: React.FC<{
                     <div className="text-primary font-mono font-bold">
                       ${Number(order.total).toFixed(2)}
                     </div>
-                    <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                    <div className="text-[10px] text-text-muted uppercase tracking-wider">
                       {new Date(order.created_at).toLocaleDateString()}
                     </div>
                   </div>
@@ -155,8 +155,8 @@ const DashboardContent: React.FC<{
         </GlassCard>
 
         {/* Quick Actions / System Status (Placeholder for now) */}
-        <GlassCard className="p-6 border-white/5 space-y-6" intensity="low">
-          <h3 className="text-lg font-bold text-white font-display">
+        <GlassCard className="p-6 border-surface-border space-y-6" intensity="low">
+          <h3 className="text-lg font-bold text-foreground font-display">
             Quick Actions
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -190,11 +190,11 @@ const DashboardContent: React.FC<{
             </GlowButton>
           </div>
 
-          <div className="pt-6 border-t border-white/5">
-            <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">
+          <div className="pt-6 border-t border-surface-border">
+            <h4 className="text-xs font-bold text-text-muted uppercase tracking-widest mb-4">
               System Status
             </h4>
-            <div className="flex items-center gap-3 text-sm text-white/60">
+            <div className="flex items-center gap-3 text-sm text-text-muted">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
               Database Connected
             </div>
@@ -217,7 +217,7 @@ const StatsCard = ({
   color: string;
 }) => (
   <GlassCard
-    className="p-6 border-white/5 relative overflow-hidden group"
+    className="p-6 border-surface-border relative overflow-hidden group"
     intensity="low"
   >
     <div
@@ -226,11 +226,11 @@ const StatsCard = ({
       <span className="material-symbols-outlined text-6xl">{icon}</span>
     </div>
     <div className="relative z-10">
-      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">
+      <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2">
         {label}
       </p>
       <div className="flex items-baseline gap-3">
-        <span className="text-4xl font-bold text-white font-display">
+        <span className="text-4xl font-bold text-foreground font-display">
           {value}
         </span>
       </div>

@@ -25,17 +25,17 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   intensity = "medium",
 }) => {
   const baseStyles =
-    "relative overflow-hidden border border-white/10 rounded-2xl backdrop-blur-md transition-all duration-300";
+    "relative overflow-hidden border border-surface-border rounded-2xl backdrop-blur-md transition-all duration-300";
 
   const intensityStyles = {
-    low: "bg-surface-dark/30",
-    medium: "bg-surface-dark/60",
-    high: "bg-surface-dark/90",
+    low: "bg-surface/30",
+    medium: "bg-surface/60",
+    high: "bg-surface/90",
   };
 
   const hoverStyles =
     hoverEffect || interactive
-      ? "hover:bg-surface-dark/80 hover:border-white/20 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:-translate-y-1"
+      ? "hover:bg-surface/80 hover:border-surface-border hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:-translate-y-1"
       : "";
 
   const cursorStyles = interactive ? "cursor-pointer" : "";

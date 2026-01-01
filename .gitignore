@@ -28,3 +28,12 @@ dist-ssr
 playwright-report/
 test-results/
 .env*.local
+
+# Test environment (contains sensitive credentials)
+.env.test
+
+# Serena MCP local cache
+.serena/
+
+# Supabase local temp files
+supabase/.temp/

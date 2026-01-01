@@ -86,7 +86,7 @@ const SystemSettingsContent: React.FC<{
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-white/40 font-display animate-pulse">
+        <div className="text-text-muted font-display animate-pulse">
           Accessing Core Mainframe...
         </div>
       </div>
@@ -169,19 +169,19 @@ const SystemSettingsContent: React.FC<{
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
-      <h1 className="text-3xl font-display font-light text-white tracking-tight">
+      <h1 className="text-3xl font-display font-light text-foreground tracking-tight">
         System Configuration
       </h1>
 
       {/* 1. Friendly AI Configuration Form */}
-      <GlassCard className="p-8 border-white/5" intensity="low">
+      <GlassCard className="p-8 border-surface-border" intensity="low">
         <div className="flex items-center gap-3 mb-6">
           <span className="material-symbols-outlined text-primary">
             psychology
           </span>
           <div>
-            <h2 className="text-xl font-bold text-white">AI Engine</h2>
-            <p className="text-xs text-white/40">
+            <h2 className="text-xl font-bold text-foreground">AI Engine</h2>
+            <p className="text-xs text-text-muted">
               Manage LLM providers and model parameters.
             </p>
           </div>
@@ -189,13 +189,13 @@ const SystemSettingsContent: React.FC<{
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* API Keys */}
-          <div className="col-span-1 md:col-span-2 space-y-4 p-4 bg-white/5 rounded-xl border border-white/5">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">
+          <div className="col-span-1 md:col-span-2 space-y-4 p-4 bg-surface-border/30 rounded-xl border border-surface-border">
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-widest">
               Credentials
             </h3>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                 OpenRouter Key (Recommended)
               </label>
               <div className="relative">
@@ -206,16 +206,16 @@ const SystemSettingsContent: React.FC<{
                     handleAiConfigChange("openrouter_key", e.target.value)
                   }
                   placeholder="sk-or-v1-..."
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 pl-10 text-white font-mono text-sm focus:border-primary/50 outline-none transition-colors"
+                  className="w-full bg-black/40 border border-surface-border rounded-lg px-4 py-3 pl-10 text-foreground font-mono text-sm focus:border-primary/50 outline-none transition-colors"
                 />
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/20 text-sm">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">
                   key
                 </span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                 Gemini Direct Key (Fallback)
               </label>
               <div className="relative">
@@ -226,9 +226,9 @@ const SystemSettingsContent: React.FC<{
                     handleAiConfigChange("gemini_key", e.target.value)
                   }
                   placeholder="AIzaSy..."
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 pl-10 text-white font-mono text-sm focus:border-primary/50 outline-none transition-colors"
+                  className="w-full bg-black/40 border border-surface-border rounded-lg px-4 py-3 pl-10 text-foreground font-mono text-sm focus:border-primary/50 outline-none transition-colors"
                 />
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/20 text-sm">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">
                   lock
                 </span>
               </div>
@@ -237,19 +237,19 @@ const SystemSettingsContent: React.FC<{
 
           {/* Model Params */}
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+            <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
               Model ID
             </label>
             <input
               type="text"
               value={aiConfig.model}
               onChange={(e) => handleAiConfigChange("model", e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white font-mono text-sm focus:border-primary/50 outline-none"
+              className="w-full bg-black/40 border border-surface-border rounded-lg px-4 py-3 text-foreground font-mono text-sm focus:border-primary/50 outline-none"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest flex justify-between">
+            <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest flex justify-between">
               <span>Temperature</span>
               <span className="text-primary">{aiConfig.temperature}</span>
             </label>
@@ -262,7 +262,7 @@ const SystemSettingsContent: React.FC<{
               onChange={(e) =>
                 handleAiConfigChange("temperature", parseFloat(e.target.value))
               }
-              className="w-full accent-primary h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+              className="w-full accent-primary h-1 bg-surface-border/30 rounded-lg appearance-none cursor-pointer"
             />
           </div>
         </div>
@@ -281,16 +281,16 @@ const SystemSettingsContent: React.FC<{
 
       {/* 2. AI Prompts Editor (Simple JSON/Textarea) */}
       {aiPrompts && (
-        <GlassCard className="p-6 border-white/5" intensity="low">
+        <GlassCard className="p-6 border-surface-border" intensity="low">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-sm">
                   chat
                 </span>
                 System Prompts
               </h3>
-              <p className="text-xs text-white/40 mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 Customize persona instructions for each module.
               </p>
             </div>
@@ -302,7 +302,7 @@ const SystemSettingsContent: React.FC<{
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 rows={10}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:border-primary/50 outline-none transition-colors leading-relaxed"
+                className="w-full bg-black/40 border border-surface-border rounded-xl px-4 py-3 text-foreground font-mono text-sm focus:border-primary/50 outline-none transition-colors leading-relaxed"
               />
               <div className="flex justify-end gap-3">
                 <GlowButton
@@ -322,7 +322,7 @@ const SystemSettingsContent: React.FC<{
             </div>
           ) : (
             <>
-              <div className="bg-black/40 rounded-xl p-4 border border-white/5 font-mono text-xs text-white/70 overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+              <div className="bg-black/40 rounded-xl p-4 border border-surface-border font-mono text-xs text-text-muted overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
                 {JSON.stringify(aiPrompts.value, null, 2)}
               </div>
               <div className="mt-4 flex justify-end">
@@ -342,13 +342,13 @@ const SystemSettingsContent: React.FC<{
       {/* 3. Other Settings */}
       {otherSettings.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-bold text-white/50 uppercase tracking-widest pl-2">
+          <h2 className="text-lg font-bold text-text-muted uppercase tracking-widest pl-2">
             Misc Settings
           </h2>
           {otherSettings.map((setting: any) => (
-            <GlassCard key={setting.key} className="p-6 border-white/5">
+            <GlassCard key={setting.key} className="p-6 border-surface-border">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-white font-bold capitalize">
+                <h3 className="text-foreground font-bold capitalize">
                   {setting.key.replace(/_/g, " ")}
                 </h3>
                 {editingKey !== setting.key && (
@@ -366,12 +366,12 @@ const SystemSettingsContent: React.FC<{
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     rows={4}
-                    className="w-full bg-black/40 border-white/10 rounded-lg text-white font-mono text-sm p-3"
+                    className="w-full bg-black/40 border-surface-border rounded-lg text-foreground font-mono text-sm p-3"
                   />
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => setEditingKey(null)}
-                      className="text-white/40 text-sm px-3 py-1"
+                      className="text-text-muted text-sm px-3 py-1"
                     >
                       Cancel
                     </button>
@@ -384,7 +384,7 @@ const SystemSettingsContent: React.FC<{
                   </div>
                 </div>
               ) : (
-                <pre className="text-xs text-white/50 overflow-x-auto">
+                <pre className="text-xs text-text-muted overflow-x-auto">
                   {JSON.stringify(setting.value, null, 2)}
                 </pre>
               )}

@@ -1,3 +1,18 @@
+/**
+ * @deprecated 使用 lib/paths.ts 中的 PATHS 常量替代
+ *
+ * 新代码请使用:
+ * ```ts
+ * import { PATHS } from "./lib/paths";
+ * import { useNavigate } from "react-router-dom";
+ *
+ * const navigate = useNavigate();
+ * navigate(PATHS.HOROSCOPE);
+ * navigate(PATHS.PRODUCT(productId));
+ * ```
+ *
+ * Screen enum 和 NavProps 将在未来版本移除。
+ */
 export enum Screen {
   HOME = "HOME",
   BIRTH_CHART = "BIRTH_CHART",
