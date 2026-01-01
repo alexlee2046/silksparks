@@ -1,4 +1,12 @@
 {
+  "error": {
+    "accessRestricted": "访问受限",
+    "unauthorized": "未授权",
+    "pleaseSignIn": "请登录以继续"
+  },
+  "user": {
+    "defaultName": "探寻者"
+  },
   "common": {
     "appName": "丝与光",
     "tagline": "探索你的宇宙之路",
@@ -75,6 +83,10 @@
   "birthChart": {
     "title": "星盘分析",
     "subtitle": "输入你的出生信息，揭示你的宇宙蓝图",
+    "locked": {
+      "title": "星盘已锁定",
+      "description": "请完善你的出生资料以解锁你的宇宙蓝图。"
+    },
     "form": {
       "name": "姓名",
       "birthDate": "出生日期",
@@ -141,6 +153,7 @@
     "viewAll": "查看全部"
   },
   "footer": {
+    "brandDescription": "融合古老天文智慧与前沿人工智能，照亮你的前行之路。",
     "copyright": "版权所有",
     "explore": "探索",
     "support": "支持",

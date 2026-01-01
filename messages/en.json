@@ -1,4 +1,12 @@
 {
+  "error": {
+    "accessRestricted": "Access Restricted",
+    "unauthorized": "Unauthorized",
+    "pleaseSignIn": "Please sign in to continue"
+  },
+  "user": {
+    "defaultName": "Seeker"
+  },
   "common": {
     "appName": "Silk & Spark",
     "tagline": "Discover Your Cosmic Path",
@@ -75,6 +83,10 @@
   "birthChart": {
     "title": "Birth Chart Analysis",
     "subtitle": "Enter your birth details to reveal your cosmic blueprint",
+    "locked": {
+      "title": "Chart Locked",
+      "description": "Please complete your birth profile to unlock your cosmic blueprint."
+    },
     "form": {
       "name": "Name",
       "birthDate": "Birth Date",
@@ -141,6 +153,7 @@
     "viewAll": "View All"
   },
   "footer": {
+    "brandDescription": "Merging ancient celestial wisdom with cutting-edge intelligence to illuminate your path.",
     "copyright": "All rights reserved",
     "explore": "Explore",
     "support": "Support",

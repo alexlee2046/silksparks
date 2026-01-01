@@ -5,13 +5,14 @@ import { UserProvider, useUser } from "./context/UserContext";
 import { CartProvider } from "./context/CartContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { PerformanceProvider } from "./context/PerformanceContext";
-import { LanguageProvider } from "./context/LanguageContext";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { Auth } from "./components/Auth";
 import { CartDrawer } from "./components/CartDrawer";
 import { Toaster } from "react-hot-toast";
 import { useScreenNavigation } from "./hooks/useAppNavigate";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import * as m from "./src/paraglide/messages";
 
 // ============ 页面组件导入 (Lazy Loading) ============
 // 首页直接加载 (LCP 关键路径)
@@ -70,7 +71,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   onAuthClick,
 }) => {
   const { session, user, loading } = useUser();
+  const { locale } = useLanguage();
   const navigate = useNavigate();
+  void locale; // 确保语言切换时重渲染
 
   if (loading) {
     return <LoadingSpinner />;
@@ -84,23 +87,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <span className="material-symbols-outlined text-4xl">lock</span>
         </div>
         <h2 className="text-3xl font-display font-bold text-foreground uppercase tracking-wider">
-          Access Restricted
+          {m["error.accessRestricted"]()}
         </h2>
         <p className="text-text-muted max-w-sm">
-          This area is reserved for seekers. Please sign in to view your cosmic
-          space.
+          {m["error.pleaseSignIn"]()}
         </p>
         <button
           onClick={onAuthClick}
           className="px-10 py-4 bg-primary text-background-dark font-bold rounded-xl shadow-2xl hover:bg-white transition-all"
         >
-          Sign In Now
+          {m["common.signIn"]()}
         </button>
         <button
           onClick={() => navigate("/")}
           className="text-text-muted text-sm hover:text-foreground transition-colors"
         >
-          Return Home
+          {m["nav.home"]()}
         </button>
       </div>
     );
@@ -114,17 +116,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <span className="material-symbols-outlined text-4xl">security</span>
         </div>
         <h2 className="text-3xl font-display font-bold text-foreground uppercase tracking-wider">
-          Unauthorized
+          {m["error.unauthorized"]()}
         </h2>
         <p className="text-text-muted max-w-sm">
-          You do not have sufficient permissions to access the Cosmic Control
-          Center.
+          {m["error.pleaseSignIn"]()}
         </p>
         <button
           onClick={() => navigate("/")}
           className="px-10 py-4 bg-surface-border/30 text-foreground font-bold rounded-xl hover:bg-white/20 transition-all"
         >
-          Return to Safety
+          {m["nav.home"]()}
         </button>
       </div>
     );

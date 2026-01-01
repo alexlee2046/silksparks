@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Screen, NavProps } from "../types";
 import { useUser } from "../context/UserContext";
+import { useLanguage } from "../context/LanguageContext";
 import {
   AstrologyEngine,
   PlanetaryPositions,
@@ -10,9 +11,12 @@ import AIService from "../services/ai";
 import { RateLimitError } from "../services/ai/SupabaseAIProvider";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import * as m from "../src/paraglide/messages";
 
 export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
   const { user, isBirthDataComplete } = useUser();
+  const { locale } = useLanguage();
+  void locale; // 确保语言切换时重渲染
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
   const [loadingAI, setLoadingAI] = useState(false);
 
@@ -44,7 +48,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
       setLoadingAI(true);
       try {
         const response = await AIService.generateBirthChartAnalysis({
-          name: user.name || "Seeker",
+          name: user.name || m["user.defaultName"](),
           birthDate: user.birthData.date || new Date(),
           planets,
           elements,
@@ -87,15 +91,15 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
         >
           lock
         </motion.span>
-        <h2 className="text-2xl font-bold mb-2">Chart Locked</h2>
+        <h2 className="text-2xl font-bold mb-2">{m["birthChart.locked.title"]()}</h2>
         <p className="text-text-muted mb-6">
-          Please complete your birth profile to unlock your cosmic blueprint.
+          {m["birthChart.locked.description"]()}
         </p>
         <button
           onClick={() => setScreen(Screen.HOME)}
           className="bg-primary hover:bg-primary-hover transition-colors text-background-dark font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-primary/20"
         >
-          Go to Setup
+          {m["nav.home"]()}
         </button>
       </div>
     );
