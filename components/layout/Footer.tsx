@@ -48,7 +48,6 @@ export const Footer: React.FC = () => {
           <div className="col-span-2 md:col-span-4 space-y-8">
             <Link
               to="/"
-              aria-label="Go to home page"
               className="flex items-center gap-3 text-foreground group"
             >
               <span
@@ -73,7 +72,7 @@ export const Footer: React.FC = () => {
 
           {/* The Spark - 占星/塔罗功能 */}
           <div className="md:col-span-2 space-y-5">
-            <h4 className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level="2">
               <span
                 className="material-symbols-outlined text-primary text-[14px]"
                 aria-hidden="true"
@@ -81,7 +80,7 @@ export const Footer: React.FC = () => {
                 auto_awesome
               </span>{" "}
               The Spark
-            </h4>
+            </p>
             <ul className="flex flex-col gap-3 text-xs font-medium">
               <FooterLink to="/horoscope">Birth Chart</FooterLink>
               <FooterLink to="/horoscope/report">Astrology Report</FooterLink>
@@ -92,7 +91,7 @@ export const Footer: React.FC = () => {
 
           {/* The Silk - 商店/咨询 */}
           <div className="md:col-span-2 space-y-5">
-            <h4 className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level="2">
               <span
                 className="material-symbols-outlined text-primary text-[14px]"
                 aria-hidden="true"
@@ -100,7 +99,7 @@ export const Footer: React.FC = () => {
                 diamond
               </span>{" "}
               The Silk
-            </h4>
+            </p>
             <ul className="flex flex-col gap-3 text-xs font-medium">
               <FooterLink to="/shop">Shop Artifacts</FooterLink>
               <FooterLink to="/experts">Expert Guides</FooterLink>
@@ -110,7 +109,7 @@ export const Footer: React.FC = () => {
 
           {/* My Space - 用户中心 */}
           <div className="md:col-span-2 space-y-5">
-            <h4 className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level="2">
               <span
                 className="material-symbols-outlined text-primary text-[14px]"
                 aria-hidden="true"
@@ -118,7 +117,7 @@ export const Footer: React.FC = () => {
                 person
               </span>{" "}
               My Space
-            </h4>
+            </p>
             <ul className="flex flex-col gap-3 text-xs font-medium">
               <FooterLink to="/dashboard">Dashboard</FooterLink>
               <FooterLink to="/dashboard/archives">Archives</FooterLink>
@@ -128,7 +127,7 @@ export const Footer: React.FC = () => {
 
           {/* Newsletter */}
           <div className="col-span-2 md:col-span-2 space-y-5">
-            <h4 className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level="2">
               <span
                 className="material-symbols-outlined text-primary text-[14px]"
                 aria-hidden="true"
@@ -136,7 +135,7 @@ export const Footer: React.FC = () => {
                 mail
               </span>{" "}
               Newsletter
-            </h4>
+            </p>
             <p className="text-xs leading-relaxed">
               Lunar updates & exclusive drops.
             </p>

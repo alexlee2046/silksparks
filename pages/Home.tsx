@@ -245,7 +245,7 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                 {isBirthDataComplete ? m["home.hero.ctaExisting"]() : m["home.hero.cta"]()}
               </motion.button>
             </div>
-            <p className="mt-3 text-[10px] text-text-muted/60 text-center flex items-center justify-center gap-1 uppercase tracking-widest">
+            <p className="mt-3 text-[10px] text-text-muted text-center flex items-center justify-center gap-1 uppercase tracking-widest">
               <span className="material-symbols-outlined text-[12px]">
                 lock
               </span>
@@ -362,7 +362,7 @@ const FeatureCard = ({ icon, title, desc, action, onClick, index }: any) => (
         <span className="material-symbols-outlined text-[28px]">{icon}</span>
       </div>
       <div>
-        <h3 className="text-2xl font-bold text-foreground mb-3">{title}</h3>
+        <h2 className="text-2xl font-bold text-foreground mb-3">{title}</h2>
         <p className="text-text-muted text-base leading-relaxed">{desc}</p>
       </div>
       <div className="mt-2 inline-flex items-center text-sm font-bold text-primary hover:text-foreground transition-colors">

@@ -201,7 +201,7 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-text-muted uppercase">
                   Place of Birth
-                  <span className="text-text-muted/60 font-normal ml-1">(optional)</span>
+                  <span className="text-text-muted font-normal ml-1">(optional)</span>
                 </label>
                 {(tempLocation || locationSkipped) && (
                   <button

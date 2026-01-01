@@ -61,7 +61,7 @@ const LanguageToggle: React.FC = () => {
         <span className="material-symbols-outlined !text-[16px] text-text-muted group-hover:text-primary transition-colors" aria-hidden="true">
           translate
         </span>
-        <span className="text-[11px] font-bold text-text-muted group-hover:text-primary transition-colors uppercase">
+        <span className="text-[11px] font-bold text-text-muted group-hover:text-primary transition-colors uppercase" aria-hidden="true">
           {locale}
         </span>
       </button>
