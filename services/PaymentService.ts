@@ -118,8 +118,8 @@ export const PaymentService = {
   },
 
   /**
-   * Validate inventory availability
-   * In production, this checks against database
+   * Validate product availability
+   * Note: products 表没有 inventory 列，仅验证产品存在
    */
   async checkInventory(items: CartItem[]): Promise<InventoryCheckResult> {
     try {
@@ -132,29 +132,26 @@ export const PaymentService = {
         return { available: true, failedItems: [] };
       }
 
-      // Check inventory in database
+      // Verify products exist (inventory 列不存在)
       const { data: products, error } = await supabase
         .from("products")
-        .select("id, name, inventory")
+        .select("id, title")
         .in("id", productIds);
 
       if (error) {
-        console.error("[PaymentService] Inventory check failed:", error);
-        // Fail-safe: allow checkout if inventory check fails
+        console.error("[PaymentService] Product check failed:", error);
+        // Fail-safe: allow checkout if check fails
         return { available: true, failedItems: [] };
       }
 
-      const productMap = new Map(products?.map((p) => [p.id, p]) || []);
+      const existingIds = new Set(products?.map((p) => p.id) || []);
       const failedItems: string[] = [];
 
       for (const item of items) {
         if (typeof item.id !== "number") continue;
 
-        const product = productMap.get(item.id);
-        if (!product) {
+        if (!existingIds.has(item.id)) {
           failedItems.push(`${item.name} (not found)`);
-        } else if (product.inventory !== null && product.inventory < item.quantity) {
-          failedItems.push(`${item.name} (only ${product.inventory} available)`);
         }
       }
 
@@ -163,7 +160,7 @@ export const PaymentService = {
         failedItems,
       };
     } catch (error) {
-      console.error("[PaymentService] Inventory check error:", error);
+      console.error("[PaymentService] Product check error:", error);
       // Fail-safe: allow checkout
       return { available: true, failedItems: [] };
     }

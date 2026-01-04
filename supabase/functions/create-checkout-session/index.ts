@@ -117,9 +117,10 @@ serve(async (req) => {
       );
     }
 
+    // 查询产品验证价格 (products 表没有 stock 列)
     const { data: products, error: productsError } = await supabase
       .from("products")
-      .select("id, price, name, stock")
+      .select("id, price, title")
       .in("id", productIds);
 
     if (productsError || !products) {
@@ -131,9 +132,9 @@ serve(async (req) => {
     }
 
     // Create a map of verified prices from database
-    const priceMap = new Map(products.map(p => [p.id, { price: p.price, name: p.name, stock: p.stock }]));
+    const priceMap = new Map(products.map(p => [p.id, { price: p.price, name: p.title }]));
 
-    // Validate each item price and stock
+    // Validate each item price
     const validatedItems: CartItem[] = [];
     for (const item of items) {
       const productId = typeof item.id === "number" ? item.id : parseInt(item.id as string, 10);
@@ -153,17 +154,6 @@ serve(async (req) => {
           JSON.stringify({
             error: "Price has changed. Please refresh your cart.",
             code: "PRICE_MISMATCH"
-          }),
-          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Check stock availability
-      if (dbProduct.stock !== null && dbProduct.stock < item.quantity) {
-        return new Response(
-          JSON.stringify({
-            error: `Insufficient stock for ${dbProduct.name}. Available: ${dbProduct.stock}`,
-            code: "INSUFFICIENT_STOCK"
           }),
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
