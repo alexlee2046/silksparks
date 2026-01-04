@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Screen, NavProps } from "../../types";
 import AIService from "../../services/ai";
 import { RateLimitError } from "../../services/ai/SupabaseAIProvider";
@@ -25,8 +26,10 @@ interface DrawnTarotCard extends TarotCardType {
 type ReadingState = "idle" | "shuffling" | "selecting" | "drawing" | "revealed";
 
 export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
+  const navigate = useNavigate();
   const { addArchive, session } = useUser();
   const userId = session?.user?.id ?? null;
+  const isLoggedIn = !!session?.user;
 
   // 状态管理
   const [readingState, setReadingState] = useState<ReadingState>("idle");
@@ -36,6 +39,8 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
   const [tarotSession, setTarotSession] = useState<DailyTarotResult | null>(
     null
   );
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // 初始化每日塔罗会话（基于种子，同一天结果一致）
   const initSession = useCallback(() => {
@@ -110,11 +115,23 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
         } catch (e) {
           console.error("[TarotDaily] Tarot AI error:", e);
           if (e instanceof RateLimitError) {
-            toast.error("Daily AI limit reached", { duration: 4000 });
+            // 显示登录引导而不是 toast
+            setShowLoginPrompt(true);
+            setAiError("rate_limit");
+            setInterpretation("");
+          } else {
+            // 其他 AI 错误，显示 fallback 消息和登录引导
+            const errorMsg = e instanceof Error ? e.message : "AI service unavailable";
+            setAiError(errorMsg);
+            if (!isLoggedIn) {
+              setShowLoginPrompt(true);
+              setInterpretation("");
+            } else {
+              setInterpretation(
+                "The stars are cloudy... but this card suggests hidden potential."
+              );
+            }
           }
-          setInterpretation(
-            "The stars are cloudy... but this card suggests hidden potential."
-          );
         }
 
         setReadingState("revealed");
@@ -130,6 +147,8 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
     setInterpretation("");
     setRecommendations([]);
     setTarotSession(null);
+    setShowLoginPrompt(false);
+    setAiError(null);
   }, []);
 
   // 取消选牌
@@ -393,9 +412,39 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                       <span className="text-[#F4C025]">✦</span> AI
                       Interpretation
                     </h3>
-                    <p className="text-gray-300 leading-relaxed text-lg font-light">
-                      {interpretation || "Interpreting the stars..."}
-                    </p>
+
+                    {showLoginPrompt ? (
+                      <div className="text-center py-4">
+                        <div className="mb-4">
+                          <span className="material-symbols-outlined text-[#F4C025] text-4xl mb-2 block">
+                            lock
+                          </span>
+                          <p className="text-gray-300 text-lg font-light mb-2">
+                            {aiError === "rate_limit"
+                              ? "You've reached your daily reading limit"
+                              : "Sign in to unlock AI interpretations"}
+                          </p>
+                          <p className="text-text-muted text-sm">
+                            {aiError === "rate_limit"
+                              ? "Sign in to get more free readings"
+                              : "Create an account to access personalized card readings"}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => navigate("/dashboard")}
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-[#F4C025] text-black font-bold rounded-full hover:bg-[#F4C025]/90 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-lg">
+                            login
+                          </span>
+                          Sign In to Continue
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-gray-300 leading-relaxed text-lg font-light">
+                        {interpretation || "Interpreting the stars..."}
+                      </p>
+                    )}
                   </div>
 
                   {recommendations.length > 0 && (

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Screen, NavProps } from "../../types";
 import AIService from "../../services/ai";
 import { RateLimitError } from "../../services/ai/SupabaseAIProvider";
@@ -27,8 +28,10 @@ type ReadingState = "idle" | "shuffling" | "selecting" | "drawing" | "revealed";
 const POSITION_LABELS = ["The Past", "The Present", "The Future"];
 
 export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
+  const navigate = useNavigate();
   const { addArchive, session } = useUser();
   const userId = session?.user?.id ?? null;
+  const isLoggedIn = !!session?.user;
 
   const [readingState, setReadingState] = useState<ReadingState>("idle");
   const [cards, setCards] = useState<TarotCardType[]>([]);
@@ -37,6 +40,8 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
   const [tarotSession, setTarotSession] = useState<SpreadTarotResult | null>(
     null
   );
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // 开始抽牌流程
   const handleStartSession = useCallback(() => {
@@ -104,11 +109,21 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
         } catch (e) {
           console.error("[TarotSpread] 3-card spread error:", e);
           if (e instanceof RateLimitError) {
-            toast.error("Daily AI limit reached", { duration: 4000 });
+            setShowLoginPrompt(true);
+            setAiError("rate_limit");
+            setInterpretation("");
+          } else {
+            const errorMsg = e instanceof Error ? e.message : "AI service unavailable";
+            setAiError(errorMsg);
+            if (!isLoggedIn) {
+              setShowLoginPrompt(true);
+              setInterpretation("");
+            } else {
+              setInterpretation(
+                "The veil is thick today... but the cards speak of transformation."
+              );
+            }
           }
-          setInterpretation(
-            "The veil is thick today... but the cards speak of transformation."
-          );
         }
         setReadingState("revealed");
       }, 1500);
@@ -123,6 +138,8 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
     setInterpretation("");
     setRecommendations([]);
     setTarotSession(null);
+    setShowLoginPrompt(false);
+    setAiError(null);
   }, []);
 
   // 取消选牌
@@ -315,14 +332,41 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
                 </div>
               </div>
               <div className="space-y-6 text-sm text-text-muted">
-                <div className="p-4 rounded-lg bg-background/50 border border-surface-border border-l-4 border-l-primary">
-                  <strong className="block text-primary text-xs uppercase tracking-widest mb-2">
-                    Synthesis
-                  </strong>
-                  <p className="text-text-muted leading-relaxed font-light text-lg">
-                    {interpretation}
-                  </p>
-                </div>
+                {showLoginPrompt ? (
+                  <div className="p-6 rounded-lg bg-background/50 border border-surface-border text-center">
+                    <span className="material-symbols-outlined text-[#F4C025] text-4xl mb-3 block">
+                      lock
+                    </span>
+                    <p className="text-gray-300 text-lg font-light mb-2">
+                      {aiError === "rate_limit"
+                        ? "You've reached your daily reading limit"
+                        : "Sign in to unlock AI interpretations"}
+                    </p>
+                    <p className="text-text-muted text-sm mb-4">
+                      {aiError === "rate_limit"
+                        ? "Sign in to get more free readings"
+                        : "Create an account to access personalized card readings"}
+                    </p>
+                    <button
+                      onClick={() => navigate("/dashboard")}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#F4C025] text-black font-bold rounded-full hover:bg-[#F4C025]/90 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        login
+                      </span>
+                      Sign In to Continue
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-lg bg-background/50 border border-surface-border border-l-4 border-l-primary">
+                    <strong className="block text-primary text-xs uppercase tracking-widest mb-2">
+                      Synthesis
+                    </strong>
+                    <p className="text-text-muted leading-relaxed font-light text-lg">
+                      {interpretation}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Recommendations */}

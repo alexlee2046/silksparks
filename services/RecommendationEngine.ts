@@ -232,7 +232,7 @@ export const RecommendationEngine = {
     const { data, error } = await supabase
       .from("products")
       .select("id, title, price, description, image_url")
-      .eq("is_featured", true)
+      .order("created_at", { ascending: false })
       .limit(20); // 缓存更多以备不同 limit 请求
 
     if (error || !data) {
