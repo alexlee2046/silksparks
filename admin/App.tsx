@@ -1,5 +1,5 @@
 import React from "react";
-import { Refine, Authenticated } from "@refinedev/core";
+import { Refine, useIsAuthenticated } from "@refinedev/core";
 import { dataProvider } from "@refinedev/supabase";
 import routerBindings, {
   NavigateToResource,
@@ -36,7 +36,6 @@ import { AppointmentList } from "./pages/appointments/list";
 import { AppointmentCreate } from "./pages/appointments/create";
 import { AppointmentEdit } from "./pages/appointments/edit";
 
-// Custom Auth Provider to use existing Supabase session
 // Custom Auth Provider to use existing Supabase session
 const authProvider = {
   login: async () => {
@@ -125,6 +124,32 @@ const authProvider = {
   },
 };
 
+// Custom auth wrapper using useIsAuthenticated hook
+// (Refine's <Authenticated> component doesn't render properly in nested Routes)
+const CustomAuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { data: authData, isLoading, isError } = useIsAuthenticated();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin h-10 w-10 border-2 border-amber-400/20 border-t-amber-400 rounded-full mx-auto mb-4"></div>
+          <p className="text-sm text-gray-400">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !authData?.authenticated) {
+    // Redirect to home page
+    window.location.href = "/";
+    return null;
+  }
+
+  return <>{children}</>;
+};
+
+// Main AdminApp with custom auth wrapper (fixes Refine <Authenticated> issue)
 export const AdminApp: React.FC = () => {
   return (
     <Refine
@@ -247,61 +272,58 @@ export const AdminApp: React.FC = () => {
         warnWhenUnsavedChanges: true,
       }}
     >
-      <Routes>
-        <Route
-          element={
-            <Authenticated key="admin-auth" redirectOnFail="/">
-              <AdminLayout />
-            </Authenticated>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="products">
-            <Route index element={<ProductList />} />
-            <Route path="create" element={<ProductCreate />} />
-            <Route path="edit/:id" element={<ProductEdit />} />
+      <CustomAuthWrapper>
+        <Routes>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="products">
+              <Route index element={<ProductList />} />
+              <Route path="create" element={<ProductCreate />} />
+              <Route path="edit/:id" element={<ProductEdit />} />
+            </Route>
+            <Route path="experts">
+              <Route index element={<ExpertList />} />
+              <Route path="create" element={<ExpertCreate />} />
+              <Route path="edit/:id" element={<ExpertEdit />} />
+            </Route>
+            <Route path="consultations">
+              <Route index element={<ConsultationList />} />
+              <Route path="create" element={<ConsultationCreate />} />
+              <Route path="edit/:id" element={<ConsultationEdit />} />
+            </Route>
+            <Route path="orders">
+              <Route index element={<OrderList />} />
+              <Route path="show/:id" element={<OrderShow />} />
+            </Route>
+            <Route path="archives">
+              <Route index element={<ArchiveList />} />
+              <Route path="create" element={<ArchiveCreate />} />
+              <Route path="edit/:id" element={<ArchiveEdit />} />
+            </Route>
+            <Route path="tags">
+              <Route index element={<TagList />} />
+              <Route path="create" element={<TagCreate />} />
+              <Route path="edit/:id" element={<TagEdit />} />
+            </Route>
+            <Route path="shipping">
+              <Route index element={<ShippingList />} />
+              <Route path="create" element={<ShippingCreate />} />
+              <Route path="edit/:id" element={<ShippingEdit />} />
+            </Route>
+            <Route path="appointments">
+              <Route index element={<AppointmentList />} />
+              <Route path="create" element={<AppointmentCreate />} />
+              <Route path="edit/:id" element={<AppointmentEdit />} />
+            </Route>
+            <Route path="profiles" element={<ProfileList />} />
+            <Route path="settings" element={<SystemSettingsList />} />
+            <Route path="*" element={<div>Page Not Found</div>} />
           </Route>
-          <Route path="experts">
-            <Route index element={<ExpertList />} />
-            <Route path="create" element={<ExpertCreate />} />
-            <Route path="edit/:id" element={<ExpertEdit />} />
-          </Route>
-          <Route path="consultations">
-            <Route index element={<ConsultationList />} />
-            <Route path="create" element={<ConsultationCreate />} />
-            <Route path="edit/:id" element={<ConsultationEdit />} />
-          </Route>
-          <Route path="orders">
-            <Route index element={<OrderList />} />
-            <Route path="show/:id" element={<OrderShow />} />
-          </Route>
-          <Route path="archives">
-            <Route index element={<ArchiveList />} />
-            <Route path="create" element={<ArchiveCreate />} />
-            <Route path="edit/:id" element={<ArchiveEdit />} />
-          </Route>
-          <Route path="tags">
-            <Route index element={<TagList />} />
-            <Route path="create" element={<TagCreate />} />
-            <Route path="edit/:id" element={<TagEdit />} />
-          </Route>
-          <Route path="shipping">
-            <Route index element={<ShippingList />} />
-            <Route path="create" element={<ShippingCreate />} />
-            <Route path="edit/:id" element={<ShippingEdit />} />
-          </Route>
-          <Route path="appointments">
-            <Route index element={<AppointmentList />} />
-            <Route path="create" element={<AppointmentCreate />} />
-            <Route path="edit/:id" element={<AppointmentEdit />} />
-          </Route>
-          <Route path="profiles" element={<ProfileList />} />
-          <Route path="settings" element={<SystemSettingsList />} />
-          <Route path="*" element={<div>Page Not Found</div>} />
-        </Route>
-      </Routes>
+        </Routes>
+      </CustomAuthWrapper>
       <UnsavedChangesNotifier />
       <DocumentTitleHandler />
     </Refine>
   );
 };
+

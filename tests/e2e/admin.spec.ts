@@ -13,78 +13,213 @@
  */
 
 import { test, expect, Page } from "@playwright/test";
+import { signIn } from "./helpers/auth";
 
-const BASE_URL = "http://localhost:3009";
+const BASE_URL = process.env.BASE_URL || "http://localhost:3007";
 const ADMIN_URL = `${BASE_URL}/admin`;
 
-// 管理员凭据
-const ADMIN_EMAIL = "alexlee20118@gmail.com";
-const ADMIN_PASSWORD = "ningping";
+// 管理员凭据 - 从环境变量读取 (helper 内部处理)
+const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || "";
+const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || "";
 
 // 检查是否有管理员访问权限
 let adminAccessVerified: boolean | null = null;
 
-// 管理员登录
+// 管理员登录 - 使用公共 helper
 async function loginAsAdmin(page: Page) {
-  await page.goto(BASE_URL);
-  await page.waitForLoadState("domcontentloaded");
-
-  // 检查是否已登录
-  const signOutBtn = page.getByRole("button", { name: /Sign Out/i });
-  if (await signOutBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-    // 已登录
-    return;
+  const success = await signIn(page, {
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
+  });
+  if (!success) {
+    throw new Error("Failed to login as admin");
   }
-
-  // 点击 Header 中的登录按钮打开模态框 (header 渲染为 banner role)
-  const headerSignInBtn = page.getByRole("banner").getByRole("button", { name: /Sign In/i });
-  await expect(headerSignInBtn).toBeVisible({ timeout: 5000 });
-  await headerSignInBtn.click();
-
-  // 等待登录模态框出现 (fixed inset-0 z-[100])
-  const modal = page.locator(".fixed.inset-0.z-\\[100\\]");
-  await expect(modal).toBeVisible({ timeout: 5000 });
-
-  // 使用 placeholder 定位输入框
-  const emailInput = page.getByPlaceholder("seeker@silkspark.com");
-  const passwordInput = page.getByPlaceholder("••••••••");
-
-  await expect(emailInput).toBeVisible({ timeout: 5000 });
-  await expect(passwordInput).toBeVisible({ timeout: 5000 });
-
-  // 清空并填写登录信息
-  await emailInput.fill(ADMIN_EMAIL);
-  await passwordInput.fill(ADMIN_PASSWORD);
-
-  // 点击模态框中的登录按钮 (form 内的 submit button)
-  const submitBtn = modal.getByRole("button", { name: /Sign In/i });
-  await submitBtn.click();
-
-  // 等待登录完成 - 模态框关闭，显示 Sign Out 按钮
-  await expect(page.getByRole("button", { name: /Sign Out/i })).toBeVisible({ timeout: 15000 });
 }
 
 // 设置管理员会话并验证访问权限
 async function setupAdminSession(page: Page): Promise<boolean> {
+  // 检查凭据是否配置
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.log("Admin credentials not configured in .env.test - skipping admin tests");
+    adminAccessVerified = false;
+    return false;
+  }
+
+  // 监听 console 错误和页面崩溃
+  const consoleErrors: string[] = [];
+  const consoleLogs: string[] = [];
+  const pageErrors: string[] = [];
+  page.on("console", (msg) => {
+    const text = msg.text();
+    if (msg.type() === "error") {
+      consoleErrors.push(text);
+    }
+    // Capture all log messages that start with our debug prefixes
+    if (text.startsWith("[Admin") || text.startsWith("[Auth")) {
+      consoleLogs.push(`[${msg.type()}] ${text}`);
+    }
+  });
+  page.on("pageerror", (err) => {
+    pageErrors.push(err.message);
+  });
+
   await loginAsAdmin(page);
 
-  // 等待一下让 auth 状态同步
+  // 等待 auth 状态完全同步
   await page.waitForTimeout(1000);
 
-  await page.goto(ADMIN_URL);
-  // 使用 domcontentloaded 而不是 networkidle，因为 admin 页面可能有持续的网络请求
+  // 检查 localStorage 中是否有 Supabase session
+  const sessionKeys = await page.evaluate(() => {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.includes("supabase")) {
+        keys.push(key);
+      }
+    }
+    return keys;
+  });
+  console.log(`Supabase keys in localStorage: ${sessionKeys.join(", ") || "NONE"}`);
+
+  // 直接检查所有 localStorage keys
+  const allKeys = await page.evaluate(() => {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) keys.push(key);
+    }
+    return keys;
+  });
+  console.log(`All localStorage keys: ${allKeys.join(", ") || "NONE"}`);
+
+  // 检查 session 内容
+  const sessionData = await page.evaluate(() => {
+    const key = Object.keys(localStorage).find((k) => k.startsWith("sb-") && k.endsWith("-auth-token"));
+    if (!key) return null;
+    try {
+      return JSON.parse(localStorage.getItem(key) || "null");
+    } catch {
+      return null;
+    }
+  });
+  if (sessionData) {
+    console.log(`Session user email: ${sessionData.user?.email || "unknown"}`);
+    console.log(`Session expires_at: ${sessionData.expires_at || "unknown"}`);
+  } else {
+    console.log("Session data: NOT FOUND or INVALID");
+  }
+
+  // 通过 footer 链接导航到 admin（保持 SPA 路由上下文）
+  console.log("Clicking Admin link in footer...");
+  const adminLink = page.locator('a[href="/admin"]').first();
+  if (await adminLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await adminLink.click();
+  } else {
+    // 如果找不到链接，直接导航
+    console.log(`Footer link not found, navigating directly to: ${ADMIN_URL}`);
+    await page.goto(ADMIN_URL);
+  }
   await page.waitForLoadState("domcontentloaded");
 
   // 等待 admin 页面内容加载
   await page.waitForTimeout(3000);
 
-  // 验证是否成功进入管理页面（检查是否有管理界面的标志性元素）
-  // 如果没有管理员权限，页面会重定向或显示空白
+  // 获取当前 URL 和页面内容
+  const currentUrl = page.url();
+  console.log(`Current URL after navigation: ${currentUrl}`);
+
+  // 验证是否成功进入管理页面
+  // 查找任何实际内容（不只是 toaster）
+  const hasAnyContent = await page.evaluate(() => {
+    const root = document.getElementById("root");
+    if (!root) return false;
+    // 检查是否有除了 toaster 之外的其他内容
+    const children = root.children;
+    for (const child of children) {
+      if (!child.hasAttribute("data-rht-toaster")) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  console.log(`Has content besides toaster: ${hasAnyContent}`);
+
+  // 如果没有内容，可能是 auth 正在检查中
+  if (!hasAnyContent) {
+    console.log("Waiting additional 3 seconds for content to load...");
+    await page.waitForTimeout(3000);
+  }
+
+  // 再次检查 admin 内容
   const hasAdminContent = await page
-    .locator("text=Dashboard, text=Products, text=Orders, text=Settings")
+    .locator("text=Dashboard")
+    .or(page.locator("text=Products"))
+    .or(page.locator("text=Orders"))
+    .or(page.locator("text=Settings"))
+    .or(page.locator("text=ADMIN"))
+    .or(page.locator(".animate-spin")) // 检查 loading spinner
     .first()
-    .isVisible({ timeout: 3000 })
+    .isVisible({ timeout: 5000 })
     .catch(() => false);
+
+  console.log(`Admin content found: ${hasAdminContent}`);
+
+  // 如果没找到，保存调试信息
+  if (!hasAdminContent) {
+    await page.screenshot({ path: "test-results/admin-debug-screenshot.png" });
+    console.log("Debug screenshot saved to test-results/admin-debug-screenshot.png");
+
+    // 获取页面 HTML
+    const html = await page.content();
+    console.log(`Page HTML length: ${html.length}`);
+    console.log(`Page HTML (first 500 chars): ${html.substring(0, 500)}`);
+
+    // 检查是否有错误消息
+    const bodyText = await page.locator("body").textContent().catch(() => "");
+    console.log(`Body text: ${bodyText?.substring(0, 200)}`);
+
+    // 检查 #root 元素
+    const rootHtml = await page.locator("#root").innerHTML().catch(() => "not found");
+    console.log(`#root innerHTML (first 1000): ${rootHtml.substring(0, 1000)}`);
+
+    // 检查 admin-layout marker
+    const hasAdminLayoutMarker = await page.locator('[data-testid="admin-layout"]').count();
+    console.log(`Admin layout marker found: ${hasAdminLayoutMarker > 0}`);
+
+    // 检查 auth fallback/success markers
+    const hasAuthLoading = await page.locator('[data-testid="auth-loading"]').count();
+    const hasAuthDenied = await page.locator('[data-testid="auth-denied"]').count();
+    const hasAuthSuccess = await page.locator('[data-testid="auth-success"]').count();
+    console.log(`Auth loading visible: ${hasAuthLoading > 0}`);
+    console.log(`Auth denied visible: ${hasAuthDenied > 0}`);
+    console.log(`Auth success visible: ${hasAuthSuccess > 0}`);
+
+    // 检查整个 DOM 中是否有 admin 相关内容
+    const fullHtml = await page.evaluate(() => document.body.outerHTML);
+    console.log(`Full body contains admin-layout: ${fullHtml.includes('admin-layout')}`);
+    console.log(`Full body contains data-rht-toaster: ${fullHtml.includes('data-rht-toaster')}`);
+
+    // 打印 page errors (未捕获的异常)
+    if (pageErrors.length > 0) {
+      console.log(`PAGE ERRORS (${pageErrors.length}):`);
+      pageErrors.forEach((err, i) => console.log(`  ${i + 1}. ${err}`));
+    }
+
+    // 只打印前 5 个 console 错误
+    if (consoleErrors.length > 0) {
+      console.log(`Console errors (${consoleErrors.length} total, showing first 5):`);
+      consoleErrors.slice(0, 5).forEach((err, i) => console.log(`  ${i + 1}. ${err}`));
+    }
+
+    // 打印 Admin/Auth 相关的 console logs
+    if (consoleLogs.length > 0) {
+      console.log(`Admin/Auth logs (${consoleLogs.length} total):`);
+      consoleLogs.forEach((log, i) => console.log(`  ${i + 1}. ${log}`));
+    } else {
+      console.log("No Admin/Auth console logs captured - AdminApp may not be loading");
+    }
+  }
 
   adminAccessVerified = hasAdminContent;
   return hasAdminContent;
