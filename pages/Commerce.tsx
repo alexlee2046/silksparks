@@ -11,7 +11,7 @@ import {
 } from "../services/RecommendationEngine";
 import { useUser } from "../context/UserContext";
 
-// Database product type with tags join
+// Database product type
 interface DBProduct {
   id: number;
   title: string;
@@ -21,7 +21,6 @@ interface DBProduct {
   element: string | null;
   badge: string | null;
   created_at: string;
-  product_tags?: Array<{ tags?: { name: string } }>;
 }
 
 // Component prop types
@@ -65,14 +64,8 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
-      let query = supabase.from("products").select(`
-        *,
-        product_tags (
-          tags (
-            name
-          )
-        )
-      `);
+      // 简化查询，移除不存在的 product_tags 关系
+      let query = supabase.from("products").select("*");
 
       // 1. DB Level Filtering for Elements (if robust schema exists)
       const elements = ["Fire", "Water", "Air", "Earth", "Spirit"];
@@ -101,21 +94,16 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
 
         let filteredData = data;
 
+        // 简化过滤：基于描述匹配 (product_tags 表不存在)
         if (complexFilters.length > 0) {
           filteredData = data.filter((product) => {
-            // Flatten tags for this product
-            // product.product_tags structure depends on the join, typically array of objects
-            const productTags =
-              product.product_tags?.map((pt) =>
-                pt.tags?.name?.toLowerCase(),
-              ) || [];
+            const descLower = product.description?.toLowerCase() ?? "";
+            const titleLower = product.title?.toLowerCase() ?? "";
 
-            // Check if product matches ANY of the selected complex filters
-            // We'll do a loose match since UI text "Love & Relationships" might map to tag "love"
             return complexFilters.some((filterText) => {
               const lowerFilter = filterText.toLowerCase();
 
-              // Simple mapping logic
+              // 关键词映射
               let keywords = [lowerFilter];
               if (lowerFilter.includes("love"))
                 keywords = ["love", "romance", "relationship"];
@@ -126,11 +114,9 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
               if (lowerFilter.includes("protection"))
                 keywords = ["protection", "shield"];
 
-              // Also support Zodiac direct match
-              // If filter is "Aries", tag might be "aries"
-
-              return keywords.some((k) =>
-                productTags.some((t: string) => t.includes(k) || k.includes(t)),
+              // 在标题和描述中搜索
+              return keywords.some(
+                (k) => titleLower.includes(k) || descLower.includes(k)
               );
             });
           });

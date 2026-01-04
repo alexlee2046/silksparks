@@ -22,10 +22,6 @@ interface DbProduct {
   price: number;
   description: string | null;
   image_url: string | null;
-  is_featured?: boolean;
-  product_tags?: Array<{
-    tags: { name: string } | null;
-  }>;
 }
 
 /** 带评分的产品 */
@@ -95,18 +91,13 @@ async function fetchProductsWithTags(): Promise<DbProduct[]> {
     return productsCache!.data;
   }
 
-  // 从数据库获取
+  // 从数据库获取 (简化查询，移除不存在的 product_tags 关系)
   const { data, error } = await supabase.from("products").select(`
     id,
     title,
     price,
     description,
-    image_url,
-    product_tags (
-      tags (
-        name
-      )
-    )
+    image_url
   `);
 
   if (error || !data) {
@@ -137,20 +128,17 @@ export const RecommendationEngine = {
       return [];
     }
 
-    // Process and Score
+    // Process and Score (简化：基于标题和描述匹配)
     const scoredProducts: ScoredProduct[] = productsData.map((p) => {
       let score = 0;
-      const tags: string[] =
-        p.product_tags?.map((pt) => pt.tags?.name.toLowerCase() ?? "").filter(Boolean) || [];
+      const titleLower = p.title.toLowerCase();
+      const descLower = p.description?.toLowerCase() ?? "";
 
-      // Keyword matching in tags
-      tags.forEach((tag) => {
-        if (lowerText.includes(tag)) score += 5;
-      });
+      // Keyword matching in title (高分)
+      if (titleLower.includes(lowerText)) score += 5;
 
-      // Keyword matching in title/description
-      if (p.title.toLowerCase().includes(lowerText)) score += 3;
-      if (p.description?.toLowerCase().includes(lowerText)) score += 1;
+      // Keyword matching in description
+      if (descLower.includes(lowerText)) score += 2;
 
       // Map to frontend interface
       return {
@@ -159,7 +147,7 @@ export const RecommendationEngine = {
         price: p.price,
         description: p.description ?? "",
         image: p.image_url ?? "",
-        tags,
+        tags: [], // product_tags 表不存在
         score,
       };
     });
@@ -302,33 +290,22 @@ export const RecommendationEngine = {
     // 去重
     const uniqueKeywords = [...new Set(keywords.map((k) => k.toLowerCase()))];
 
-    // 评分产品
+    // 评分产品 (简化：基于标题和描述匹配，product_tags 表不存在)
     const scoredProducts: ScoredProduct[] = productsData.map((p) => {
       let score = 0;
-      const tags: string[] =
-        p.product_tags?.map((pt) => pt.tags?.name?.toLowerCase() ?? "").filter(Boolean) || [];
       const titleLower = p.title?.toLowerCase() ?? "";
       const descLower = p.description?.toLowerCase() ?? "";
 
       // 关键词匹配
       uniqueKeywords.forEach((keyword) => {
-        // 标签完全匹配 (高分)
-        if (tags.includes(keyword)) {
-          score += 10;
-        }
-        // 标签部分匹配
-        else if (tags.some((t) => t.includes(keyword) || keyword.includes(t))) {
-          score += 5;
-        }
-
-        // 标题匹配
+        // 标题匹配 (高分)
         if (titleLower.includes(keyword)) {
-          score += 4;
+          score += 6;
         }
 
         // 描述匹配
         if (descLower.includes(keyword)) {
-          score += 2;
+          score += 3;
         }
       });
 
@@ -338,8 +315,8 @@ export const RecommendationEngine = {
         if (titleLower.includes(crystalLower)) {
           score += 15; // 强匹配
         }
-        if (tags.some((t) => t.includes(crystalLower))) {
-          score += 12;
+        if (descLower.includes(crystalLower)) {
+          score += 8;
         }
       }
 
@@ -349,7 +326,7 @@ export const RecommendationEngine = {
         price: p.price,
         description: p.description ?? "",
         image: p.image_url ?? "",
-        tags,
+        tags: [], // product_tags 表不存在
         score,
       };
     });
