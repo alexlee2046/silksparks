@@ -160,14 +160,17 @@ export const AdminApp: React.FC = () => {
       authProvider={authProvider}
       routerProvider={routerBindings}
       resources={[
+        // 概览
         {
           name: "dashboard",
           list: "/admin",
           meta: {
             label: "Dashboard",
             icon: "dashboard",
+            group: "overview",
           },
         },
+        // 商品管理
         {
           name: "products",
           list: "/admin/products",
@@ -176,8 +179,21 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "Products",
             icon: "inventory_2",
+            group: "catalog",
           },
         },
+        {
+          name: "tags",
+          list: "/admin/tags",
+          create: "/admin/tags/create",
+          edit: "/admin/tags/edit/:id",
+          meta: {
+            label: "Tags",
+            icon: "label",
+            group: "catalog",
+          },
+        },
+        // 咨询服务
         {
           name: "experts",
           list: "/admin/experts",
@@ -186,6 +202,7 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "Experts",
             icon: "psychology",
+            group: "services",
           },
         },
         {
@@ -196,8 +213,21 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "Consultations",
             icon: "event",
+            group: "services",
           },
         },
+        {
+          name: "appointments",
+          list: "/admin/appointments",
+          create: "/admin/appointments/create",
+          edit: "/admin/appointments/edit/:id",
+          meta: {
+            label: "Appointments",
+            icon: "calendar_month",
+            group: "services",
+          },
+        },
+        // 订单管理
         {
           name: "orders",
           list: "/admin/orders",
@@ -205,26 +235,7 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "Orders",
             icon: "receipt_long",
-          },
-        },
-        {
-          name: "archives",
-          list: "/admin/archives",
-          create: "/admin/archives/create",
-          edit: "/admin/archives/edit/:id",
-          meta: {
-            label: "Archives (CMS)",
-            icon: "history_edu",
-          },
-        },
-        {
-          name: "tags",
-          list: "/admin/tags",
-          create: "/admin/tags/create",
-          edit: "/admin/tags/edit/:id",
-          meta: {
-            label: "Tags & Categories",
-            icon: "label",
+            group: "commerce",
           },
         },
         {
@@ -235,6 +246,7 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "Shipping",
             icon: "local_shipping",
+            group: "commerce",
           },
         },
         {
@@ -251,32 +263,38 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "Currencies",
             icon: "currency_exchange",
+            group: "commerce",
           },
         },
-        {
-          name: "appointments",
-          list: "/admin/appointments",
-          create: "/admin/appointments/create",
-          edit: "/admin/appointments/edit/:id",
-          meta: {
-            label: "Appointments",
-            icon: "calendar_month",
-          },
-        },
+        // 用户内容
         {
           name: "profiles",
           list: "/admin/profiles",
           meta: {
             label: "Users",
             icon: "group",
+            group: "users",
           },
         },
+        {
+          name: "archives",
+          list: "/admin/archives",
+          create: "/admin/archives/create",
+          edit: "/admin/archives/edit/:id",
+          meta: {
+            label: "Archives",
+            icon: "history_edu",
+            group: "users",
+          },
+        },
+        // 系统管理
         {
           name: "admin_audit_logs",
           list: "/admin/audit",
           meta: {
             label: "Audit Logs",
             icon: "shield",
+            group: "system",
           },
         },
         {
@@ -285,6 +303,7 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "AI Usage",
             icon: "insights",
+            group: "system",
           },
         },
         {
@@ -293,6 +312,7 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "Settings",
             icon: "settings",
+            group: "system",
           },
         },
       ]}
