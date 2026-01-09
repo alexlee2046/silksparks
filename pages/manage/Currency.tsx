@@ -1,32 +1,18 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { GlassCard } from "../../components/GlassCard";
-import { supabase } from "../../services/supabase";
+import { useSupabaseQuery } from "../../hooks/useSupabaseQuery";
 import type { Currency as CurrencyType } from "../../types/database";
 import { AdminLayout } from "./AdminLayout";
 import { CurrencyRow } from "./CurrencyRow";
 
 export const Currency: React.FC = () => {
   const navigate = useNavigate();
-  const [currencies, setCurrencies] = React.useState<CurrencyType[]>([]);
-  const [loading, setLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    const fetchCurrencies = async () => {
-      const { data, error } = await supabase
-        .from("currencies")
-        .select("*")
-        .order("id", { ascending: true });
-
-      if (error) {
-        console.error("[Admin] Failed to fetch currencies:", error.message);
-      } else if (data) {
-        setCurrencies(data);
-      }
-      setLoading(false);
-    };
-    fetchCurrencies();
-  }, []);
+  const { data: currencies, loading } = useSupabaseQuery<CurrencyType>({
+    table: "currencies",
+    orderBy: { column: "id", ascending: true },
+  });
 
   return (
     <AdminLayout title="Currency & Localization" navigate={navigate}>

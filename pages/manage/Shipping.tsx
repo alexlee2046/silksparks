@@ -3,48 +3,31 @@ import { useNavigate } from "react-router-dom";
 import { GlassCard } from "../../components/GlassCard";
 import { GlowButton } from "../../components/GlowButton";
 import { supabase } from "../../services/supabase";
+import { useSupabaseQuery } from "../../hooks/useSupabaseQuery";
 import type { ShippingZoneWithRates } from "../../types/database";
 import { AdminLayout } from "./AdminLayout";
 import { ShippingZone } from "./ShippingZone";
 
 export const Shipping: React.FC = () => {
   const navigate = useNavigate();
-  const [zones, setZones] = React.useState<ShippingZoneWithRates[]>([]);
-  const [loading, setLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    const fetchShipping = async () => {
-      const { data, error } = await supabase
-        .from("shipping_zones")
-        .select("*, shipping_rates(*)");
-
-      if (error) {
-        console.error("[Admin] Failed to fetch shipping zones:", error.message);
-      } else if (data) {
-        setZones(data);
-      }
-      setLoading(false);
-    };
-    fetchShipping();
-  }, []);
+  const { data: zones, loading, refetch } = useSupabaseQuery<ShippingZoneWithRates>({
+    table: "shipping_zones",
+    select: "*, shipping_rates(*)",
+  });
 
   const handleAddZone = async () => {
-    // Create new shipping zone
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("shipping_zones")
-      .insert({ name: "New Zone", countries: [] })
-      .select("*, shipping_rates(*)")
-      .single();
+      .insert({ name: "New Zone", countries: [] });
 
     if (error) {
       console.error("[Admin] Failed to create shipping zone:", error.message);
       return;
     }
 
-    // Update state instead of reloading page
-    if (data) {
-      setZones((prev) => [...prev, data]);
-    }
+    // Refetch to get updated data including the new zone
+    await refetch();
   };
 
   return (

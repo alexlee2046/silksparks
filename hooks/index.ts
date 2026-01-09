@@ -1,3 +1,12 @@
+// Generic Supabase query hook
+export {
+  useSupabaseQuery,
+  invalidateQueryCache,
+  invalidateQueryCachePrefix,
+  clearQueryCache,
+} from "./useSupabaseQuery";
+export type { UseSupabaseQueryOptions, UseSupabaseQueryReturn } from "./useSupabaseQuery";
+
 // Lazy-loading data hooks
 export { useArchives, invalidateArchivesCache } from "./useArchives";
 export { useOrders, invalidateOrdersCache } from "./useOrders";

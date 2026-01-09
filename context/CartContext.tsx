@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { Product } from "../services/RecommendationEngine";
 import toast from "react-hot-toast";
+import { STORAGE_KEYS } from "../lib/constants";
 
 export interface CartItem extends Product {
   quantity: number;
@@ -25,7 +26,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [items, setItems] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
-      const savedCart = localStorage.getItem("silk_spark_cart");
+      const savedCart = localStorage.getItem(STORAGE_KEYS.CART);
       if (savedCart) {
         try {
           const parsed = JSON.parse(savedCart);
@@ -37,11 +38,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           }
           // 数据格式无效，清除并通知用户
           console.warn("[Cart] Invalid cart data structure, resetting cart");
-          localStorage.removeItem("silk_spark_cart");
+          localStorage.removeItem(STORAGE_KEYS.CART);
         } catch (e) {
           // JSON 解析失败，清除损坏的数据
           console.error("[Cart] Failed to parse cart data, resetting cart", e);
-          localStorage.removeItem("silk_spark_cart");
+          localStorage.removeItem(STORAGE_KEYS.CART);
           // 延迟显示 toast，避免在初始化时触发
           setTimeout(() => {
             toast.error("购物车数据已重置，请重新添加商品");
@@ -55,7 +56,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Save to local storage on change
   useEffect(() => {
-    localStorage.setItem("silk_spark_cart", JSON.stringify(items));
+    localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(items));
   }, [items]);
 
   const addItem = useCallback((product: Product, quantity: number = 1) => {

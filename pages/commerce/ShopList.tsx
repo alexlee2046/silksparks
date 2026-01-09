@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
+import { ELEMENTS } from "../../lib/constants";
 import { motion } from "framer-motion";
 import { supabase } from "../../services/supabase";
 import { useCart } from "../../context/CartContext";
@@ -32,9 +33,10 @@ export const ShopList: React.FC = () => {
       let query = supabase.from("products").select("*");
 
       // 1. DB Level Filtering for Elements (if robust schema exists)
-      const elements = ["Fire", "Water", "Air", "Earth", "Spirit"];
       // Split filters into categories
-      const selectedElements = filters.filter((f) => elements.includes(f));
+      const selectedElements = filters.filter((f) =>
+        (ELEMENTS as readonly string[]).includes(f)
+      );
 
       if (selectedElements.length > 0) {
         query = query.in("category", selectedElements);
@@ -54,7 +56,9 @@ export const ShopList: React.FC = () => {
       if (!error && data) {
         // 2. Client Side Filtering for Complex Tags (Intent, Zodiac)
         // Map UI filter text to tag keywords
-        const complexFilters = filters.filter((f) => !elements.includes(f));
+        const complexFilters = filters.filter(
+          (f) => !(ELEMENTS as readonly string[]).includes(f)
+        );
 
         let filteredData = data;
 
@@ -204,7 +208,7 @@ export const ShopList: React.FC = () => {
           <FilterSection
             title="Elements"
             icon="local_fire_department"
-            items={["Fire", "Water", "Air", "Earth", "Spirit"]}
+            items={[...ELEMENTS]}
             selectedItems={filters}
             onToggle={toggleFilter}
           />

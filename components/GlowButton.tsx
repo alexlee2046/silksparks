@@ -19,7 +19,7 @@ export const GlowButton: React.FC<GlowButtonProps> = ({
   className,
   variant = "primary",
   icon,
-  glowColor = "rgba(244,192,37,0.4)", // Default primary gold glow
+  glowColor: _glowColor = "rgba(244,192,37,0.4)", // Reserved for future custom glow colors
   ...props
 }) => {
   const baseStyles =

@@ -3,34 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
 import { motion } from "framer-motion";
 import { useLocaleFormat } from "../../hooks/useLocaleFormat";
-import { supabase } from "../../services/supabase";
+import { useSupabaseQuery } from "../../hooks/useSupabaseQuery";
 import toast from "react-hot-toast";
 import type { Expert } from "../../types/database";
 import { ExpertCard } from "./ExpertCard";
 
 export const Experts: React.FC = () => {
   const navigate = useNavigate();
-  const [experts, setExperts] = React.useState<Expert[]>([]);
-  const [loading, setLoading] = React.useState(true);
   const { currencySymbol } = useLocaleFormat();
 
-  React.useEffect(() => {
-    const fetchExperts = async () => {
-      const { data, error } = await supabase
-        .from("experts")
-        .select("*")
-        .order("rating", { ascending: false });
-
-      if (!error && data) {
-        setExperts(data);
-      } else if (error) {
-        console.error("Error loading experts:", error);
-        toast.error("Failed to load experts. Please try again.");
-      }
-      setLoading(false);
-    };
-    fetchExperts();
-  }, []);
+  const { data: experts, loading } = useSupabaseQuery<Expert>({
+    table: "experts",
+    orderBy: { column: "rating", ascending: false },
+    onError: () => toast.error("Failed to load experts. Please try again."),
+  });
 
   return (
     <div className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-10 py-10 bg-background min-h-screen">

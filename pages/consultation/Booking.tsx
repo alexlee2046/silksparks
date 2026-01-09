@@ -5,14 +5,14 @@ import { motion } from "framer-motion";
 import { GlassCard } from "../../components/GlassCard";
 import { GlowButton } from "../../components/GlowButton";
 import { useLocaleFormat } from "../../hooks/useLocaleFormat";
+import { useSupabaseQuery } from "../../hooks/useSupabaseQuery";
 import { supabase } from "../../services/supabase";
+import type { Expert } from "../../types/database";
 
 export const Booking: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const expertId = searchParams.get("expert");
-  const [expert, setExpert] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
   const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
   const [calendarDays, setCalendarDays] = React.useState<Date[]>([]);
   const [availableSlots, setAvailableSlots] = React.useState<string[]>([]);
@@ -20,23 +20,12 @@ export const Booking: React.FC = () => {
   const { formatDate, formatCurrency } = useLocaleFormat();
 
   // Fetch Expert
-  React.useEffect(() => {
-    const fetchExpert = async () => {
-      if (!expertId) return;
-
-      const { data, error } = await supabase
-        .from("experts")
-        .select("*")
-        .eq("id", expertId)
-        .single();
-
-      if (!error && data) {
-        setExpert(data);
-      }
-      setLoading(false);
-    };
-    fetchExpert();
-  }, [expertId]);
+  const { data: experts, loading } = useSupabaseQuery<Expert>({
+    table: "experts",
+    filter: (q) => q.eq("id", expertId!),
+    enabled: !!expertId,
+  });
+  const expert = experts[0];
 
   // Generate Calendar
   React.useEffect(() => {
@@ -104,6 +93,7 @@ export const Booking: React.FC = () => {
   }, [selectedDate, expertId]);
 
   const handleConfirm = () => {
+    if (!expert) return;
     // Save draft booking data
     const bookingData = {
       expertId,
@@ -153,7 +143,7 @@ export const Booking: React.FC = () => {
               <img
                 alt="Expert Avatar"
                 className="h-full w-full object-cover"
-                src={expert.avatar_url}
+                src={expert.avatar_url ?? undefined}
                 loading="lazy"
                 decoding="async"
               />

@@ -187,7 +187,7 @@ const SystemSettingsContent: React.FC<SystemSettingsContentProps> = ({
         setEditingKey(null);
         refetch();
       }
-    } catch (e) {
+    } catch {
       toast.error("Invalid JSON format.");
     } finally {
       setIsUpdating(false);

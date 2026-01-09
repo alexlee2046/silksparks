@@ -1,33 +1,32 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { GlassCard } from "../../components/GlassCard";
-import { supabase } from "../../services/supabase";
+import { useSupabaseQuery } from "../../hooks/useSupabaseQuery";
+import type { Order } from "../../types/database";
 import { AdminLayout } from "./AdminLayout";
 import { StatsMini } from "./StatsMini";
 import { ProviderCard } from "./ProviderCard";
 
+interface PaymentStats {
+  revenue: number;
+  transactions: number;
+}
+
 export const Payments: React.FC = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = React.useState({
-    revenue: 0,
-    transactions: 0,
+
+  const { data: statsData } = useSupabaseQuery<Order, PaymentStats>({
+    table: "orders",
+    select: "total, status",
+    transform: (orders) => {
+      const revenue = orders.reduce((acc, curr) => acc + (curr.total || 0), 0);
+      return [{ revenue, transactions: orders.length }];
+    },
+    onError: () => toast.error("Failed to load payment stats"),
   });
 
-  React.useEffect(() => {
-    // Mock stats from real orders if possible, or just mock for now
-    const fetchStats = async () => {
-      const { data, error } = await supabase.from("orders").select("total, status");
-      if (error) {
-        console.error("[Admin] Failed to fetch payment stats:", error.message);
-        return;
-      }
-      if (data) {
-        const total = data.reduce((acc, curr) => acc + (curr.total || 0), 0);
-        setStats({ revenue: total, transactions: data.length });
-      }
-    };
-    fetchStats();
-  }, []);
+  const stats = statsData[0] ?? { revenue: 0, transactions: 0 };
 
   return (
     <AdminLayout title="Payment Configuration" navigate={navigate}>

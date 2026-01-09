@@ -4,39 +4,24 @@ import { PATHS } from "../../lib/paths";
 import { motion } from "framer-motion";
 import { GlassCard } from "../../components/GlassCard";
 import { GlowButton } from "../../components/GlowButton";
-import { supabase } from "../../services/supabase";
+import { useSupabaseQuery } from "../../hooks/useSupabaseQuery";
 import { useCart } from "../../context/CartContext";
+import type { Product as ProductType } from "../../types/database";
 
 export const ProductDetail: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
-  const [product, setProduct] = React.useState<any>(null);
   const [selectedImage, setSelectedImage] = React.useState(0);
   const [isFavorite, setIsFavorite] = React.useState(false);
   const toggleFavorite = () => setIsFavorite(!isFavorite);
-  const [loading, setLoading] = React.useState(true);
   const { addItem, setIsCartOpen } = useCart();
 
-  React.useEffect(() => {
-    if (!productId) {
-      // Fallback or returned to list
-      setLoading(false);
-      return;
-    }
-    const fetchProduct = async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", Number(productId))
-        .single();
-
-      if (!error && data) {
-        setProduct(data);
-      }
-      setLoading(false);
-    };
-    fetchProduct();
-  }, [productId]);
+  const { data: products, loading } = useSupabaseQuery<ProductType>({
+    table: "products",
+    filter: (q) => q.eq("id", Number(productId)),
+    enabled: !!productId,
+  });
+  const product = products[0];
 
   const handleAddToCart = () => {
     if (product) {
@@ -81,11 +66,8 @@ export const ProductDetail: React.FC = () => {
   }
 
   // Use product images or fallback to the main one repeated (since DB might only have one url)
-  const images = [
-    product.image_url,
-    product.image_url, // Mocking gallery for now
-    product.image_url,
-  ];
+  const imageUrl = product.image_url ?? "";
+  const images = [imageUrl, imageUrl, imageUrl];
 
   return (
     <div className="flex h-full grow flex-col bg-background min-h-screen">
@@ -127,7 +109,7 @@ export const ProductDetail: React.FC = () => {
               >
                 <img
                   src={images[selectedImage]}
-                  alt={product?.title || "Product image"}
+                  alt={product?.name || "Product image"}
                   loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
                 />

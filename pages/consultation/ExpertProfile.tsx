@@ -2,30 +2,20 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
 import { GlowButton } from "../../components/GlowButton";
-import { supabase } from "../../services/supabase";
+import { useSupabaseQuery } from "../../hooks/useSupabaseQuery";
+import type { Expert } from "../../types/database";
 
 export const ExpertProfile: React.FC = () => {
   const navigate = useNavigate();
   const { expertId } = useParams<{ expertId: string }>();
-  const [expert, setExpert] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    const fetchExpert = async () => {
-      if (!expertId) return;
-      const { data, error } = await supabase
-        .from("experts")
-        .select("*")
-        .eq("id", expertId)
-        .single();
+  const { data: experts, loading } = useSupabaseQuery<Expert>({
+    table: "experts",
+    filter: (q) => q.eq("id", expertId!),
+    enabled: !!expertId,
+  });
 
-      if (!error && data) {
-        setExpert(data);
-      }
-      setLoading(false);
-    };
-    fetchExpert();
-  }, [expertId]);
+  const expert = experts[0];
 
   if (loading) {
     return (
@@ -44,7 +34,7 @@ export const ExpertProfile: React.FC = () => {
       <div className="relative h-[40vh] min-h-[400px]">
         <div className="absolute inset-0">
           <img
-            src={expert.avatar_url}
+            src={expert.avatar_url ?? undefined}
             className="w-full h-full object-cover"
             alt={expert.name}
             loading="eager"
@@ -95,7 +85,7 @@ export const ExpertProfile: React.FC = () => {
                 ))}
               </div>
               <span className="text-foreground font-bold text-lg">
-                {expert.rating.toFixed(1)}
+                {(expert.rating ?? 0).toFixed(1)}
               </span>
             </div>
             <p className="text-text-muted text-sm mb-6">

@@ -31,6 +31,7 @@ export const SystemSettings: React.FC = () => {
 
     if (error) {
       console.error("[Admin] Failed to fetch AI settings:", error.message);
+      toast.error("Failed to load AI settings");
     } else if (data?.value && typeof data.value === "object" && !Array.isArray(data.value)) {
       const remoteConfig = data.value as Record<string, unknown>;
       setConfig((prev) => ({
