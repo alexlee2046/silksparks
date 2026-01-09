@@ -34,6 +34,11 @@ import { ShippingEdit } from "./pages/shipping/edit";
 import { AppointmentList } from "./pages/appointments/list";
 import { AppointmentCreate } from "./pages/appointments/create";
 import { AppointmentEdit } from "./pages/appointments/edit";
+import { AuditLogList } from "./pages/audit/list";
+import { AIUsageList } from "./pages/ai-usage/list";
+import { CurrencyList } from "./pages/currencies/list";
+import { CurrencyCreate } from "./pages/currencies/create";
+import { CurrencyEdit } from "./pages/currencies/edit";
 
 // Custom Auth Provider to use existing Supabase session
 const authProvider = {
@@ -239,6 +244,16 @@ export const AdminApp: React.FC = () => {
           },
         },
         {
+          name: "currencies",
+          list: "/admin/currencies",
+          create: "/admin/currencies/create",
+          edit: "/admin/currencies/edit/:id",
+          meta: {
+            label: "Currencies",
+            icon: "currency_exchange",
+          },
+        },
+        {
           name: "appointments",
           list: "/admin/appointments",
           create: "/admin/appointments/create",
@@ -254,6 +269,22 @@ export const AdminApp: React.FC = () => {
           meta: {
             label: "Users",
             icon: "group",
+          },
+        },
+        {
+          name: "admin_audit_logs",
+          list: "/admin/audit",
+          meta: {
+            label: "Audit Logs",
+            icon: "shield",
+          },
+        },
+        {
+          name: "ai_usage_stats",
+          list: "/admin/ai-usage",
+          meta: {
+            label: "AI Usage",
+            icon: "insights",
           },
         },
         {
@@ -308,12 +339,19 @@ export const AdminApp: React.FC = () => {
               <Route path="create" element={<ShippingCreate />} />
               <Route path="edit/:id" element={<ShippingEdit />} />
             </Route>
+            <Route path="currencies">
+              <Route index element={<CurrencyList />} />
+              <Route path="create" element={<CurrencyCreate />} />
+              <Route path="edit/:id" element={<CurrencyEdit />} />
+            </Route>
             <Route path="appointments">
               <Route index element={<AppointmentList />} />
               <Route path="create" element={<AppointmentCreate />} />
               <Route path="edit/:id" element={<AppointmentEdit />} />
             </Route>
             <Route path="profiles" element={<ProfileList />} />
+            <Route path="audit" element={<AuditLogList />} />
+            <Route path="ai-usage" element={<AIUsageList />} />
             <Route path="settings" element={<SystemSettingsList />} />
             <Route path="*" element={<div>Page Not Found</div>} />
           </Route>

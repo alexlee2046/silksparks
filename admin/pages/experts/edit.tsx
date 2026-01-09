@@ -2,6 +2,7 @@ import React from "react";
 import { useForm } from "@refinedev/core";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
+import { ExpertAvailability } from "../../components/ExpertAvailability";
 
 export const ExpertEdit: React.FC = () => {
   const {
@@ -137,6 +138,11 @@ export const ExpertEdit: React.FC = () => {
           </div>
         </form>
       </GlassCard>
+
+      {/* Availability Management */}
+      {expert?.id && (
+        <ExpertAvailability expertId={String(expert.id)} />
+      )}
     </div>
   );
 };
