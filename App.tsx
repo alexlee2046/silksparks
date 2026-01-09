@@ -27,22 +27,23 @@ const AdminApp = lazy(() => import("./admin/App").then(m => ({ default: m.AdminA
 const LazyAstrologyReport = lazy(() => import("./pages/AppFeatures").then(m => ({ default: m.AstrologyReport })));
 const LazyTarotDaily = lazy(() => import("./pages/AppFeatures").then(m => ({ default: m.TarotDaily })));
 const LazyTarotSpread = lazy(() => import("./pages/AppFeatures").then(m => ({ default: m.TarotSpread })));
-const LazyShopList = lazy(() => import("./pages/Commerce").then(m => ({ default: m.ShopList })));
-const LazyProductDetail = lazy(() => import("./pages/Commerce").then(m => ({ default: m.ProductDetail })));
-const LazyExperts = lazy(() => import("./pages/Consultation").then(m => ({ default: m.Experts })));
-const LazyExpertProfile = lazy(() => import("./pages/Consultation").then(m => ({ default: m.ExpertProfile })));
-const LazyBooking = lazy(() => import("./pages/Consultation").then(m => ({ default: m.Booking })));
-const LazyIntake = lazy(() => import("./pages/Consultation").then(m => ({ default: m.Intake })));
-const LazyDelivery = lazy(() => import("./pages/Consultation").then(m => ({ default: m.Delivery })));
-const LazyUserDashboard = lazy(() => import("./pages/UserDashboard").then(m => ({ default: m.UserDashboard })));
-const LazyArchives = lazy(() => import("./pages/UserDashboard").then(m => ({ default: m.Archives })));
-const LazyOrders = lazy(() => import("./pages/UserDashboard").then(m => ({ default: m.Orders })));
-const LazyConsultations = lazy(() => import("./pages/UserDashboard").then(m => ({ default: m.Consultations })));
-const LazyUserSettings = lazy(() => import("./pages/UserDashboard").then(m => ({ default: m.UserSettings })));
-const LazyPayments = lazy(() => import("./pages/Admin").then(m => ({ default: m.Payments })));
-const LazyCurrency = lazy(() => import("./pages/Admin").then(m => ({ default: m.Currency })));
-const LazyShipping = lazy(() => import("./pages/Admin").then(m => ({ default: m.Shipping })));
-const LazySystemSettings = lazy(() => import("./pages/Admin").then(m => ({ default: m.SystemSettings })));
+const LazyShopList = lazy(() => import("./pages/commerce").then(m => ({ default: m.ShopList })));
+const LazyProductDetail = lazy(() => import("./pages/commerce").then(m => ({ default: m.ProductDetail })));
+const LazyExperts = lazy(() => import("./pages/consultation").then(m => ({ default: m.Experts })));
+const LazyExpertProfile = lazy(() => import("./pages/consultation").then(m => ({ default: m.ExpertProfile })));
+const LazyBooking = lazy(() => import("./pages/consultation").then(m => ({ default: m.Booking })));
+const LazyIntake = lazy(() => import("./pages/consultation").then(m => ({ default: m.Intake })));
+const LazyDelivery = lazy(() => import("./pages/consultation").then(m => ({ default: m.Delivery })));
+const LazyUserDashboard = lazy(() => import("./pages/dashboard").then(m => ({ default: m.UserDashboard })));
+const LazyArchives = lazy(() => import("./pages/dashboard").then(m => ({ default: m.Archives })));
+const LazyOrders = lazy(() => import("./pages/dashboard").then(m => ({ default: m.Orders })));
+const LazyConsultations = lazy(() => import("./pages/dashboard").then(m => ({ default: m.Consultations })));
+const LazyUserSettings = lazy(() => import("./pages/dashboard").then(m => ({ default: m.UserSettings })));
+const LazyFavorites = lazy(() => import("./pages/dashboard").then(m => ({ default: m.Favorites })));
+const LazyPayments = lazy(() => import("./pages/manage").then(m => ({ default: m.Payments })));
+const LazyCurrency = lazy(() => import("./pages/manage").then(m => ({ default: m.Currency })));
+const LazyShipping = lazy(() => import("./pages/manage").then(m => ({ default: m.Shipping })));
+const LazySystemSettings = lazy(() => import("./pages/manage").then(m => ({ default: m.SystemSettings })));
 
 // ============ 加载状态组件 ============
 const LoadingSpinner: React.FC = () => (
@@ -252,6 +253,18 @@ const AppContent: React.FC = () => {
                 onAuthClick={() => setShowAuth(true)}
               >
                 <LazyUserSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/favorites"
+            element={
+              <ProtectedRoute
+                requiresAuth={true}
+                requiresAdmin={false}
+                onAuthClick={() => setShowAuth(true)}
+              >
+                <LazyFavorites />
               </ProtectedRoute>
             }
           />
