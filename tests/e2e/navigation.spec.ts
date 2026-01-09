@@ -19,7 +19,7 @@ test.use({ viewport: { width: 1280, height: 720 } });
 test.describe("Header 导航测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("点击 Shop 应导航到商店页面", async ({ page }) => {
@@ -62,7 +62,7 @@ test.describe("Header 导航测试", () => {
 test.describe("Footer 导航测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     // 滚动到 Footer
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(500);
@@ -108,7 +108,7 @@ test.describe("Footer 导航测试", () => {
 test.describe("首页组件和按钮测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("页面应显示主标题", async ({ page }) => {
@@ -169,7 +169,7 @@ test.describe("首页组件和按钮测试", () => {
 test.describe("商店页面测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/shop");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("商店页面应显示标题", async ({ page }) => {
@@ -197,7 +197,7 @@ test.describe("商店页面测试", () => {
 test.describe("专家页面测试", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/experts");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("专家页面应显示标题", async ({ page }) => {
@@ -225,7 +225,7 @@ test.describe("专家页面测试", () => {
 test.describe("塔罗页面测试", () => {
   test("塔罗每日页面应显示正确内容", async ({ page }) => {
     await page.goto("/tarot");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByText("Daily Guidance")).toBeVisible({ timeout: 10000 });
     await expect(page.locator("body")).toContainText(/Daily Guidance|Draw Card|Touch/i);
@@ -233,7 +233,7 @@ test.describe("塔罗页面测试", () => {
 
   test("塔罗每日页面返回按钮应工作", async ({ page }) => {
     await page.goto("/tarot");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await page.getByRole("button", { name: /Back/i }).click();
     await page.waitForURL("/");
@@ -242,7 +242,7 @@ test.describe("塔罗页面测试", () => {
 
   test("塔罗牌阵页面应显示三张牌位", async ({ page }) => {
     await page.goto("/tarot/spread");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByText("Past, Present, Future")).toBeVisible({ timeout: 10000 });
   });
@@ -254,7 +254,7 @@ test.describe("塔罗页面测试", () => {
 test.describe("滚动到顶部功能测试", () => {
   test("导航后页面头部应可见", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // 滚动到页面底部
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -262,7 +262,7 @@ test.describe("滚动到顶部功能测试", () => {
     // 点击 Footer 导航链接
     await page.getByRole("link", { name: /Shop Artifacts/i }).click();
     await page.waitForURL("**/shop**");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // 验证导航后页面正常加载且头部可见
     // 注意：Lenis 平滑滚动可能不会立即重置滚动位置
@@ -281,7 +281,7 @@ test.describe("响应式设计测试", () => {
   test("移动端视图应正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });
@@ -289,7 +289,7 @@ test.describe("响应式设计测试", () => {
   test("平板视图应正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });
@@ -297,7 +297,7 @@ test.describe("响应式设计测试", () => {
   test("桌面视图应正确显示", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("main-title")).toBeVisible();
   });

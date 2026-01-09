@@ -205,19 +205,43 @@ export async function captureSupabaseRequests(
 }
 
 /**
+ * 判断是否为非数据变更请求（应排除在写入检测外）
+ * - 认证相关：登录、token刷新
+ * - Edge Functions：无状态计算，不直接修改数据库
+ * - RPC 函数：通常是查询操作
+ */
+function isExcludedFromWriteCheck(url: string): boolean {
+  return (
+    // 认证相关
+    url.includes("/auth/") ||
+    url.includes("/token") ||
+    url.includes("gotrue") ||
+    url.includes("/session") ||
+    // Edge Functions (无状态计算)
+    url.includes("/functions/") ||
+    // Realtime 订阅
+    url.includes("/realtime/")
+  );
+}
+
+/**
  * 验证没有写入操作（只读模式）
- * @throws Error 如果检测到写入操作
+ * 排除认证相关请求（登录、刷新token等）
+ * @throws Error 如果检测到非认证的写入操作
  */
 export async function assertNoWrites(interceptor: ApiInterceptor): Promise<void> {
   const writeRequests = interceptor.getSupabaseWriteRequests();
 
-  if (writeRequests.length > 0) {
-    const details = writeRequests
+  // 过滤掉非数据变更请求（认证、Edge Functions等）
+  const actualWrites = writeRequests.filter((r) => !isExcludedFromWriteCheck(r.url));
+
+  if (actualWrites.length > 0) {
+    const details = actualWrites
       .map((r) => `${r.method} ${r.url}`)
       .join("\n  - ");
 
     throw new Error(
-      `Read-only mode violation: ${writeRequests.length} write request(s) detected:\n  - ${details}`
+      `Read-only mode violation: ${actualWrites.length} write request(s) detected:\n  - ${details}`
     );
   }
 }

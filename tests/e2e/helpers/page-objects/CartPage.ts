@@ -13,34 +13,38 @@ export class CartPage extends BasePage {
 
   // ============ 定位器 ============
 
-  /** 购物车抽屉 */
+  /** 购物车抽屉 - 基于 "Cosmic Cart" 标题定位 */
   get cartDrawer(): Locator {
-    return this.page.locator('[data-testid="cart-drawer"], .cart-drawer, [role="dialog"]');
+    return this.page.locator('.fixed.top-0.right-0.h-full').filter({
+      has: this.page.getByText("Cosmic Cart"),
+    });
   }
 
-  /** 购物车商品列表 */
+  /** 购物车商品列表 - 基于商品卡片结构 */
   get cartItems(): Locator {
-    return this.cartDrawer.locator('[data-testid="cart-item"], .cart-item');
+    return this.cartDrawer.locator('.flex.gap-4.p-4').filter({
+      has: this.page.locator('h4'),
+    });
   }
 
   /** 购物车为空提示 */
   get emptyCartMessage(): Locator {
-    return this.cartDrawer.locator('[data-testid="empty-cart"], .empty-cart');
+    return this.page.getByText("Your vessel is empty.");
   }
 
-  /** 购物车总价 */
+  /** 购物车总价 - Total行 */
   get cartTotal(): Locator {
-    return this.cartDrawer.locator('[data-testid="cart-total"], .cart-total');
+    return this.cartDrawer.locator('.font-mono.text-primary').last();
   }
 
   /** 结账按钮 */
   get checkoutButton(): Locator {
-    return this.cartDrawer.getByRole("button", { name: /Checkout|结账|去支付/i });
+    return this.page.getByRole("button", { name: /Checkout with Stripe|Processing/i });
   }
 
   /** 关闭按钮 */
   get closeButton(): Locator {
-    return this.cartDrawer.locator('button[aria-label="Close"], button:has-text("×")');
+    return this.page.locator('button[aria-label="Close cart"]');
   }
 
   /** 清空购物车按钮 */
@@ -55,28 +59,41 @@ export class CartPage extends BasePage {
    */
   async open(): Promise<void> {
     await this.openCart();
-    await expect(this.cartDrawer).toBeVisible({ timeout: 5000 });
+    // 等待购物车标题可见
+    await expect(this.page.getByText("Cosmic Cart")).toBeVisible({ timeout: 5000 });
   }
 
   /**
    * 关闭购物车
    */
   async close(): Promise<void> {
-    // 点击关闭按钮或背景
-    if (await this.closeButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await this.closeButton.click();
-    } else {
-      // 点击背景关闭
-      await this.page.locator('.fixed.inset-0.bg-black\\/50').click();
+    // 尝试通过 JavaScript 直接触发关闭按钮点击
+    const clicked = await this.page.evaluate(() => {
+      const btn = document.querySelector('button[aria-label="Close cart"]') as HTMLButtonElement;
+      if (btn) {
+        btn.click();
+        return true;
+      }
+      return false;
+    });
+
+    if (!clicked) {
+      // 备用: 点击背景关闭
+      const backdrop = this.page.locator('.fixed.inset-0.bg-black\\/60');
+      if (await backdrop.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await backdrop.click({ position: { x: 50, y: 50 } });
+      }
     }
-    await this.cartDrawer.waitFor({ state: "hidden", timeout: 5000 });
+
+    await this.page.getByText("Cosmic Cart").waitFor({ state: "hidden", timeout: 5000 });
   }
 
   /**
    * 获取购物车商品数量
    */
   async getItemCount(): Promise<number> {
-    if (await this.emptyCartMessage.isVisible({ timeout: 500 }).catch(() => false)) {
+    // 检查是否显示空状态
+    if (await this.page.getByText("Your vessel is empty.").isVisible({ timeout: 500 }).catch(() => false)) {
       return 0;
     }
     return this.cartItems.count();
@@ -102,11 +119,12 @@ export class CartPage extends BasePage {
   }> {
     const item = this.cartItems.nth(index);
 
-    const name = await item.locator('.item-name, h3, h4').first().textContent() || "";
-    const priceText = await item.locator('.item-price, .price').first().textContent() || "0";
-    const quantityText = await item.locator('input[type="number"], .quantity').first().inputValue().catch(
-      () => item.locator('.quantity').first().textContent()
-    ) || "1";
+    // 商品名在 h4 标签
+    const name = await item.locator('h4').first().textContent() || "";
+    // 价格在 p.font-mono
+    const priceText = await item.locator('p.font-mono').first().textContent() || "0";
+    // 数量在增减按钮之间的 span
+    const quantityText = await item.locator('.flex.items-center.gap-2 span.text-center').first().textContent() || "1";
 
     return {
       name: name.trim(),
@@ -153,7 +171,7 @@ export class CartPage extends BasePage {
    */
   async increaseQuantity(index: number = 0): Promise<void> {
     const item = this.cartItems.nth(index);
-    const plusButton = item.getByRole("button", { name: /\+|increase/i });
+    const plusButton = item.locator('button[aria-label="Increase quantity"]');
     await plusButton.click();
     await this.page.waitForTimeout(300);
   }
@@ -163,7 +181,7 @@ export class CartPage extends BasePage {
    */
   async decreaseQuantity(index: number = 0): Promise<void> {
     const item = this.cartItems.nth(index);
-    const minusButton = item.getByRole("button", { name: /-|decrease/i });
+    const minusButton = item.locator('button[aria-label="Decrease quantity"]');
     await minusButton.click();
     await this.page.waitForTimeout(300);
   }
@@ -173,7 +191,8 @@ export class CartPage extends BasePage {
    */
   async removeItem(index: number = 0): Promise<void> {
     const item = this.cartItems.nth(index);
-    const removeButton = item.getByRole("button", { name: /Remove|删除|×/i });
+    // 删除按钮的 aria-label 是 "Remove {item.name} from cart"
+    const removeButton = item.locator('button[aria-label*="Remove"]');
     await removeButton.click();
     await this.page.waitForTimeout(300);
   }
@@ -203,14 +222,14 @@ export class CartPage extends BasePage {
    * 验证购物车打开
    */
   async expectOpen(): Promise<void> {
-    await expect(this.cartDrawer).toBeVisible({ timeout: 5000 });
+    await expect(this.page.getByText("Cosmic Cart")).toBeVisible({ timeout: 5000 });
   }
 
   /**
    * 验证购物车关闭
    */
   async expectClosed(): Promise<void> {
-    await this.cartDrawer.waitFor({ state: "hidden", timeout: 5000 });
+    await this.page.getByText("Cosmic Cart").waitFor({ state: "hidden", timeout: 5000 });
   }
 
   /**
