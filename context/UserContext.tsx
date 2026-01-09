@@ -136,11 +136,33 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // 1. 监听 Auth 状态变化
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) fetchUserProfile(session.user.id);
-      else setLoading(false); // Ensure loading stops even if no session
-    });
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          // Token 过期/无效时，静默清除本地 session
+          console.warn("[UserContext] Session error, clearing local state:", error.message);
+          await supabase.auth.signOut();
+          setSession(null);
+          setLoading(false);
+          return;
+        }
+
+        setSession(session);
+        if (session) {
+          fetchUserProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("[UserContext] Unexpected auth error:", err);
+        setSession(null);
+        setLoading(false);
+      }
+    };
+
+    initSession();
 
     const {
       data: { subscription },

@@ -21,6 +21,10 @@ export { useLocationSearch } from "./useLocationSearch";
 // Tarot tracking
 export { useTarotStreak } from "./useTarotStreak";
 
+// Guest birth data (localStorage)
+export { useTempBirthData } from "./useTempBirthData";
+export type { TempBirthData } from "./useTempBirthData";
+
 // Responsive utilities
 export {
   useMediaQuery,

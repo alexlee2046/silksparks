@@ -87,6 +87,13 @@
       "title": "星盘已锁定",
       "description": "请完善你的出生资料以解锁你的宇宙蓝图。"
     },
+    "guest": {
+      "title": "探索你的星盘",
+      "description": "输入出生信息，即刻揭示你的行星布局。无需注册。",
+      "cta": "输入出生信息",
+      "savePrompt": "登录以保存星盘",
+      "localStorageNote": "数据暂存本地。登录后可永久保存。"
+    },
     "form": {
       "name": "姓名",
       "birthDate": "出生日期",

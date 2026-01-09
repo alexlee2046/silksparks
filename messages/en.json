@@ -87,6 +87,13 @@
       "title": "Chart Locked",
       "description": "Please complete your birth profile to unlock your cosmic blueprint."
     },
+    "guest": {
+      "title": "Discover Your Cosmic Blueprint",
+      "description": "Enter your birth details to reveal your planetary alignments. No account required.",
+      "cta": "Enter Birth Details",
+      "savePrompt": "Sign in to save your chart",
+      "localStorageNote": "Your data is stored locally. Sign in to save permanently."
+    },
     "form": {
       "name": "Name",
       "birthDate": "Birth Date",

@@ -74,6 +74,7 @@ interface ProductCache<T = DbProduct> {
 let productsCache: ProductCache<DbProduct> | null = null;
 let featuredCache: ProductCache<DbProduct> | null = null;
 const CACHE_TTL = 5 * 60 * 1000; // 5 分钟
+const FALLBACK_STORAGE_KEY = "silksparks_products_fallback";
 
 function isCacheValid(cache: ProductCache | null): boolean {
   return cache !== null && Date.now() - cache.timestamp < CACHE_TTL;
@@ -85,8 +86,30 @@ export function invalidateProductCache(): void {
   featuredCache = null;
 }
 
+/** 从 localStorage 获取备份数据 */
+function getFallbackProducts(): DbProduct[] {
+  try {
+    const stored = localStorage.getItem(FALLBACK_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored) as DbProduct[];
+    }
+  } catch (e) {
+    console.warn("[RecommendationEngine] Failed to parse fallback cache:", e);
+  }
+  return [];
+}
+
+/** 保存备份数据到 localStorage */
+function saveFallbackProducts(products: DbProduct[]): void {
+  try {
+    localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(products));
+  } catch (e) {
+    console.warn("[RecommendationEngine] Failed to save fallback cache:", e);
+  }
+}
+
 async function fetchProductsWithTags(): Promise<DbProduct[]> {
-  // 检查缓存
+  // 检查内存缓存
   if (isCacheValid(productsCache)) {
     return productsCache!.data;
   }
@@ -102,14 +125,23 @@ async function fetchProductsWithTags(): Promise<DbProduct[]> {
 
   if (error || !data) {
     console.error("[RecommendationEngine] Error fetching products:", error);
+    // 尝试从 localStorage 恢复
+    const fallback = getFallbackProducts();
+    if (fallback.length > 0) {
+      console.info("[RecommendationEngine] Using fallback cache");
+      return fallback;
+    }
     return [];
   }
 
-  // 更新缓存
+  // 更新内存缓存
   productsCache = {
     data: data as DbProduct[],
     timestamp: Date.now(),
   };
+
+  // 保存到 localStorage 作为备份
+  saveFallbackProducts(data as DbProduct[]);
 
   return data as DbProduct[];
 }

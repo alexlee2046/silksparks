@@ -1,43 +1,73 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../lib/paths";
 import { useUser } from "../context/UserContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useTempBirthData } from "../hooks/useTempBirthData";
 import { AstrologyEngine } from "../services/AstrologyEngine";
 import AIService from "../services/ai";
 import { RateLimitError } from "../services/ai/SupabaseAIProvider";
-import { motion } from "framer-motion";
+import { GuestBirthDataForm } from "../components/GuestBirthDataForm";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import * as m from "../src/paraglide/messages";
 
-export const BirthChart: React.FC = () => {
+interface BirthChartProps {
+  onAuthClick?: () => void;
+}
+
+export const BirthChart: React.FC<BirthChartProps> = ({ onAuthClick }) => {
   const navigate = useNavigate();
-  const { user, isBirthDataComplete } = useUser();
+  const { user, session, isBirthDataComplete } = useUser();
   const { locale } = useLanguage();
   void locale; // 确保语言切换时重渲染
+
+  const { tempData, saveTempData, hasTempData } = useTempBirthData();
+  const [showGuestForm, setShowGuestForm] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
   const [loadingAI, setLoadingAI] = useState(false);
 
+  // 优先使用登录用户的数据，其次使用临时数据
+  const effectiveBirthData = useMemo(() => {
+    if (session && isBirthDataComplete) {
+      return user.birthData;
+    }
+    if (hasTempData && tempData) {
+      return {
+        date: tempData.date,
+        time: tempData.time,
+        location: tempData.location,
+      };
+    }
+    return null;
+  }, [session, isBirthDataComplete, user.birthData, tempData, hasTempData]);
+
+  // 用于显示的名字
+  const displayName = session ? user.name : m["user.defaultName"]();
+
+  // 是否可以显示星盘
+  const canShowChart = !!(effectiveBirthData?.date && effectiveBirthData?.time);
+
   // Default to (0,0) if no location provided - affects accuracy but allows chart generation
-  const planets = React.useMemo(() => {
-    if (user.birthData.date) {
-      const lat = user.birthData.location?.lat ?? 0;
-      const lng = user.birthData.location?.lng ?? 0;
+  const planets = useMemo(() => {
+    if (effectiveBirthData?.date) {
+      const lat = effectiveBirthData.location?.lat ?? 0;
+      const lng = effectiveBirthData.location?.lng ?? 0;
       return AstrologyEngine.calculatePlanetaryPositions(
-        user.birthData.date,
+        effectiveBirthData.date,
         lat,
         lng,
       );
     }
     return null;
-  }, [user.birthData.date, user.birthData.location]);
+  }, [effectiveBirthData?.date, effectiveBirthData?.location]);
 
-  const elements = React.useMemo(() => {
-    if (user.birthData.date) {
-      return AstrologyEngine.calculateFiveElements(user.birthData.date);
+  const elements = useMemo(() => {
+    if (effectiveBirthData?.date) {
+      return AstrologyEngine.calculateFiveElements(effectiveBirthData.date);
     }
     return null;
-  }, [user.birthData.date]);
+  }, [effectiveBirthData?.date]);
 
   useEffect(() => {
     const fetchAnalysis = async () => {
@@ -46,8 +76,8 @@ export const BirthChart: React.FC = () => {
       setLoadingAI(true);
       try {
         const response = await AIService.generateBirthChartAnalysis({
-          name: user.name || m["user.defaultName"](),
-          birthDate: user.birthData.date || new Date(),
+          name: displayName || m["user.defaultName"](),
+          birthDate: effectiveBirthData?.date || new Date(),
           planets,
           elements,
         });
@@ -77,29 +107,46 @@ export const BirthChart: React.FC = () => {
     };
 
     fetchAnalysis();
-  }, [planets, elements, aiAnalysis, loadingAI, user.name]);
+  }, [planets, elements, aiAnalysis, loadingAI, displayName, effectiveBirthData?.date]);
 
-  if (!isBirthDataComplete) {
+  // 没有数据时显示访客输入界面
+  if (!canShowChart) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-foreground p-8">
-        <motion.span
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="material-symbols-outlined text-6xl text-text-muted mb-4"
-        >
-          lock
-        </motion.span>
-        <h2 className="text-2xl font-bold mb-2">{m["birthChart.locked.title"]()}</h2>
-        <p className="text-text-muted mb-6">
-          {m["birthChart.locked.description"]()}
-        </p>
-        <button
-          onClick={() => navigate(PATHS.HOME)}
-          className="bg-primary hover:bg-primary-hover transition-colors text-background-dark font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-primary/20"
-        >
-          {m["nav.home"]()}
-        </button>
-      </div>
+      <>
+        <div className="flex flex-col items-center justify-center min-h-screen text-foreground p-8">
+          <motion.span
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="material-symbols-outlined text-6xl text-primary mb-4"
+          >
+            auto_awesome
+          </motion.span>
+          <h2 className="text-2xl font-bold mb-2 text-center">
+            {m["birthChart.guest.title"]()}
+          </h2>
+          <p className="text-text-muted mb-6 text-center max-w-md">
+            {m["birthChart.guest.description"]()}
+          </p>
+          <button
+            onClick={() => setShowGuestForm(true)}
+            className="bg-primary hover:bg-primary-hover transition-colors text-background-dark font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-primary/20"
+          >
+            {m["birthChart.guest.cta"]()}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {showGuestForm && (
+            <GuestBirthDataForm
+              onComplete={(data) => {
+                saveTempData(data);
+                setShowGuestForm(false);
+              }}
+              onCancel={() => setShowGuestForm(false)}
+            />
+          )}
+        </AnimatePresence>
+      </>
     );
   }
 
@@ -147,7 +194,7 @@ export const BirthChart: React.FC = () => {
             >
               <div className="w-full h-full rounded-full bg-surface flex items-center justify-center border border-black/50">
                 <span className="text-4xl font-display font-bold text-foreground tracking-tighter">
-                  {user.name.charAt(0)}
+                  {displayName.charAt(0)}
                 </span>
               </div>
             </motion.div>
@@ -159,7 +206,7 @@ export const BirthChart: React.FC = () => {
                 transition={{ delay: 0.3 }}
                 className="text-4xl md:text-6xl font-display font-light text-foreground mb-2 tracking-tight"
               >
-                {user.name}
+                {displayName}
               </motion.h1>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -171,19 +218,19 @@ export const BirthChart: React.FC = () => {
                   <span className="material-symbols-outlined text-[18px] text-primary">
                     cake
                   </span>{" "}
-                  {user.birthData.date?.toLocaleDateString()}
+                  {effectiveBirthData?.date?.toLocaleDateString()}
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[18px] text-primary">
                     schedule
                   </span>{" "}
-                  {user.birthData.time}
+                  {effectiveBirthData?.time}
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[18px] text-primary">
                     location_on
                   </span>{" "}
-                  {user.birthData.location?.name || (
+                  {effectiveBirthData?.location?.name || (
                     <span className="text-text-muted italic">Not specified</span>
                   )}
                 </span>
@@ -387,6 +434,27 @@ export const BirthChart: React.FC = () => {
           </motion.button>
         </motion.div>
       </motion.div>
+
+      {/* 访客保存提示 */}
+      {!session && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-surface/95 backdrop-blur-md border border-primary/30 rounded-full px-6 py-3 shadow-lg flex items-center gap-3 z-50"
+        >
+          <span className="material-symbols-outlined text-primary">bookmark</span>
+          <span className="text-sm text-foreground">
+            {m["birthChart.guest.savePrompt"]()}
+          </span>
+          <button
+            onClick={onAuthClick}
+            className="bg-primary text-background-dark font-bold px-4 py-1.5 rounded-full text-sm hover:bg-primary-hover transition-colors"
+          >
+            {m["common.signIn"]()}
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 };
