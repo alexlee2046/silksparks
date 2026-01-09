@@ -10,7 +10,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Auth } from "./components/Auth";
 import { CartDrawer } from "./components/CartDrawer";
 import { Toaster } from "react-hot-toast";
-import { useScreenNavigation } from "./hooks/useAppNavigate";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import * as m from "./src/paraglide/messages";
 
@@ -158,7 +157,6 @@ const AnimatedPage: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 const AppContent: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false);
   const { loading } = useUser();
-  const { setScreen, currentScreen } = useScreenNavigation();
   const location = useLocation();
 
   // 根据当前路径确定布局类型
@@ -173,34 +171,28 @@ const AppContent: React.FC = () => {
     return <LoadingSpinner />;
   }
 
-  // 创建兼容的 props 对象
-  const navProps = {
-    currentScreen,
-    setScreen,
-  };
-
   return (
     <Layout type={getLayoutType()} onAuthClick={() => setShowAuth(true)}>
       <AnimatedPage>
         <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* 公开页面 */}
-          <Route path="/" element={<Home {...navProps} />} />
-          <Route path="/horoscope" element={<BirthChart {...navProps} />} />
-          <Route path="/horoscope/report" element={<LazyAstrologyReport {...navProps} />} />
-          <Route path="/tarot" element={<LazyTarotDaily {...navProps} />} />
-          <Route path="/tarot/spread" element={<LazyTarotSpread {...navProps} />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/horoscope" element={<BirthChart />} />
+          <Route path="/horoscope/report" element={<LazyAstrologyReport />} />
+          <Route path="/tarot" element={<LazyTarotDaily />} />
+          <Route path="/tarot/spread" element={<LazyTarotSpread />} />
 
           {/* 商店页面 */}
-          <Route path="/shop" element={<LazyShopList {...navProps} />} />
-          <Route path="/shop/:productId" element={<LazyProductDetail {...navProps} />} />
+          <Route path="/shop" element={<LazyShopList />} />
+          <Route path="/shop/:productId" element={<LazyProductDetail />} />
 
           {/* 专家咨询页面 */}
-          <Route path="/experts" element={<LazyExperts {...navProps} />} />
-          <Route path="/experts/:expertId" element={<LazyExpertProfile {...navProps} />} />
-          <Route path="/booking" element={<LazyBooking {...navProps} />} />
-          <Route path="/booking/intake" element={<LazyIntake {...navProps} />} />
-          <Route path="/booking/delivery" element={<LazyDelivery {...navProps} />} />
+          <Route path="/experts" element={<LazyExperts />} />
+          <Route path="/experts/:expertId" element={<LazyExpertProfile />} />
+          <Route path="/booking" element={<LazyBooking />} />
+          <Route path="/booking/intake" element={<LazyIntake />} />
+          <Route path="/booking/delivery" element={<LazyDelivery />} />
 
           {/* 用户中心 (受保护) */}
           <Route
@@ -211,7 +203,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={false}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazyUserDashboard {...navProps} />
+                <LazyUserDashboard />
               </ProtectedRoute>
             }
           />
@@ -223,7 +215,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={false}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazyArchives {...navProps} />
+                <LazyArchives />
               </ProtectedRoute>
             }
           />
@@ -235,7 +227,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={false}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazyOrders {...navProps} />
+                <LazyOrders />
               </ProtectedRoute>
             }
           />
@@ -247,7 +239,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={false}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazyConsultations {...navProps} />
+                <LazyConsultations />
               </ProtectedRoute>
             }
           />
@@ -259,7 +251,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={false}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazyUserSettings {...navProps} />
+                <LazyUserSettings />
               </ProtectedRoute>
             }
           />
@@ -273,7 +265,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={true}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazyPayments {...navProps} />
+                <LazyPayments />
               </ProtectedRoute>
             }
           />
@@ -285,7 +277,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={true}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazyCurrency {...navProps} />
+                <LazyCurrency />
               </ProtectedRoute>
             }
           />
@@ -297,7 +289,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={true}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazyShipping {...navProps} />
+                <LazyShipping />
               </ProtectedRoute>
             }
           />
@@ -309,7 +301,7 @@ const AppContent: React.FC = () => {
                 requiresAdmin={true}
                 onAuthClick={() => setShowAuth(true)}
               >
-                <LazySystemSettings {...navProps} />
+                <LazySystemSettings />
               </ProtectedRoute>
             }
           />

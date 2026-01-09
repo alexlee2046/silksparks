@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
-import { Screen, NavProps } from "../../types";
+import { useNavigate } from "react-router-dom";
+import { PATHS } from "../../lib/paths";
 import AIService from "../../services/ai";
 import { RateLimitError } from "../../services/ai/SupabaseAIProvider";
 import toast from "react-hot-toast";
@@ -17,7 +18,8 @@ const CosmicBackground = lazy(() =>
   import("../../components/CosmicBackground").then((m) => ({ default: m.CosmicBackground }))
 );
 
-export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
+export const AstrologyReport: React.FC = () => {
+  const navigate = useNavigate();
   const { user, isBirthDataComplete, addArchive } = useUser();
   const [analysis, setAnalysis] = React.useState<string | null>(null);
   const [planets, setPlanets] = React.useState<PlanetaryPositions | null>(null);
@@ -91,9 +93,9 @@ export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
     if (isBirthDataComplete) {
       generate();
     } else {
-      setScreen(Screen.HOME);
+      navigate(PATHS.HOME);
     }
-  }, [user, isBirthDataComplete, setScreen, addArchive]);
+  }, [user, isBirthDataComplete, navigate, addArchive]);
 
   if (loading) {
     return (
@@ -130,7 +132,7 @@ export const AstrologyReport: React.FC<NavProps> = ({ setScreen }) => {
 
       {/* Back Button */}
       <button
-        onClick={() => setScreen(Screen.BIRTH_CHART)}
+        onClick={() => navigate(PATHS.HOROSCOPE)}
         className="absolute top-8 left-8 text-text-muted hover:text-foreground flex items-center gap-2 z-20 group transition-colors"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">

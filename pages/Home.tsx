@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Screen, NavProps } from "../types";
+import { useNavigate } from "react-router-dom";
+import { PATHS } from "../lib/paths";
 import AIService from "../services/ai";
 import { RateLimitError } from "../services/ai/SupabaseAIProvider";
 import { BirthDataForm } from "../components/BirthDataForm";
@@ -45,7 +46,8 @@ function getTodaySign(): string {
   return getSunSign(new Date());
 }
 
-export const Home: React.FC<NavProps> = ({ setScreen }) => {
+export const Home: React.FC = () => {
+  const navigate = useNavigate();
   const [dailySpark, setDailySpark] = useState<string>(
     m["home.dailySpark.loading"](),
   );
@@ -173,7 +175,7 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
               </p>
             </div>
             <button
-              onClick={() => setScreen(Screen.BIRTH_CHART)}
+              onClick={() => navigate(PATHS.HOROSCOPE)}
               className="text-xs sm:text-sm font-bold flex items-center gap-1 text-text-muted hover:text-foreground transition-colors group"
             >
               {m["home.dailySpark.viewHoroscope"]()}{" "}
@@ -190,7 +192,7 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
           onCancel={() => setShowForm(false)}
           onComplete={() => {
             setShowForm(false);
-            setScreen(Screen.BIRTH_CHART);
+            navigate(PATHS.HOROSCOPE);
           }}
         />
       )}
@@ -265,7 +267,7 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
                 whileTap={{ scale: 0.98 }}
                 onClick={() =>
                   isBirthDataComplete
-                    ? setScreen(Screen.BIRTH_CHART)
+                    ? navigate(PATHS.HOROSCOPE)
                     : setShowForm(true)
                 }
                 className="bg-primary hover:bg-primary-hover text-background font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2 whitespace-nowrap"
@@ -294,7 +296,7 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
             title={m["home.features.tarot.title"]()}
             desc={m["home.features.tarot.description"]()}
             action={m["home.features.tarot.action"]()}
-            onClick={() => setScreen(Screen.TAROT_DAILY)}
+            onClick={() => navigate(PATHS.TAROT)}
             index={0}
           />
           <FeatureCard
@@ -302,7 +304,7 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
             title={m["home.features.experts.title"]()}
             desc={m["home.features.experts.description"]()}
             action={m["home.features.experts.action"]()}
-            onClick={() => setScreen(Screen.EXPERTS)}
+            onClick={() => navigate(PATHS.EXPERTS)}
             index={1}
           />
           <FeatureCard
@@ -310,7 +312,7 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
             title={m["home.features.shop.title"]()}
             desc={m["home.features.shop.description"]()}
             action={m["home.features.shop.action"]()}
-            onClick={() => setScreen(Screen.SHOP_LIST)}
+            onClick={() => navigate(PATHS.SHOP)}
             index={2}
           />
         </div>
@@ -329,7 +331,7 @@ export const Home: React.FC<NavProps> = ({ setScreen }) => {
               </h2>
             </div>
             <button
-              onClick={() => setScreen(Screen.SHOP_LIST)}
+              onClick={() => navigate(PATHS.SHOP)}
               className="text-foreground hover:text-primary transition-colors flex items-center gap-2 text-sm font-bold group"
             >
               {m["home.products.viewAll"]()}{" "}

@@ -1,5 +1,6 @@
 import React from "react";
-import { Screen, NavProps } from "../types";
+import { useNavigate } from "react-router-dom";
+import { PATHS } from "../lib/paths";
 import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
@@ -50,10 +51,10 @@ interface AIConfig {
 const AdminLayout: React.FC<{
   title: string;
   children: React.ReactNode;
-  setScreen: (s: Screen) => void;
+  navigate: (path: string) => void;
   onSave?: () => void;
   loading?: boolean;
-}> = ({ title, children, setScreen, onSave, loading }) => (
+}> = ({ title, children, navigate, onSave, loading }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -103,7 +104,7 @@ const AdminLayout: React.FC<{
         <div className="flex gap-4">
           <GlowButton
             variant="secondary"
-            onClick={() => setScreen(Screen.HOME)}
+            onClick={() => navigate(PATHS.HOME)}
             icon="home"
           >
             Exit Admin
@@ -137,25 +138,25 @@ const AdminLayout: React.FC<{
             <nav className="flex flex-col space-y-2">
               <AdminNavLink
                 active={title === "Payment Configuration"}
-                onClick={() => setScreen(Screen.ADMIN_PAYMENTS)}
+                onClick={() => navigate(PATHS.MANAGE_PAYMENTS)}
                 icon="payments"
                 label="Payments"
               />
               <AdminNavLink
                 active={title === "Currency & Localization"}
-                onClick={() => setScreen(Screen.ADMIN_CURRENCY)}
+                onClick={() => navigate(PATHS.MANAGE_CURRENCY)}
                 icon="currency_exchange"
                 label="Currency"
               />
               <AdminNavLink
                 active={title === "Shipping Rate Templates"}
-                onClick={() => setScreen(Screen.ADMIN_SHIPPING)}
+                onClick={() => navigate(PATHS.MANAGE_SHIPPING)}
                 icon="local_shipping"
                 label="Shipping"
               />
               <AdminNavLink
                 active={title === "System Intelligence"}
-                onClick={() => setScreen(Screen.ADMIN_SETTINGS)}
+                onClick={() => navigate(PATHS.MANAGE_SETTINGS)}
                 icon="psychology"
                 label="AI Config"
               />
@@ -209,7 +210,8 @@ const AdminNavLink: React.FC<AdminNavLinkProps> = ({ active, onClick, icon, labe
   </button>
 );
 
-export const Payments: React.FC<NavProps> = ({ setScreen }) => {
+export const Payments: React.FC = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = React.useState({
     revenue: 0,
     transactions: 0,
@@ -232,7 +234,7 @@ export const Payments: React.FC<NavProps> = ({ setScreen }) => {
   }, []);
 
   return (
-    <AdminLayout title="Payment Configuration" setScreen={setScreen}>
+    <AdminLayout title="Payment Configuration" navigate={navigate}>
       <GlassCard className="p-8 border-surface-border">
         <div className="flex flex-col md:flex-row items-start justify-between gap-6 pb-8 border-b border-surface-border mb-8">
           <div className="space-y-1">
@@ -322,7 +324,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ name, icon, connected }) =>
   </div>
 );
 
-export const Currency: React.FC<NavProps> = ({ setScreen }) => {
+export const Currency: React.FC = () => {
+  const navigate = useNavigate();
   const [currencies, setCurrencies] = React.useState<CurrencyType[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -344,7 +347,7 @@ export const Currency: React.FC<NavProps> = ({ setScreen }) => {
   }, []);
 
   return (
-    <AdminLayout title="Currency & Localization" setScreen={setScreen}>
+    <AdminLayout title="Currency & Localization" navigate={navigate}>
       <GlassCard className="p-8 border-surface-border">
         <h2 className="text-xl font-bold text-foreground mb-8 font-display flex items-center gap-2">
           <span className="text-primary">✦</span> General Preferences
@@ -446,7 +449,8 @@ const CurrencyRow: React.FC<CurrencyRowProps> = ({ name, code, rate, defaultC })
   </div>
 );
 
-export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
+export const Shipping: React.FC = () => {
+  const navigate = useNavigate();
   const [zones, setZones] = React.useState<ShippingZoneWithRates[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -486,7 +490,7 @@ export const Shipping: React.FC<NavProps> = ({ setScreen }) => {
   };
 
   return (
-    <AdminLayout title="Shipping Rate Templates" setScreen={setScreen}>
+    <AdminLayout title="Shipping Rate Templates" navigate={navigate}>
       <div className="grid grid-cols-1 gap-8">
         <GlassCard className="overflow-hidden border-surface-border p-0">
           <div className="p-8 border-b border-surface-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -584,7 +588,8 @@ const ShippingZone: React.FC<ShippingZoneProps> = ({ name, rates }) => (
   </div>
 );
 
-export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
+export const SystemSettings: React.FC = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true);
   const [config, setConfig] = React.useState({
     systemPrompt:
@@ -647,7 +652,7 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
   return (
     <AdminLayout
       title="System Intelligence"
-      setScreen={setScreen}
+      navigate={navigate}
       onSave={handleSave}
       loading={loading}
     >

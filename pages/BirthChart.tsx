@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Screen, NavProps } from "../types";
+import { useNavigate } from "react-router-dom";
+import { PATHS } from "../lib/paths";
 import { useUser } from "../context/UserContext";
 import { useLanguage } from "../context/LanguageContext";
 import { AstrologyEngine } from "../services/AstrologyEngine";
@@ -9,7 +10,8 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import * as m from "../src/paraglide/messages";
 
-export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
+export const BirthChart: React.FC = () => {
+  const navigate = useNavigate();
   const { user, isBirthDataComplete } = useUser();
   const { locale } = useLanguage();
   void locale; // 确保语言切换时重渲染
@@ -92,7 +94,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
           {m["birthChart.locked.description"]()}
         </p>
         <button
-          onClick={() => setScreen(Screen.HOME)}
+          onClick={() => navigate(PATHS.HOME)}
           className="bg-primary hover:bg-primary-hover transition-colors text-background-dark font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-primary/20"
         >
           {m["nav.home"]()}
@@ -106,7 +108,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
       {/* Header */}
       <div className="w-full flex justify-between items-center mb-8">
         <button
-          onClick={() => setScreen(Screen.HOME)}
+          onClick={() => navigate(PATHS.HOME)}
           className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group"
         >
           <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
@@ -378,7 +380,7 @@ export const BirthChart: React.FC<NavProps> = ({ setScreen }) => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setScreen(Screen.REPORT)}
+            onClick={() => navigate(PATHS.HOROSCOPE_REPORT)}
             className="bg-primary hover:bg-primary-hover text-background-dark font-bold py-4 px-12 rounded-full shadow-[0_0_30px_rgba(244,192,37,0.4)] hover:shadow-[0_0_50px_rgba(244,192,37,0.6)] transition-all relative z-10 text-lg"
           >
             Generate Full Report (AI)

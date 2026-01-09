@@ -1,7 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent, act } from "@testing-library/react";
 import React from "react";
-import { Screen } from "@/types";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+
+// Mock useNavigate and useParams
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -164,32 +174,48 @@ vi.mock("@/components/GlowButton", () => ({
 import { ShopList, ProductDetail } from "@/pages/Commerce";
 
 describe("Commerce", () => {
-  const mockSetScreen = vi.fn();
-  const mockSetProductId = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
     mockProductsData = [...sampleProducts];
     mockSingleProduct = sampleProducts[0];
   });
 
+  const renderShopList = () => {
+    return render(
+      <MemoryRouter>
+        <ShopList />
+      </MemoryRouter>
+    );
+  };
+
+  const renderProductDetail = (productId: number = 1) => {
+    return render(
+      <MemoryRouter initialEntries={[`/shop/${productId}`]}>
+        <Routes>
+          <Route path="/shop/:productId" element={<ProductDetail />} />
+        </Routes>
+      </MemoryRouter>
+    );
+  };
+
   describe("ShopList", () => {
     describe("rendering", () => {
       it("should render loading state while products are being fetched", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         expect(screen.getByText(/Summoning mystical artifacts/i)).toBeInTheDocument();
       });
 
       it("should render hero section with title", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         expect(screen.getByText(/Curated Tools for/i)).toBeInTheDocument();
         expect(screen.getByText(/Your Journey/i)).toBeInTheDocument();
       });
 
       it("should render filter sidebar with sections", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         expect(screen.getByText("Filters")).toBeInTheDocument();
         expect(screen.getByText("Intent")).toBeInTheDocument();
@@ -198,7 +224,7 @@ describe("Commerce", () => {
       });
 
       it("should display element filter options", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         expect(screen.getByText("Fire")).toBeInTheDocument();
         expect(screen.getByText("Water")).toBeInTheDocument();
@@ -208,7 +234,7 @@ describe("Commerce", () => {
       });
 
       it("should display intent filter options", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         expect(screen.getByText("Love & Relationships")).toBeInTheDocument();
         expect(screen.getByText("Wealth & Career")).toBeInTheDocument();
@@ -217,13 +243,13 @@ describe("Commerce", () => {
       });
 
       it("should render back to home button", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         expect(screen.getByText("Back to Home")).toBeInTheDocument();
       });
 
       it("should render curated collection badge", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         expect(screen.getByText("Curated Collection")).toBeInTheDocument();
       });
@@ -231,25 +257,25 @@ describe("Commerce", () => {
 
     describe("navigation", () => {
       it("should navigate back to home when back button is clicked", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         const backButton = screen.getByText("Back to Home");
         fireEvent.click(backButton);
 
-        expect(mockSetScreen).toHaveBeenCalledWith(Screen.HOME);
+        expect(mockNavigate).toHaveBeenCalledWith("/");
       });
     });
 
     describe("filtering", () => {
       it("should have checkboxes for element filters", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         const checkboxes = screen.getAllByRole("checkbox");
         expect(checkboxes.length).toBeGreaterThan(0);
       });
 
       it("should toggle filter when checkbox is clicked", () => {
-        render(<ShopList setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+        renderShopList();
 
         const checkboxes = screen.getAllByRole("checkbox");
         const fireCheckbox = checkboxes[4]; // Fire is in Elements section
@@ -269,15 +295,15 @@ describe("Commerce", () => {
   describe("ProductDetail", () => {
     describe("rendering", () => {
       it("should render loading state while product is being fetched", () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         expect(screen.getByText(/Consulting the stars/i)).toBeInTheDocument();
       });
 
-      it("should show not found message when productId is not provided", async () => {
+      it("should show not found message when product does not exist", async () => {
         mockSingleProduct = null;
 
-        render(<ProductDetail setScreen={mockSetScreen} productId={undefined} />);
+        renderProductDetail(999);
 
         await waitFor(() => {
           expect(screen.queryByText(/Consulting the stars/i)).not.toBeInTheDocument();
@@ -285,7 +311,7 @@ describe("Commerce", () => {
       });
 
       it("should display product badge when available", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           // The badge "New" or "Sacred Artifact" should appear
@@ -299,13 +325,13 @@ describe("Commerce", () => {
       it("should navigate to shop from not found page", async () => {
         mockSingleProduct = null;
 
-        render(<ProductDetail setScreen={mockSetScreen} productId={999} />);
+        renderProductDetail(999);
 
         await waitFor(() => {
           const returnButton = screen.queryByText("Return to Shop");
           if (returnButton) {
             fireEvent.click(returnButton);
-            expect(mockSetScreen).toHaveBeenCalledWith(Screen.SHOP_LIST);
+            expect(mockNavigate).toHaveBeenCalledWith("/shop");
           }
         });
       });
@@ -313,7 +339,7 @@ describe("Commerce", () => {
 
     describe("product info sections", () => {
       it("should display verified reviews text", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           expect(screen.getByText("Verified Reviews")).toBeInTheDocument();
@@ -321,7 +347,7 @@ describe("Commerce", () => {
       });
 
       it("should display cosmic resonance section", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           expect(screen.getByText("Cosmic Resonance")).toBeInTheDocument();
@@ -329,7 +355,7 @@ describe("Commerce", () => {
       });
 
       it("should display shipping information", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           expect(screen.getByText(/Free shipping on orders over \$100/i)).toBeInTheDocument();
@@ -337,7 +363,7 @@ describe("Commerce", () => {
       });
 
       it("should display add to cart button", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           expect(screen.getByText("Add to Cart")).toBeInTheDocument();
@@ -345,7 +371,7 @@ describe("Commerce", () => {
       });
 
       it("should display back to shop button", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           expect(screen.getByText("Back to Shop")).toBeInTheDocument();
@@ -355,7 +381,7 @@ describe("Commerce", () => {
 
     describe("cart functionality", () => {
       it("should call addItem when Add to Cart is clicked", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           expect(screen.getByText("Add to Cart")).toBeInTheDocument();
@@ -371,7 +397,7 @@ describe("Commerce", () => {
 
     describe("favorite functionality", () => {
       it("should have a favorite button", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           const buttons = screen.getAllByRole("button");
@@ -385,7 +411,7 @@ describe("Commerce", () => {
 
     describe("breadcrumb navigation", () => {
       it("should display Shop in breadcrumb", async () => {
-        render(<ProductDetail setScreen={mockSetScreen} productId={1} />);
+        renderProductDetail(1);
 
         await waitFor(() => {
           expect(screen.getByText("Shop")).toBeInTheDocument();

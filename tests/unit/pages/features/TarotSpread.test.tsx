@@ -1,7 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import React from "react";
-import { Screen } from "@/types";
+import { MemoryRouter } from "react-router-dom";
+
+// Mock useNavigate
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -139,20 +149,27 @@ vi.mock("@/context/UserContext", () => ({
 import { TarotSpread } from "@/pages/features/TarotSpread";
 
 describe("TarotSpread", () => {
-  const mockSetScreen = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
   });
+
+  const renderComponent = () => {
+    return render(
+      <MemoryRouter>
+        <TarotSpread />
+      </MemoryRouter>
+    );
+  };
 
   describe("rendering", () => {
     it("should render without crashing", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       expect(document.body).toBeInTheDocument();
     });
 
     it("should display title", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Past, Present,")).toBeInTheDocument();
       // "Future" appears in multiple places, use getAllByText
       const futureElements = screen.getAllByText("Future");
@@ -160,27 +177,27 @@ describe("TarotSpread", () => {
     });
 
     it("should display Three Card Spread label", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Three Card Spread")).toBeInTheDocument();
     });
 
     it("should show initial prompt message", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText(/Focus on a question/)).toBeInTheDocument();
     });
 
     it("should show Tap Deck to Shuffle text", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Tap Deck to Shuffle")).toBeInTheDocument();
     });
 
     it("should show Silk & Sparks branding", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Silk & Sparks")).toBeInTheDocument();
     });
 
     it("should show position labels in idle state", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Past")).toBeInTheDocument();
       expect(screen.getByText("Present")).toBeInTheDocument();
       // Note: "Future" might be styled differently in the title
@@ -189,21 +206,21 @@ describe("TarotSpread", () => {
 
   describe("navigation", () => {
     it("should have back button", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Back")).toBeInTheDocument();
     });
 
     it("should navigate home when back button clicked", () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
       const backButton = screen.getByText("Back");
       fireEvent.click(backButton);
-      expect(mockSetScreen).toHaveBeenCalledWith(Screen.HOME);
+      expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
   describe("deck interaction", () => {
     it("should show card selector after clicking deck", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       const tapDeck = screen.getByText("Tap Deck to Shuffle");
       const clickableElement = tapDeck.closest(".cursor-pointer");
@@ -218,7 +235,7 @@ describe("TarotSpread", () => {
     });
 
     it("should request 3 cards from CardSelector", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       const tapDeck = screen.getByText("Tap Deck to Shuffle");
       fireEvent.click(tapDeck.closest(".cursor-pointer")!);
@@ -234,7 +251,7 @@ describe("TarotSpread", () => {
 
   describe("cancel selection", () => {
     it("should return to idle when cancel is clicked", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       const tapDeck = screen.getByText("Tap Deck to Shuffle");
       fireEvent.click(tapDeck.closest(".cursor-pointer")!);
@@ -258,7 +275,7 @@ describe("TarotSpread", () => {
     it("should call initSpreadTarot with userId", async () => {
       const { initSpreadTarot } = await import("@/services/TarotService");
 
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       const tapDeck = screen.getByText("Tap Deck to Shuffle");
       fireEvent.click(tapDeck.closest(".cursor-pointer")!);
@@ -274,7 +291,7 @@ describe("TarotSpread", () => {
 
   describe("message updates", () => {
     it("should show different message during selecting", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       const tapDeck = screen.getByText("Tap Deck to Shuffle");
       fireEvent.click(tapDeck.closest(".cursor-pointer")!);
@@ -294,7 +311,7 @@ describe("TarotSpread", () => {
     it("should call selectSpreadCards after selection", async () => {
       const { selectSpreadCards } = await import("@/services/TarotService");
 
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -318,7 +335,7 @@ describe("TarotSpread", () => {
 
   describe("full reading flow", () => {
     it("should show three TarotCard components after selection", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -342,7 +359,7 @@ describe("TarotSpread", () => {
     });
 
     it("should show interpretation after reveal", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -364,7 +381,7 @@ describe("TarotSpread", () => {
     });
 
     it("should add archive after successful reading", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -393,7 +410,7 @@ describe("TarotSpread", () => {
 
   describe("revealed state UI", () => {
     it("should show Spark AI Interpretation heading", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -415,7 +432,7 @@ describe("TarotSpread", () => {
     });
 
     it("should show Browse Sacred Shop button", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -437,7 +454,7 @@ describe("TarotSpread", () => {
     });
 
     it("should show New Reading button", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -459,7 +476,7 @@ describe("TarotSpread", () => {
     });
 
     it("should navigate to shop when Browse Sacred Shop clicked", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -481,13 +498,13 @@ describe("TarotSpread", () => {
 
       fireEvent.click(screen.getByText("Browse Sacred Shop"));
 
-      expect(mockSetScreen).toHaveBeenCalledWith(Screen.SHOP_LIST);
+      expect(mockNavigate).toHaveBeenCalledWith("/shop");
     });
   });
 
   describe("reset functionality", () => {
     it("should reset to idle when New Reading is clicked", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -517,7 +534,7 @@ describe("TarotSpread", () => {
 
   describe("recommendations", () => {
     it("should show recommendations after reading", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -540,7 +557,7 @@ describe("TarotSpread", () => {
     });
 
     it("should navigate to product detail when recommendation clicked", async () => {
-      render(<TarotSpread setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap Deck to Shuffle").closest(".cursor-pointer")!);
 
@@ -562,7 +579,7 @@ describe("TarotSpread", () => {
 
       fireEvent.click(screen.getByText("Crystal Ball"));
 
-      expect(mockSetScreen).toHaveBeenCalledWith(Screen.PRODUCT_DETAIL);
+      expect(mockNavigate).toHaveBeenCalledWith("/shop/1");
     });
   });
 });

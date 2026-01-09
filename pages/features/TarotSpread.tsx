@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Screen, NavProps } from "../../types";
+import { PATHS } from "../../lib/paths";
 import AIService from "../../services/ai";
 import { RateLimitError } from "../../services/ai/SupabaseAIProvider";
 import type { TarotCard as TarotCardType } from "../../services/ai/types";
@@ -27,7 +27,7 @@ type ReadingState = "idle" | "shuffling" | "selecting" | "drawing" | "revealed";
 
 const POSITION_LABELS = ["The Past", "The Present", "The Future"];
 
-export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
+export const TarotSpread: React.FC = () => {
   const navigate = useNavigate();
   const { addArchive, session } = useUser();
   const userId = session?.user?.id ?? null;
@@ -177,7 +177,7 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
 
       {/* Back Button */}
       <button
-        onClick={() => setScreen(Screen.HOME)}
+        onClick={() => navigate(PATHS.HOME)}
         className="absolute top-8 left-8 text-text-muted hover:text-foreground flex items-center gap-2 z-20 group transition-colors"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
@@ -409,9 +409,7 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
                     {recommendations.map((r) => (
                       <div
                         key={r.id}
-                        onClick={() => {
-                          setScreen(Screen.PRODUCT_DETAIL);
-                        }}
+                        onClick={() => navigate(PATHS.PRODUCT(r.id))}
                         className="bg-surface-border/30 hover:bg-surface-border/50 border border-surface-border px-4 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors"
                       >
                         <span className="text-primary material-symbols-outlined text-sm">
@@ -426,7 +424,7 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
 
               <div className="mt-8 flex justify-center gap-4">
                 <button
-                  onClick={() => setScreen(Screen.SHOP_LIST)}
+                  onClick={() => navigate(PATHS.SHOP)}
                   className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-background-dark font-bold transition-all shadow-[0_0_20px_rgba(244,192,37,0.2)] flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined">

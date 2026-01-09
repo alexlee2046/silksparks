@@ -1,7 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { PATHS } from "../lib/paths";
 import { useUser } from "../context/UserContext";
 import { useFavorites } from "../hooks/useFavorites";
-import { Screen, NavProps } from "../types";
 import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
@@ -15,14 +16,15 @@ import { useLanguage, LOCALE_NAMES, type Locale } from "../context/LanguageConte
 import { usePerformance, type QualityLevel } from "../context/PerformanceContext";
 import * as m from "../src/paraglide/messages";
 
-export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
+export const UserDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user, signOut } = useUser();
   const userName = user.name || "Seeker";
 
   const handleSignOut = async () => {
     await signOut();
     toast.success("Successfully signed out");
-    setScreen(Screen.HOME);
+    navigate(PATHS.HOME);
   };
 
   return (
@@ -64,7 +66,7 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
               </div>
             </div>
             <button
-              onClick={() => setScreen(Screen.BIRTH_CHART)}
+              onClick={() => navigate(PATHS.HOROSCOPE)}
               className="flex items-center gap-2 rounded-lg bg-surface-border/30 hover:bg-surface-border/50 px-3 py-2 transition-colors group w-full border border-surface-border"
             >
               <span className="material-symbols-outlined text-[18px] text-primary group-hover:rotate-45 transition-transform">
@@ -81,32 +83,32 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
               icon="dashboard"
               label="My Space"
               active
-              onClick={() => setScreen(Screen.USER_DASHBOARD)}
+              onClick={() => navigate(PATHS.DASHBOARD)}
             />
             <NavBtn
               icon="description"
               label="Digital Archives"
-              onClick={() => setScreen(Screen.ARCHIVES)}
+              onClick={() => navigate(PATHS.DASHBOARD_ARCHIVES)}
             />
             <NavBtn
               icon="shopping_bag"
               label="Order History"
-              onClick={() => setScreen(Screen.ORDERS)}
+              onClick={() => navigate(PATHS.DASHBOARD_ORDERS)}
             />
             <NavBtn
               icon="favorite"
               label="Favorites"
-              onClick={() => setScreen(Screen.FAVORITES)}
+              onClick={() => navigate(PATHS.DASHBOARD_FAVORITES)}
             />
             <NavBtn
               icon="calendar_month"
               label="Consultations"
-              onClick={() => setScreen(Screen.CONSULTATIONS)}
+              onClick={() => navigate(PATHS.DASHBOARD_CONSULTATIONS)}
             />
             <NavBtn
               icon="settings"
               label="Settings"
-              onClick={() => setScreen(Screen.SETTINGS)}
+              onClick={() => navigate(PATHS.DASHBOARD_SETTINGS)}
             />
           </nav>
         </div>
@@ -239,7 +241,7 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
                   TODAY
                 </span>
                 <button
-                  onClick={() => setScreen(Screen.REPORT)}
+                  onClick={() => navigate(PATHS.HOROSCOPE_REPORT)}
                   className="text-primary text-sm font-bold hover:text-foreground flex items-center gap-1 transition-colors"
                 >
                   Read Full{" "}
@@ -256,7 +258,7 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
             value={user.archives?.length || 0}
             label="Reports"
             color="from-blue-500 to-indigo-500"
-            onClick={() => setScreen(Screen.ARCHIVES)}
+            onClick={() => navigate(PATHS.DASHBOARD_ARCHIVES)}
           />
           <DashboardCard
             title="Favorites"
@@ -264,7 +266,7 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
             value={user.favorites?.length || 0}
             label="Saved Items"
             color="from-red-400 to-pink-600"
-            onClick={() => setScreen(Screen.FAVORITES)}
+            onClick={() => navigate(PATHS.DASHBOARD_FAVORITES)}
           />
         </div>
       </main>
@@ -272,11 +274,12 @@ export const UserDashboard: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-export const Orders: React.FC<NavProps> = ({ setScreen }) => {
+export const Orders: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <button
-        onClick={() => setScreen(Screen.USER_DASHBOARD)}
+        onClick={() => navigate(PATHS.DASHBOARD)}
         className="text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
@@ -306,7 +309,7 @@ export const Orders: React.FC<NavProps> = ({ setScreen }) => {
         </div>
         <p className="text-text-muted">No orders placed yet.</p>
         <button
-          onClick={() => setScreen(Screen.SHOP_LIST)}
+          onClick={() => navigate(PATHS.SHOP)}
           className="text-primary mt-4 hover:text-foreground font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-foreground transition-all"
         >
           Browse Shop
@@ -328,7 +331,8 @@ function NavBtn({ icon, label, active, onClick }: any) {
   );
 }
 
-export const Archives: React.FC<NavProps> = ({ setScreen }) => {
+export const Archives: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useUser();
   const archives = user.archives || [];
 
@@ -345,7 +349,7 @@ export const Archives: React.FC<NavProps> = ({ setScreen }) => {
       <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
 
       <button
-        onClick={() => setScreen(Screen.USER_DASHBOARD)}
+        onClick={() => navigate(PATHS.DASHBOARD)}
         className="relative z-10 text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
@@ -466,7 +470,8 @@ const ArchiveCard = ({ item }: { item: any; key?: any }) => {
   );
 };
 
-export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
+export const UserSettings: React.FC = () => {
+  const navigate = useNavigate();
   const { user, updateUser } = useUser();
   const { theme, setTheme } = useTheme();
   const { locale, setLocale, locales } = useLanguage();
@@ -501,7 +506,7 @@ export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
   return (
     <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <button
-        onClick={() => setScreen(Screen.USER_DASHBOARD)}
+        onClick={() => navigate(PATHS.DASHBOARD)}
         className="text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
@@ -646,7 +651,8 @@ export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
+export const Consultations: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useUser();
   const [consultations, setConsultations] = React.useState<any[]>([]);
   const [_loading, setLoading] = React.useState(true);
@@ -687,7 +693,7 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
   return (
     <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <button
-        onClick={() => setScreen(Screen.USER_DASHBOARD)}
+        onClick={() => navigate(PATHS.DASHBOARD)}
         className="text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
@@ -718,7 +724,7 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
           </div>
           <p className="text-text-muted">No consultations booked yet.</p>
           <button
-            onClick={() => setScreen(Screen.BOOKING)}
+            onClick={() => navigate(PATHS.EXPERTS)}
             className="text-primary mt-4 hover:text-foreground font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-foreground transition-all"
           >
             Book a Session
@@ -768,7 +774,8 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-export const Favorites: React.FC<NavProps> = ({ setScreen }) => {
+export const Favorites: React.FC = () => {
+  const navigate = useNavigate();
   const { favorites, toggleFavorite } = useFavorites();
   const { addItem } = useCart();
   const [products, setProducts] = React.useState<Tables<"products">[]>([]);
@@ -800,7 +807,7 @@ export const Favorites: React.FC<NavProps> = ({ setScreen }) => {
   return (
     <div className="flex-1 p-4 md:p-10 bg-background min-h-screen relative">
       <button
-        onClick={() => setScreen(Screen.USER_DASHBOARD)}
+        onClick={() => navigate(PATHS.DASHBOARD)}
         className="text-text-muted hover:text-foreground mb-8 flex items-center gap-2 transition-colors group text-sm font-medium"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
@@ -827,7 +834,7 @@ export const Favorites: React.FC<NavProps> = ({ setScreen }) => {
           </div>
           <p className="text-text-muted">No favorites yet.</p>
           <button
-            onClick={() => setScreen(Screen.SHOP_LIST)}
+            onClick={() => navigate(PATHS.SHOP)}
             className="text-primary mt-4 hover:text-foreground font-bold text-sm tracking-wide border-b border-primary/30 pb-0.5 hover:border-foreground transition-all"
           >
             Browse Shop

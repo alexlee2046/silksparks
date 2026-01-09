@@ -1,6 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import React from "react";
+import { MemoryRouter } from "react-router-dom";
+
+// Mock useNavigate
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -173,17 +184,23 @@ vi.mock("@/src/paraglide/messages", async (importOriginal) => {
 import { Home } from "@/pages/Home";
 
 describe("Home", () => {
-  const mockSetScreen = vi.fn();
-  const mockSetProductId = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
     localStorage.clear();
   });
 
+  const renderComponent = () => {
+    return render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>
+    );
+  };
+
   describe("rendering", () => {
     it("should render without crashing", async () => {
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(document.body).toBeInTheDocument();
@@ -191,7 +208,7 @@ describe("Home", () => {
     });
 
     it("should render SEO component", async () => {
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+      renderComponent();
 
       // SEO is mocked to return null, but it should be called
       await waitFor(() => {
@@ -202,13 +219,13 @@ describe("Home", () => {
 
   describe("daily spark", () => {
     it("should show loading message initially", () => {
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+      renderComponent();
 
       expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
     it("should display daily spark message after loading", async () => {
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText("Trust your intuition today")).toBeInTheDocument();
@@ -219,7 +236,7 @@ describe("Home", () => {
       localStorage.setItem("daily_spark", "Cached message");
       localStorage.setItem("daily_spark_date", new Date().toDateString());
 
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText("Cached message")).toBeInTheDocument();
@@ -228,12 +245,11 @@ describe("Home", () => {
   });
 
   describe("navigation", () => {
-    it("should have navigation props", () => {
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+    it("should render with React Router", () => {
+      renderComponent();
 
-      // Component should accept navigation props
-      expect(mockSetScreen).toBeDefined();
-      expect(mockSetProductId).toBeDefined();
+      // Component should use React Router navigation
+      expect(mockNavigate).toBeDefined();
     });
   });
 
@@ -241,7 +257,7 @@ describe("Home", () => {
     it("should load featured products", async () => {
       const { RecommendationEngine } = await import("@/services/RecommendationEngine");
 
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(RecommendationEngine.getFeaturedProducts).toHaveBeenCalledWith(4);
@@ -251,7 +267,7 @@ describe("Home", () => {
 
   describe("birth data form", () => {
     it("should not show form initially", () => {
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+      renderComponent();
 
       expect(screen.queryByTestId("birth-data-form")).not.toBeInTheDocument();
     });
@@ -259,7 +275,7 @@ describe("Home", () => {
 
   describe("categories", () => {
     it("should have default category", async () => {
-      render(<Home setScreen={mockSetScreen} setProductId={mockSetProductId} />);
+      renderComponent();
 
       await waitFor(() => {
         // Component should initialize with "All" category

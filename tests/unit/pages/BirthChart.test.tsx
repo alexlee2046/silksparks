@@ -1,6 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import React from "react";
+import { MemoryRouter } from "react-router-dom";
+
+// Mock useNavigate
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -118,18 +129,24 @@ vi.mock("@/src/paraglide/messages", async (importOriginal) => {
 
 // Import component after mocks
 import { BirthChart } from "@/pages/BirthChart";
-import { Screen } from "@/types";
 
 describe("BirthChart", () => {
-  const mockSetScreen = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
   });
+
+  const renderComponent = () => {
+    return render(
+      <MemoryRouter>
+        <BirthChart />
+      </MemoryRouter>
+    );
+  };
 
   describe("rendering", () => {
     it("should render without crashing", async () => {
-      render(<BirthChart setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(document.body).toBeInTheDocument();
@@ -137,7 +154,7 @@ describe("BirthChart", () => {
     });
 
     it("should display user name in context", async () => {
-      render(<BirthChart setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         // The component should use the user's name from context
@@ -150,7 +167,7 @@ describe("BirthChart", () => {
     it("should calculate planets from birth data", async () => {
       const { AstrologyEngine } = await import("@/services/AstrologyEngine");
 
-      render(<BirthChart setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(AstrologyEngine.calculatePlanetaryPositions).toHaveBeenCalled();
@@ -160,7 +177,7 @@ describe("BirthChart", () => {
     it("should calculate five elements from birth data", async () => {
       const { AstrologyEngine } = await import("@/services/AstrologyEngine");
 
-      render(<BirthChart setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(AstrologyEngine.calculateFiveElements).toHaveBeenCalled();
@@ -172,7 +189,7 @@ describe("BirthChart", () => {
     it("should fetch AI analysis when data is available", async () => {
       const AIService = (await import("@/services/ai")).default;
 
-      render(<BirthChart setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(AIService.generateBirthChartAnalysis).toHaveBeenCalled();
@@ -182,7 +199,7 @@ describe("BirthChart", () => {
     it("should pass correct data to AI service", async () => {
       const AIService = (await import("@/services/ai")).default;
 
-      render(<BirthChart setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(AIService.generateBirthChartAnalysis).toHaveBeenCalledWith(
@@ -195,15 +212,15 @@ describe("BirthChart", () => {
   });
 
   describe("navigation", () => {
-    it("should accept setScreen prop", () => {
-      render(<BirthChart setScreen={mockSetScreen} />);
-      expect(mockSetScreen).toBeDefined();
+    it("should render with React Router", () => {
+      renderComponent();
+      expect(mockNavigate).toBeDefined();
     });
   });
 
   describe("loading states", () => {
     it("should show loading state while fetching analysis", async () => {
-      render(<BirthChart setScreen={mockSetScreen} />);
+      renderComponent();
 
       // Component should handle loading state
       await waitFor(() => {

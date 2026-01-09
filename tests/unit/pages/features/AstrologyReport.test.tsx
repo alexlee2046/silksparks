@@ -1,7 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import React from "react";
-import { Screen } from "@/types";
+import { MemoryRouter } from "react-router-dom";
+
+// Mock useNavigate
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -103,17 +113,24 @@ vi.mock("@/context/UserContext", () => ({
 import { AstrologyReport } from "@/pages/features/AstrologyReport";
 
 describe("AstrologyReport", () => {
-  const mockSetScreen = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
     localStorage.clear();
     mockIsBirthDataComplete = true;
   });
 
+  const renderComponent = () => {
+    return render(
+      <MemoryRouter>
+        <AstrologyReport />
+      </MemoryRouter>
+    );
+  };
+
   describe("rendering", () => {
     it("should render without crashing", async () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(document.body).toBeInTheDocument();
@@ -121,13 +138,13 @@ describe("AstrologyReport", () => {
     });
 
     it("should show loading state initially", () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       expect(screen.getByText("TRANSCENDING...")).toBeInTheDocument();
     });
 
     it("should show loading message about Akashic Records", () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       expect(screen.getByText("Consulting the Akashic Records")).toBeInTheDocument();
     });
@@ -137,7 +154,7 @@ describe("AstrologyReport", () => {
     it("should calculate planetary positions", async () => {
       const { AstrologyEngine } = await import("@/services/AstrologyEngine");
 
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(AstrologyEngine.calculatePlanetaryPositions).toHaveBeenCalled();
@@ -147,7 +164,7 @@ describe("AstrologyReport", () => {
     it("should calculate five elements", async () => {
       const { AstrologyEngine } = await import("@/services/AstrologyEngine");
 
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(AstrologyEngine.calculateFiveElements).toHaveBeenCalled();
@@ -157,7 +174,7 @@ describe("AstrologyReport", () => {
     it("should fetch AI analysis", async () => {
       const AIService = (await import("@/services/ai")).default;
 
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(AIService.generateBirthChartAnalysis).toHaveBeenCalled();
@@ -165,7 +182,7 @@ describe("AstrologyReport", () => {
     });
 
     it("should display user name after loading", async () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText("Test User")).toBeInTheDocument();
@@ -173,7 +190,7 @@ describe("AstrologyReport", () => {
     });
 
     it("should display Sun sign", async () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText("Capricorn Sun")).toBeInTheDocument();
@@ -181,7 +198,7 @@ describe("AstrologyReport", () => {
     });
 
     it("should display element bars", async () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(screen.getByTestId("element-Fire")).toBeInTheDocument();
@@ -191,7 +208,7 @@ describe("AstrologyReport", () => {
     });
 
     it("should add archive after successful analysis", async () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(mockAddArchive).toHaveBeenCalledWith(
@@ -208,10 +225,10 @@ describe("AstrologyReport", () => {
     it("should redirect to home when birth data is incomplete", async () => {
       mockIsBirthDataComplete = false;
 
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
-        expect(mockSetScreen).toHaveBeenCalledWith(Screen.HOME);
+        expect(mockNavigate).toHaveBeenCalledWith("/");
       });
     });
   });
@@ -223,7 +240,7 @@ describe("AstrologyReport", () => {
 
       const AIService = (await import("@/services/ai")).default;
 
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         // Should not call AI service when cache exists
@@ -234,7 +251,7 @@ describe("AstrologyReport", () => {
 
   describe("navigation", () => {
     it("should have back button", async () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText("Back to Chart")).toBeInTheDocument();
@@ -242,20 +259,20 @@ describe("AstrologyReport", () => {
     });
 
     it("should navigate back when back button clicked", async () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         const backButton = screen.getByText("Back to Chart");
         fireEvent.click(backButton);
       });
 
-      expect(mockSetScreen).toHaveBeenCalledWith(Screen.BIRTH_CHART);
+      expect(mockNavigate).toHaveBeenCalledWith("/horoscope");
     });
   });
 
   describe("premium features", () => {
     it("should show premium unlock button", async () => {
-      render(<AstrologyReport setScreen={mockSetScreen} />);
+      renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText("Unlock 12-Month Forecast")).toBeInTheDocument();

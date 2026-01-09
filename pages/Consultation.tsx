@@ -1,5 +1,6 @@
 import React from "react";
-import { Screen, NavProps } from "../types";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { PATHS } from "../lib/paths";
 import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
@@ -33,7 +34,8 @@ interface DeliveryOptionProps {
   delay: number;
 }
 
-export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
+export const Experts: React.FC = () => {
+  const navigate = useNavigate();
   const [experts, setExperts] = React.useState<Expert[]>([]);
   const [loading, setLoading] = React.useState(true);
   const { currencySymbol } = useLocaleFormat();
@@ -60,7 +62,7 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
     <div className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-10 py-10 bg-background min-h-screen">
       {/* Back Button */}
       <button
-        onClick={() => setScreen(Screen.HOME)}
+        onClick={() => navigate(PATHS.HOME)}
         className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group w-fit mb-8"
       >
         <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
@@ -164,14 +166,8 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
                 tags={expert.specialties}
                 image={expert.avatar_url}
                 isOnline={false}
-                onBook={() => {
-                  if (setExpertId) setExpertId(expert.id);
-                  setScreen(Screen.BOOKING);
-                }}
-                onProfile={() => {
-                  if (setExpertId) setExpertId(expert.id);
-                  setScreen(Screen.EXPERT_PROFILE);
-                }}
+                onBook={() => navigate(`${PATHS.BOOKING}?expert=${expert.id}`)}
+                onProfile={() => navigate(PATHS.EXPERT(expert.id))}
               />
             ))
           )}
@@ -276,10 +272,9 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   </div>
 );
 
-export const ExpertProfile: React.FC<NavProps> = ({
-  setScreen,
-  expertId,
-}) => {
+export const ExpertProfile: React.FC = () => {
+  const navigate = useNavigate();
+  const { expertId } = useParams<{ expertId: string }>();
   const [expert, setExpert] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -329,7 +324,7 @@ export const ExpertProfile: React.FC<NavProps> = ({
         <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col md:flex-row items-end justify-between gap-8 max-w-7xl mx-auto">
           <div className="flex flex-col gap-4">
             <button
-              onClick={() => setScreen(Screen.EXPERTS)}
+              onClick={() => navigate(PATHS.EXPERTS)}
               className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors w-fit mb-2"
             >
               <span className="material-symbols-outlined text-[16px]">
@@ -375,7 +370,7 @@ export const ExpertProfile: React.FC<NavProps> = ({
               {expert.review_count} consultations completed
             </p>
             <GlowButton
-              onClick={() => setScreen(Screen.BOOKING)}
+              onClick={() => navigate(`${PATHS.BOOKING}?expert=${expertId}`)}
               className="w-full font-bold"
               icon="calendar_month"
             >
@@ -431,7 +426,10 @@ export const ExpertProfile: React.FC<NavProps> = ({
   );
 };
 
-export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
+export const Booking: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const expertId = searchParams.get("expert");
   const [expert, setExpert] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
@@ -535,7 +533,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
       time: selectedSlot,
     };
     localStorage.setItem("booking_draft", JSON.stringify(bookingData));
-    setScreen(Screen.INTAKE);
+    navigate(PATHS.BOOKING_INTAKE);
   };
 
   if (loading) {
@@ -555,7 +553,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
       <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-12 md:py-16">
         {/* Back Button */}
         <button
-          onClick={() => setScreen(Screen.EXPERTS)}
+          onClick={() => navigate(PATHS.EXPERTS)}
           className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group w-fit mb-8"
         >
           <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
@@ -750,7 +748,8 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
   );
 };
 
-export const Intake: React.FC<NavProps> = ({ setScreen }) => {
+export const Intake: React.FC = () => {
+  const navigate = useNavigate();
   const [focus, setFocus] = React.useState("");
   const [questions, setQuestions] = React.useState("");
 
@@ -763,7 +762,7 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
       const updatedData = { ...data, intake: { focus, questions } };
       localStorage.setItem("booking_draft", JSON.stringify(updatedData));
     }
-    setScreen(Screen.DELIVERY);
+    navigate(PATHS.BOOKING_DELIVERY);
   };
 
   return (
@@ -866,7 +865,11 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
               <div className="bg-surface/50 border-t border-surface-border p-8 flex flex-col md:flex-row justify-between items-center gap-6">
                 <button
                   type="button"
-                  onClick={() => setScreen(Screen.BOOKING)}
+                  onClick={() => {
+                    const draft = localStorage.getItem("booking_draft");
+                    const expertId = draft ? JSON.parse(draft).expertId : null;
+                    navigate(expertId ? `${PATHS.BOOKING}?expert=${expertId}` : PATHS.BOOKING);
+                  }}
                   className="text-text-muted hover:text-foreground text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition-colors"
                 >
                   <span className="material-symbols-outlined text-lg">
@@ -890,36 +893,26 @@ export const Intake: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-export const Delivery: React.FC<NavProps> = ({ setScreen, expertId }) => {
-  const { addItem, setIsCartOpen } = useCart(); // Use Cart Context instead of direct order creation
+export const Delivery: React.FC = () => {
+  const navigate = useNavigate();
+  const { addItem, setIsCartOpen } = useCart();
   const [expert, setExpert] = React.useState<any>(null);
 
   React.useEffect(() => {
-    // If expertId is missing, try to recover from draft
-    if (!expertId) {
-      const draft = localStorage.getItem("booking_draft");
-      if (draft) {
-        const data = JSON.parse(draft);
-        if (data.expertId) {
-          // We should ideally setExpertId in parent or handle it here.
-          // For now, let's just fetch by ID from draft.
-          supabase
-            .from("experts")
-            .select("*")
-            .eq("id", data.expertId)
-            .single()
-            .then(({ data }) => setExpert(data));
-        }
+    // Get expertId from localStorage booking draft
+    const draft = localStorage.getItem("booking_draft");
+    if (draft) {
+      const data = JSON.parse(draft);
+      if (data.expertId) {
+        supabase
+          .from("experts")
+          .select("*")
+          .eq("id", data.expertId)
+          .single()
+          .then(({ data }) => setExpert(data));
       }
-    } else {
-      supabase
-        .from("experts")
-        .select("*")
-        .eq("id", expertId)
-        .single()
-        .then(({ data }) => setExpert(data));
     }
-  }, [expertId]);
+  }, []);
 
   const handleSelect = async (deliveryType: string) => {
     const draft = localStorage.getItem("booking_draft");
@@ -1002,7 +995,7 @@ export const Delivery: React.FC<NavProps> = ({ setScreen, expertId }) => {
         </div>
 
         <button
-          onClick={() => setScreen(Screen.INTAKE)}
+          onClick={() => navigate(PATHS.BOOKING_INTAKE)}
           className="mx-auto text-text-muted hover:text-foreground text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all mt-4"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>

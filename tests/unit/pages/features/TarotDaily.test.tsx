@@ -1,7 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import React from "react";
-import { Screen } from "@/types";
+import { MemoryRouter } from "react-router-dom";
+
+// Mock useNavigate
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -125,62 +135,69 @@ vi.mock("@/context/UserContext", () => ({
 import { TarotDaily } from "@/pages/features/TarotDaily";
 
 describe("TarotDaily", () => {
-  const mockSetScreen = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
   });
+
+  const renderComponent = () => {
+    return render(
+      <MemoryRouter>
+        <TarotDaily />
+      </MemoryRouter>
+    );
+  };
 
   describe("rendering", () => {
     it("should render without crashing", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       expect(document.body).toBeInTheDocument();
     });
 
     it("should display title", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Your Energy")).toBeInTheDocument();
       expect(screen.getByText("Revealed")).toBeInTheDocument();
     });
 
     it("should display Daily Guidance label", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Daily Guidance")).toBeInTheDocument();
     });
 
     it("should display initial prompt message", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText(/Focus your intention/)).toBeInTheDocument();
     });
 
     it("should show Tap to Begin text", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Tap to Begin")).toBeInTheDocument();
     });
 
     it("should show card deck visual", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Silk & Sparks")).toBeInTheDocument();
     });
   });
 
   describe("navigation", () => {
     it("should have back button", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       expect(screen.getByText("Back")).toBeInTheDocument();
     });
 
     it("should navigate home when back button clicked", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       const backButton = screen.getByText("Back");
       fireEvent.click(backButton);
-      expect(mockSetScreen).toHaveBeenCalledWith(Screen.HOME);
+      expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
   describe("idle state", () => {
     it("should show auto_awesome icon", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       const icons = document.querySelectorAll(".material-symbols-outlined");
       const hasAutoAwesome = Array.from(icons).some(
         icon => icon.textContent === "auto_awesome"
@@ -189,7 +206,7 @@ describe("TarotDaily", () => {
     });
 
     it("should have clickable card deck", () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
       const tapToBegin = screen.getByText("Tap to Begin");
       expect(tapToBegin).toBeInTheDocument();
     });
@@ -197,7 +214,7 @@ describe("TarotDaily", () => {
 
   describe("starting reading", () => {
     it("should show card selector after clicking deck", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       // Find the clickable deck - it has cursor-pointer class
       const tapToBegin = screen.getByText("Tap to Begin");
@@ -214,7 +231,7 @@ describe("TarotDaily", () => {
     });
 
     it("should enter reading flow when deck is clicked", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       const tapToBegin = screen.getByText("Tap to Begin");
       const clickableElement = tapToBegin.closest(".cursor-pointer");
@@ -232,7 +249,7 @@ describe("TarotDaily", () => {
 
   describe("cancel selection", () => {
     it("should return to idle when cancel is clicked", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       // Start reading
       const tapToBegin = screen.getByText("Tap to Begin");
@@ -260,7 +277,7 @@ describe("TarotDaily", () => {
     it("should call initDailyTarot with userId", async () => {
       const { initDailyTarot } = await import("@/services/TarotService");
 
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       const tapToBegin = screen.getByText("Tap to Begin");
       fireEvent.click(tapToBegin.closest(".cursor-pointer")!);
@@ -277,19 +294,19 @@ describe("TarotDaily", () => {
 
   describe("component structure", () => {
     it("should render main container", () => {
-      const { container } = render(<TarotDaily setScreen={mockSetScreen} />);
+      const { container } = renderComponent();
       expect(container.querySelector(".flex-1")).toBeInTheDocument();
     });
 
     it("should have max-width container", () => {
-      const { container } = render(<TarotDaily setScreen={mockSetScreen} />);
+      const { container } = renderComponent();
       expect(container.querySelector(".max-w-\\[1100px\\]")).toBeInTheDocument();
     });
   });
 
   describe("message updates", () => {
     it("should show different message during selecting", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       const tapToBegin = screen.getByText("Tap to Begin");
       fireEvent.click(tapToBegin.closest(".cursor-pointer")!);
@@ -311,7 +328,7 @@ describe("TarotDaily", () => {
     it("should handle card selection callback", async () => {
       const { selectDailyCard } = await import("@/services/TarotService");
 
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       // Start reading
       fireEvent.click(screen.getByText("Tap to Begin").closest(".cursor-pointer")!);
@@ -339,7 +356,7 @@ describe("TarotDaily", () => {
 
   describe("full reading flow", () => {
     it("should complete reading and show revealed card", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       // Start reading
       fireEvent.click(screen.getByText("Tap to Begin").closest(".cursor-pointer")!);
@@ -367,7 +384,7 @@ describe("TarotDaily", () => {
     });
 
     it("should show interpretation after reveal", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap to Begin").closest(".cursor-pointer")!);
 
@@ -389,7 +406,7 @@ describe("TarotDaily", () => {
     });
 
     it("should add archive after successful reading", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap to Begin").closest(".cursor-pointer")!);
 
@@ -418,7 +435,7 @@ describe("TarotDaily", () => {
 
   describe("revealed state UI", () => {
     it("should show Draw Another Card button", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap to Begin").closest(".cursor-pointer")!);
 
@@ -440,7 +457,7 @@ describe("TarotDaily", () => {
     });
 
     it("should show AI Interpretation section", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap to Begin").closest(".cursor-pointer")!);
 
@@ -462,7 +479,7 @@ describe("TarotDaily", () => {
     });
 
     it("should show tags", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap to Begin").closest(".cursor-pointer")!);
 
@@ -486,7 +503,7 @@ describe("TarotDaily", () => {
 
   describe("reset functionality", () => {
     it("should reset to idle when Draw Another Card is clicked", async () => {
-      render(<TarotDaily setScreen={mockSetScreen} />);
+      renderComponent();
 
       fireEvent.click(screen.getByText("Tap to Begin").closest(".cursor-pointer")!);
 

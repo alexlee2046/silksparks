@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Screen, NavProps } from "../types";
+import { useNavigate, useParams } from "react-router-dom";
+import { PATHS } from "../lib/paths";
 import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
@@ -46,7 +47,8 @@ interface ShopItemProps {
   index: number;
 }
 
-export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
+export const ShopList: React.FC = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<DBProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<string[]>([]);
@@ -162,7 +164,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
     <div className="flex-1 w-full max-w-[1440px] mx-auto p-4 lg:p-10 flex flex-col gap-8 bg-background min-h-screen">
       {/* Back Button */}
       <button
-        onClick={() => setScreen(Screen.HOME)}
+        onClick={() => navigate(PATHS.HOME)}
         className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group w-fit"
       >
         <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
@@ -270,10 +272,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                   <div
                     key={p.id}
                     className="group relative bg-surface-border/30 border border-surface-border rounded-xl overflow-hidden hover:border-primary/30 transition-all cursor-pointer"
-                    onClick={() => {
-                      if (setProductId) setProductId(p.id);
-                      setScreen(Screen.PRODUCT_DETAIL);
-                    }}
+                    onClick={() => navigate(PATHS.PRODUCT(p.id))}
                   >
                     <div className="aspect-[4/3] bg-black/20 relative overflow-hidden">
                       <img
@@ -341,10 +340,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                   element={product.category}
                   image={product.image_url}
                   badge={product.featured ? "Featured" : null}
-                  onClick={() => {
-                    if (setProductId) setProductId(String(product.id));
-                    setScreen(Screen.PRODUCT_DETAIL);
-                  }}
+                  onClick={() => navigate(PATHS.PRODUCT(product.id))}
                   onQuickAdd={(e) => handleQuickAdd(e, product)}
                 />
               ))
@@ -470,7 +466,9 @@ const ShopItem: React.FC<ShopItemProps> = ({
   </div>
 );
 
-export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
+export const ProductDetail: React.FC = () => {
+  const navigate = useNavigate();
+  const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = React.useState<any>(null);
   const [selectedImage, setSelectedImage] = React.useState(0);
   const [isFavorite, setIsFavorite] = React.useState(false);
@@ -532,7 +530,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
       <div className="min-h-screen bg-background flex items-center justify-center flex-col gap-4">
         <p className="text-text-muted">Artifact not found in this dimension.</p>
         <button
-          onClick={() => setScreen(Screen.SHOP_LIST)}
+          onClick={() => navigate(PATHS.SHOP)}
           className="text-primary hover:text-foreground transition-colors text-sm font-bold uppercase tracking-widest"
         >
           Return to Shop
@@ -554,7 +552,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
         <div className="flex flex-col max-w-[1200px] flex-1">
           {/* Back Button */}
           <button
-            onClick={() => setScreen(Screen.SHOP_LIST)}
+            onClick={() => navigate(PATHS.SHOP)}
             className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group w-fit mb-4"
           >
             <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
@@ -569,7 +567,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
             className="flex flex-wrap gap-2 px-4 py-2 text-sm mb-6"
           >
             <span
-              onClick={() => setScreen(Screen.SHOP_LIST)}
+              onClick={() => navigate(PATHS.SHOP)}
               className="text-text-muted hover:text-foreground cursor-pointer transition-colors"
             >
               Shop

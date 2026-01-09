@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Screen, NavProps } from "../../types";
+import { PATHS } from "../../lib/paths";
 import AIService from "../../services/ai";
 import { RateLimitError } from "../../services/ai/SupabaseAIProvider";
 import type { TarotCard as TarotCardType } from "../../services/ai/types";
@@ -29,7 +29,7 @@ interface DrawnTarotCard extends TarotCardType {
 
 type ReadingState = "idle" | "shuffling" | "selecting" | "drawing" | "revealed";
 
-export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
+export const TarotDaily: React.FC = () => {
   const navigate = useNavigate();
   const { addArchive, session } = useUser();
   const userId = session?.user?.id ?? null;
@@ -186,7 +186,7 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
         <div className="flex flex-col items-center gap-4 relative z-20">
           <div className="w-full flex justify-between items-center mb-4">
             <button
-              onClick={() => setScreen(Screen.HOME)}
+              onClick={() => navigate(PATHS.HOME)}
               className="text-text-muted hover:text-foreground flex items-center gap-2 text-sm transition-colors group"
             >
               <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">
@@ -533,7 +533,7 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.2 + idx * 0.1 }}
                             className="bg-surface-border/30 border border-surface-border p-3 rounded-xl flex gap-4 hover:bg-surface-border/30 hover:border-primary/30 transition-all cursor-pointer group"
-                            onClick={() => setScreen(Screen.PRODUCT_DETAIL)}
+                            onClick={() => navigate(PATHS.PRODUCT(product.id))}
                           >
                             <div className="w-20 h-20 rounded-lg bg-black/50 flex-shrink-0 overflow-hidden relative">
                               <img
