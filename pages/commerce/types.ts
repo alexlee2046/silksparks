@@ -1,15 +1,19 @@
-// Database product type (matches types/database.ts)
+// Database product type (matches supabase_init.sql schema)
 export interface DBProduct {
   id: number;
-  name: string;
+  title: string;
   price: number;
   description: string | null;
   image_url: string | null;
+  element: string | null;
+  badge: string | null;
   category: string | null;
-  stock: number | null;
-  featured: boolean;
+  vibe: string | null;
+  ritual: string | null;
+  wisdom: string | null;
+  rating: number;
+  review_count: number;
   created_at: string;
-  updated_at: string | null;
 }
 
 // Component prop types

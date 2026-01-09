@@ -65,7 +65,7 @@ export const ShopList: React.FC = () => {
         if (complexFilters.length > 0) {
           filteredData = data.filter((product) => {
             const descLower = product.description?.toLowerCase() ?? "";
-            const titleLower = product.name?.toLowerCase() ?? "";
+            const titleLower = product.title?.toLowerCase() ?? "";
 
             return complexFilters.some((filterText) => {
               const lowerFilter = filterText.toLowerCase();
@@ -116,7 +116,7 @@ export const ShopList: React.FC = () => {
     e.stopPropagation();
     addItem({
       id: String(product.id),
-      name: product.name,
+      name: product.title,
       price: product.price,
       description: product.description || "",
       image: product.image_url || "",
@@ -300,11 +300,11 @@ export const ShopList: React.FC = () => {
                 <ShopItem
                   key={product.id}
                   index={index}
-                  title={product.name}
+                  title={product.title}
                   price={`$${product.price.toFixed(2)}`}
-                  element={product.category}
+                  element={product.element}
                   image={product.image_url}
-                  badge={product.featured ? "Featured" : null}
+                  badge={product.badge}
                   onClick={() => navigate(PATHS.PRODUCT(product.id))}
                   onQuickAdd={(e) => handleQuickAdd(e, product)}
                 />

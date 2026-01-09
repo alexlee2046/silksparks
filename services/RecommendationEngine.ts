@@ -18,7 +18,7 @@ export interface Product {
 /** 数据库返回的产品记录 */
 interface DbProduct {
   id: number;
-  name: string;
+  title: string;
   price: number;
   description: string | null;
   image_url: string | null;
@@ -117,7 +117,7 @@ async function fetchProductsWithTags(): Promise<DbProduct[]> {
   // 从数据库获取 (简化查询，移除不存在的 product_tags 关系)
   const { data, error } = await supabase.from("products").select(`
     id,
-    name,
+    title,
     price,
     description,
     image_url
@@ -163,7 +163,7 @@ export const RecommendationEngine = {
     // Process and Score (简化：基于标题和描述匹配)
     const scoredProducts: ScoredProduct[] = productsData.map((p) => {
       let score = 0;
-      const titleLower = p.name.toLowerCase();
+      const titleLower = p.title.toLowerCase();
       const descLower = p.description?.toLowerCase() ?? "";
 
       // Keyword matching in title (高分)
@@ -175,7 +175,7 @@ export const RecommendationEngine = {
       // Map to frontend interface
       return {
         id: String(p.id),
-        name: p.name,
+        name: p.title,
         price: p.price,
         description: p.description ?? "",
         image: p.image_url ?? "",
@@ -236,8 +236,8 @@ export const RecommendationEngine = {
     /** 映射数据库产品到前端产品 */
     const mapToProduct = (p: DbProduct): Product => ({
       id: String(p.id),
-      name: p.name,
-      title: p.name,
+      name: p.title,
+      title: p.title,
       price: p.price,
       description: p.description ?? "",
       image: p.image_url ?? "",
@@ -251,7 +251,7 @@ export const RecommendationEngine = {
 
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, price, description, image_url")
+      .select("id, title, price, description, image_url")
       .order("created_at", { ascending: false })
       .limit(20); // 缓存更多以备不同 limit 请求
 
@@ -327,7 +327,7 @@ export const RecommendationEngine = {
     // 评分产品 (简化：基于标题和描述匹配，product_tags 表不存在)
     const scoredProducts: ScoredProduct[] = productsData.map((p) => {
       let score = 0;
-      const titleLower = p.name?.toLowerCase() ?? "";
+      const titleLower = p.title?.toLowerCase() ?? "";
       const descLower = p.description?.toLowerCase() ?? "";
 
       // 关键词匹配
@@ -356,7 +356,7 @@ export const RecommendationEngine = {
 
       return {
         id: String(p.id),
-        name: p.name,
+        name: p.title,
         price: p.price,
         description: p.description ?? "",
         image: p.image_url ?? "",

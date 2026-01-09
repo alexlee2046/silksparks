@@ -141,7 +141,7 @@ export const PaymentService = {
       const numericIds = productIds.filter((id): id is number => typeof id === "number");
       const { data: products, error } = await supabase
         .from("products")
-        .select("id, name")
+        .select("id, title")
         .in("id", numericIds);
 
       if (error) {

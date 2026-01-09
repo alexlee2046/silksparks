@@ -92,13 +92,13 @@ export const Favorites: React.FC = () => {
               onAddToCart={() => {
                 addItem({
                   id: String(product.id),
-                  name: product.name,
+                  name: product.title,
                   price: product.price,
                   description: product.description || "",
                   image: product.image_url || "",
                   tags: [product.category || "General"],
                 });
-                toast.success(`Added ${product.name} to cart`);
+                toast.success(`Added ${product.title} to cart`);
               }}
             />
           ))}

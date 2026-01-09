@@ -24,7 +24,7 @@ interface SystemSetting {
 }
 
 const DEFAULT_AI_CONFIG: AIConfig = {
-  provider: "google",
+  provider: "openrouter",
   model: "google/gemini-2.0-flash-exp:free",
   openrouter_key: "",
   gemini_key: "",
@@ -221,51 +221,116 @@ const SystemSettingsContent: React.FC<SystemSettingsContentProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* API Keys */}
+          {/* Provider Selection */}
           <div className="col-span-1 md:col-span-2 space-y-4 p-4 bg-surface-border/30 rounded-xl border border-surface-border">
             <h3 className="text-xs font-bold text-text-muted uppercase tracking-widest">
-              Credentials
+              Provider
+            </h3>
+            <div className="flex gap-4">
+              <label className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                aiConfig.provider === "openrouter"
+                  ? "border-primary bg-primary/10"
+                  : "border-surface-border hover:border-surface-border/80"
+              }`}>
+                <input
+                  type="radio"
+                  name="provider"
+                  value="openrouter"
+                  checked={aiConfig.provider === "openrouter"}
+                  onChange={() => handleAiConfigChange("provider", "openrouter")}
+                  className="sr-only"
+                />
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary">hub</span>
+                  <div>
+                    <div className="font-bold text-foreground">OpenRouter</div>
+                    <div className="text-xs text-text-muted">Access 100+ models via unified API</div>
+                  </div>
+                </div>
+              </label>
+              <label className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                aiConfig.provider === "gemini"
+                  ? "border-primary bg-primary/10"
+                  : "border-surface-border hover:border-surface-border/80"
+              }`}>
+                <input
+                  type="radio"
+                  name="provider"
+                  value="gemini"
+                  checked={aiConfig.provider === "gemini"}
+                  onChange={() => handleAiConfigChange("provider", "gemini")}
+                  className="sr-only"
+                />
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary">auto_awesome</span>
+                  <div>
+                    <div className="font-bold text-foreground">Gemini Direct</div>
+                    <div className="text-xs text-text-muted">Google AI Studio API</div>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* API Key for selected provider */}
+          <div className="col-span-1 md:col-span-2 space-y-4 p-4 bg-surface-border/30 rounded-xl border border-surface-border">
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-widest">
+              API Key
             </h3>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
-                OpenRouter Key (Recommended)
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={aiConfig.openrouter_key || ""}
-                  onChange={(e) =>
-                    handleAiConfigChange("openrouter_key", e.target.value)
-                  }
-                  placeholder="sk-or-v1-..."
-                  className="w-full bg-black/40 border border-surface-border rounded-lg px-4 py-3 pl-10 text-foreground font-mono text-sm focus:border-primary/50 outline-none transition-colors"
-                />
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">
-                  key
-                </span>
+            {aiConfig.provider === "openrouter" ? (
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                  OpenRouter API Key
+                </label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={aiConfig.openrouter_key || ""}
+                    onChange={(e) =>
+                      handleAiConfigChange("openrouter_key", e.target.value)
+                    }
+                    placeholder="sk-or-v1-..."
+                    className="w-full bg-black/40 border border-surface-border rounded-lg px-4 py-3 pl-10 text-foreground font-mono text-sm focus:border-primary/50 outline-none transition-colors"
+                  />
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">
+                    key
+                  </span>
+                </div>
+                <p className="text-xs text-text-muted">
+                  Get your key from{" "}
+                  <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    openrouter.ai/keys
+                  </a>
+                </p>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
-                Gemini Direct Key (Fallback)
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={aiConfig.gemini_key || ""}
-                  onChange={(e) =>
-                    handleAiConfigChange("gemini_key", e.target.value)
-                  }
-                  placeholder="AIzaSy..."
-                  className="w-full bg-black/40 border border-surface-border rounded-lg px-4 py-3 pl-10 text-foreground font-mono text-sm focus:border-primary/50 outline-none transition-colors"
-                />
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">
-                  lock
-                </span>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                  Gemini API Key
+                </label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={aiConfig.gemini_key || ""}
+                    onChange={(e) =>
+                      handleAiConfigChange("gemini_key", e.target.value)
+                    }
+                    placeholder="AIzaSy..."
+                    className="w-full bg-black/40 border border-surface-border rounded-lg px-4 py-3 pl-10 text-foreground font-mono text-sm focus:border-primary/50 outline-none transition-colors"
+                  />
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">
+                    lock
+                  </span>
+                </div>
+                <p className="text-xs text-text-muted">
+                  Get your key from{" "}
+                  <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Google AI Studio
+                  </a>
+                </p>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Model Params */}

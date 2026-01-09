@@ -27,7 +27,7 @@ export const ProductDetail: React.FC = () => {
     if (product) {
       addItem({
         id: String(product.id),
-        name: product.name,
+        name: product.title,
         price: product.price,
         description: product.description || "",
         image: product.image_url || "",
@@ -96,7 +96,7 @@ export const ProductDetail: React.FC = () => {
               Shop
             </span>
             <span className="text-text-muted">/</span>
-            <span className="text-foreground font-medium">{product.name}</span>
+            <span className="text-foreground font-medium">{product.title}</span>
           </motion.div>
 
           <div className="flex flex-col lg:flex-row gap-10 px-4 py-4">
@@ -109,7 +109,7 @@ export const ProductDetail: React.FC = () => {
               >
                 <img
                   src={images[selectedImage]}
-                  alt={product?.name || "Product image"}
+                  alt={product?.title || "Product image"}
                   loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
                 />
@@ -137,10 +137,10 @@ export const ProductDetail: React.FC = () => {
               <div className="flex flex-col gap-4 text-left">
                 <div>
                   <h1 className="text-foreground text-4xl md:text-5xl font-display font-light leading-tight tracking-[-0.02em]">
-                    {product.name}
+                    {product.title}
                   </h1>
                   <p className="text-primary font-bold mt-2 text-lg">
-                    {product.featured ? "Featured" : "Sacred Artifact"}
+                    {product.badge || "Sacred Artifact"}
                   </p>
                 </div>
 

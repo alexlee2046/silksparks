@@ -6,16 +6,17 @@ import { GlowButton } from "../../../components/GlowButton";
 export const ProductList: React.FC = () => {
   const { query } = useList({
     resource: "products",
-    sorters: [{ field: "featured", order: "desc" }, { field: "created_at", order: "desc" }],
+    sorters: [{ field: "created_at", order: "desc" }],
   });
   const { data: products, isLoading } = query;
   const go = useGo();
   const { mutate: deleteProduct } = useDelete();
   const { mutate: updateProduct } = useUpdate();
 
-  const handleToggleFeatured = (id: string, currentFeatured: boolean) => {
+  const handleToggleBadge = (id: string, currentBadge: string | null) => {
+    const newBadge = currentBadge === "Featured" ? null : "Featured";
     updateProduct(
-      { resource: "products", id, values: { featured: !currentFeatured } },
+      { resource: "products", id, values: { badge: newBadge } },
       { onSuccess: () => query.refetch() }
     );
   };
@@ -32,7 +33,7 @@ export const ProductList: React.FC = () => {
             { onSuccess: () => query.refetch() },
           )
         }
-        onToggleFeatured={handleToggleFeatured}
+        onToggleBadge={handleToggleBadge}
       />
     </Authenticated>
   );
@@ -43,8 +44,8 @@ const ProductListContent: React.FC<{
   products: any;
   go: ReturnType<typeof useGo>;
   onDelete: (id: string) => void;
-  onToggleFeatured: (id: string, currentFeatured: boolean) => void;
-}> = ({ isLoading, products, go, onDelete, onToggleFeatured }) => {
+  onToggleBadge: (id: string, currentBadge: string | null) => void;
+}> = ({ isLoading, products, go, onDelete, onToggleBadge }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -77,7 +78,7 @@ const ProductListContent: React.FC<{
               <th className="px-6 py-4">Title</th>
               <th className="px-6 py-4">Price</th>
               <th className="px-6 py-4">Category</th>
-              <th className="px-6 py-4">Featured</th>
+              <th className="px-6 py-4">Badge</th>
               <th className="px-6 py-4">Actions</th>
             </tr>
           </thead>
@@ -110,19 +111,26 @@ const ProductListContent: React.FC<{
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <button
-                    onClick={() => onToggleFeatured(product.id, product.featured)}
-                    className={`p-1.5 rounded-lg transition-all ${
-                      product.featured
-                        ? "bg-primary/20 text-primary"
-                        : "bg-surface-border/30 text-text-muted hover:bg-surface-border/50"
-                    }`}
-                    title={product.featured ? "Remove from featured" : "Add to featured"}
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {product.featured ? "star" : "star_outline"}
-                    </span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {product.badge && (
+                      <span className="px-2 py-1 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-bold text-primary uppercase tracking-wider">
+                        {product.badge}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => onToggleBadge(product.id, product.badge)}
+                      className={`p-1.5 rounded-lg transition-all ${
+                        product.badge === "Featured"
+                          ? "bg-primary/20 text-primary"
+                          : "bg-surface-border/30 text-text-muted hover:bg-surface-border/50"
+                      }`}
+                      title={product.badge === "Featured" ? "Remove featured badge" : "Add featured badge"}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        {product.badge === "Featured" ? "star" : "star_outline"}
+                      </span>
+                    </button>
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">

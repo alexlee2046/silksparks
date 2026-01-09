@@ -247,11 +247,14 @@ Deno.serve(async (req) => {
     let usedModel = "";
     let isFallback = false;
 
-    // STRATEGY: Try OpenRouter -> Fallback to Gemini Direct
-    if (openRouterKey) {
+    // Get configured provider (default to openrouter for backward compatibility)
+    const configuredProvider = config.provider || "openrouter";
+    console.log(`[AI-Generate] Configured provider: ${configuredProvider}`);
+
+    // STRATEGY: Use configured provider, fallback to the other if available
+    if (configuredProvider === "openrouter" && openRouterKey) {
       try {
         console.log("[AI-Generate] Attempting OpenRouter Provider...");
-        // Use configured model from request, then DB config (no hardcoded default)
         const targetModel = model || config.model;
         if (!targetModel) {
           throw new Error("No model configured. Please set 'model' in Admin AI Config.");
@@ -267,11 +270,9 @@ Deno.serve(async (req) => {
       } catch (error: any) {
         console.warn(`[AI-Generate] OpenRouter Failed: ${error.message}`);
 
-        // Fallback check
+        // Fallback to Gemini if available
         if (geminiKey) {
-          console.log(
-            "[AI-Generate] Falling back to Gemini Direct Provider...",
-          );
+          console.log("[AI-Generate] Falling back to Gemini Direct Provider...");
           const fallbackModel = config.gemini_model || "gemini-1.5-flash";
           result = await callGeminiDirect(
             geminiKey,
@@ -283,12 +284,46 @@ Deno.serve(async (req) => {
           usedModel = fallbackModel;
           isFallback = true;
         } else {
-          // No fallback available
           throw error;
         }
       }
+    } else if (configuredProvider === "gemini" && geminiKey) {
+      try {
+        console.log("[AI-Generate] Using Gemini Direct Provider (Primary)...");
+        const geminiModel = model || config.gemini_model || "gemini-1.5-flash";
+        result = await callGeminiDirect(geminiKey, systemPrompt, userPrompt, geminiModel);
+        usedProvider = "gemini_direct";
+        usedModel = geminiModel;
+      } catch (error: any) {
+        console.warn(`[AI-Generate] Gemini Failed: ${error.message}`);
+
+        // Fallback to OpenRouter if available
+        if (openRouterKey) {
+          console.log("[AI-Generate] Falling back to OpenRouter Provider...");
+          const targetModel = config.model || "google/gemini-2.0-flash-exp:free";
+          result = await callOpenRouter(
+            openRouterKey,
+            targetModel,
+            systemPrompt,
+            userPrompt,
+          );
+          usedProvider = "openrouter";
+          usedModel = targetModel;
+          isFallback = true;
+        } else {
+          throw error;
+        }
+      }
+    } else if (openRouterKey) {
+      // Fallback: configured provider key missing, try OpenRouter
+      console.log("[AI-Generate] Using OpenRouter (fallback - configured key missing)...");
+      const targetModel = model || config.model || "google/gemini-2.0-flash-exp:free";
+      result = await callOpenRouter(openRouterKey, targetModel, systemPrompt, userPrompt);
+      usedProvider = "openrouter";
+      usedModel = targetModel;
     } else if (geminiKey) {
-      console.log("[AI-Generate] Using Gemini Direct Provider (Primary)...");
+      // Fallback: configured provider key missing, try Gemini
+      console.log("[AI-Generate] Using Gemini (fallback - configured key missing)...");
       const geminiModel = config.gemini_model || "gemini-1.5-flash";
       result = await callGeminiDirect(geminiKey, systemPrompt, userPrompt, geminiModel);
       usedProvider = "gemini_direct";

@@ -54,7 +54,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none" />
 
       {/* Inner content */}
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 h-full flex flex-col">{children}</div>
     </div>
   );
 };
