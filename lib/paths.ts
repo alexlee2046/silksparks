@@ -90,7 +90,7 @@ export function getRouteMetadata(pathname: string): RouteMetadata {
 export function extractIdFromPath(pathname: string, pattern: string): string | null {
   const regex = new RegExp(pattern.replace(":id", "([^/]+)"));
   const match = pathname.match(regex);
-  return match ? match[1] : null;
+  return match?.[1] ?? null;
 }
 
 /**

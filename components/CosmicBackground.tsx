@@ -1,4 +1,5 @@
 import React, { useRef, useMemo } from "react";
+import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Stars, Sparkles, Float } from "@react-three/drei";
 import { useTheme } from "../context/ThemeContext";

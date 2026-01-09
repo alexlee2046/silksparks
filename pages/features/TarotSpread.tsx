@@ -12,16 +12,16 @@ import {
   Product,
 } from "../../services/RecommendationEngine";
 import { TarotCard } from "./TarotCard";
+import { TarotCardBack } from "./TarotCardBack";
 import { CardSelector } from "./CardSelector";
+import { TarotLoadingOverlay } from "./TarotLoadingOverlay";
+import { TarotInterpretation } from "./TarotInterpretation";
 import {
   initSpreadTarot,
   selectSpreadCards,
   type SpreadTarotResult,
 } from "../../services/TarotService";
-
-interface DrawnCard extends Omit<TarotCardType, "position"> {
-  keywords?: string[];
-}
+import type { LuckyElements } from "../../services/ai/types";
 
 type ReadingState = "idle" | "shuffling" | "selecting" | "drawing" | "revealed";
 
@@ -42,6 +42,11 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
   );
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [aiLoadingStartTime, setAiLoadingStartTime] = useState<number | null>(null);
+  const [coreMessage, setCoreMessage] = useState<string>("");
+  const [actionAdvice, setActionAdvice] = useState<string>("");
+  const [luckyElements, setLuckyElements] = useState<LuckyElements | undefined>(undefined);
 
   // 开始抽牌流程
   const handleStartSession = useCallback(() => {
@@ -68,12 +73,16 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
 
       // 生成解读
       setTimeout(async () => {
+        setReadingState("revealed");
         const [card0, card1, card2] = drawnCards;
         if (!card0 || !card1 || !card2) {
           setInterpretation("Failed to draw cards. Please try again.");
-          setReadingState("revealed");
           return;
         }
+
+        // 开始 AI 加载
+        setIsAILoading(true);
+        setAiLoadingStartTime(Date.now());
 
         try {
           const response = await AIService.generateTarotReading({
@@ -88,6 +97,10 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
           });
           const text = response.interpretation;
           setInterpretation(text);
+          setCoreMessage(response.coreMessage || "");
+          setActionAdvice(response.actionAdvice || "");
+          setLuckyElements(response.luckyElements);
+          setIsAILoading(false);
 
           if (response.meta?.isFallback) {
             toast("Using backup AI for reading", { icon: "⚠️", duration: 3000 });
@@ -108,6 +121,7 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
           });
         } catch (e) {
           console.error("[TarotSpread] 3-card spread error:", e);
+          setIsAILoading(false);
           if (e instanceof RateLimitError) {
             setShowLoginPrompt(true);
             setAiError("rate_limit");
@@ -125,7 +139,6 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
             }
           }
         }
-        setReadingState("revealed");
       }, 1500);
     },
     [tarotSession, addArchive]
@@ -140,6 +153,11 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
     setTarotSession(null);
     setShowLoginPrompt(false);
     setAiError(null);
+    setIsAILoading(false);
+    setAiLoadingStartTime(null);
+    setCoreMessage("");
+    setActionAdvice("");
+    setLuckyElements(undefined);
   }, []);
 
   // 取消选牌
@@ -205,46 +223,45 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
             >
               <div
                 onClick={handleStartSession}
-                className="relative cursor-pointer group w-full max-w-64 aspect-[256/400] perspective-1000 mx-auto"
+                className="relative cursor-pointer group w-full max-w-64 aspect-[256/380] perspective-1000 mx-auto"
               >
-                {/* Stack Effect */}
-                <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-4 translate-y-4 -z-20"></div>
-                <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-2 translate-y-2 -z-10"></div>
+                {/* Stack Effect - 使用统一的 TarotCardBack */}
+                <div className="absolute top-0 left-0 w-full h-full rounded-2xl transform translate-x-4 translate-y-4 -z-20 opacity-50">
+                  <TarotCardBack showPattern={false} />
+                </div>
+                <div className="absolute top-0 left-0 w-full h-full rounded-2xl transform translate-x-2 translate-y-2 -z-10 opacity-70">
+                  <TarotCardBack showPattern={false} />
+                </div>
 
-                {/* Main Deck */}
-                <div className="relative w-full h-full rounded-2xl bg-gradient-to-b from-[#0d0d0d] via-[#0a0a0a] to-[#0d0d0d] border-2 border-[#F4C025]/50 overflow-hidden shadow-2xl flex flex-col items-center justify-center transform transition-transform duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_0_60px_rgba(244,192,37,0.3)]">
-                  {/* Glow */}
-                  <div className="absolute inset-0 bg-[#F4C025]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                {/* Main Deck - 使用 TarotCardBack 并叠加三张牌标识 */}
+                <div className="relative w-full h-full transform transition-transform duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_0_60px_rgba(244,192,37,0.3)]">
+                  <TarotCardBack showPattern={true} />
 
-                  {/* Triple Icon */}
-                  <div className="relative z-10 flex gap-2">
-                    {[0, 1, 2].map((i) => (
-                      <div
-                        key={i}
-                        className={`w-12 h-12 rounded-full border-2 border-[#F4C025]/40 flex items-center justify-center group-hover:border-[#F4C025]/80 transition-all ${
-                          i === 1 ? "scale-125" : ""
-                        }`}
-                        style={{ transitionDelay: `${i * 50}ms` }}
-                      >
-                        <span className="text-[#F4C025] text-lg font-serif font-bold">
-                          {["I", "II", "III"][i]}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  {/* 叠加三张牌阵特有的标识 */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    {/* Triple Icon */}
+                    <div className="relative z-30 flex gap-2">
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className={`w-10 h-10 rounded-full border-2 border-[#F4C025]/60 bg-[#0a0a0a]/80 flex items-center justify-center group-hover:border-[#F4C025] transition-all ${
+                            i === 1 ? "scale-110" : ""
+                          }`}
+                          style={{ transitionDelay: `${i * 50}ms` }}
+                        >
+                          <span className="text-[#F4C025] text-sm font-serif font-bold">
+                            {["I", "II", "III"][i]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
 
-                  {/* Labels */}
-                  <div className="mt-6 flex gap-4 text-[#F4C025]/60 text-[8px] uppercase tracking-widest">
-                    <span>Past</span>
-                    <span className="text-[#F4C025]">Present</span>
-                    <span>Future</span>
-                  </div>
-
-                  {/* Bottom Logo */}
-                  <div className="absolute bottom-8 text-center">
-                    <span className="text-[#F4C025]/80 text-[10px] font-serif tracking-[0.3em] uppercase">
-                      Silk & Sparks
-                    </span>
+                    {/* Labels */}
+                    <div className="mt-3 flex gap-3 text-[#F4C025]/60 text-[7px] uppercase tracking-widest z-30">
+                      <span>Past</span>
+                      <span className="text-[#F4C025]">Present</span>
+                      <span>Future</span>
+                    </div>
                   </div>
                 </div>
 
@@ -303,6 +320,7 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
                     image={card.image}
                     delay={i * 0.2}
                     active={i === 1}
+                    isReversed={card.isReversed}
                   />
                 </motion.div>
               ))}
@@ -332,7 +350,17 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
                 </div>
               </div>
               <div className="space-y-6 text-sm text-text-muted">
-                {showLoginPrompt ? (
+                {/* AI 加载状态 */}
+                {isAILoading && (
+                  <TarotLoadingOverlay
+                    isLoading={isAILoading}
+                    cards={cards}
+                    startTime={aiLoadingStartTime || undefined}
+                  />
+                )}
+
+                {/* 登录提示 */}
+                {!isAILoading && showLoginPrompt && (
                   <div className="p-6 rounded-lg bg-background/50 border border-surface-border text-center">
                     <span className="material-symbols-outlined text-[#F4C025] text-4xl mb-3 block">
                       lock
@@ -357,15 +385,17 @@ export const TarotSpread: React.FC<NavProps> = ({ setScreen }) => {
                       Sign In to Continue
                     </button>
                   </div>
-                ) : (
-                  <div className="p-4 rounded-lg bg-background/50 border border-surface-border border-l-4 border-l-primary">
-                    <strong className="block text-primary text-xs uppercase tracking-widest mb-2">
-                      Synthesis
-                    </strong>
-                    <p className="text-text-muted leading-relaxed font-light text-lg">
-                      {interpretation}
-                    </p>
-                  </div>
+                )}
+
+                {/* 解读内容 */}
+                {!isAILoading && !showLoginPrompt && interpretation && (
+                  <TarotInterpretation
+                    interpretation={interpretation}
+                    coreMessage={coreMessage}
+                    actionAdvice={actionAdvice}
+                    luckyElements={luckyElements}
+                    isSpread={true}
+                  />
                 )}
               </div>
 

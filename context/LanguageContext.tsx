@@ -39,16 +39,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [locale, setLocaleState] = useState<Locale>(() => getStoredLocale());
   const [isReady, setIsReady] = useState(false);
 
-  // Initialize from Paraglide or localStorage
+  // Initialize Paraglide runtime on mount
   useEffect(() => {
-    const initialLocale = getStoredLocale();
-    setLocaleState(initialLocale);
-
     // Set Paraglide locale without reload (we manage state via React)
-    runtime.setLocale(initialLocale, { reload: false });
-
+    // locale is already initialized from getStoredLocale() in useState
+    runtime.setLocale(locale, { reload: false });
     setIsReady(true);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount, locale is stable from initial value
 
   const setLocale = useCallback((newLocale: Locale) => {
     // Update React state first (triggers re-render)

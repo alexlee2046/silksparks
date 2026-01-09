@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useMenu, useGo, useLogout } from "@refinedev/core";
 import { GlassCard } from "../../components/GlassCard";
 import { motion } from "framer-motion";
@@ -9,7 +9,6 @@ export const AdminLayout: React.FC = () => {
   const { menuItems, selectedKey } = useMenu();
   const go = useGo();
   const { mutate: logout } = useLogout();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const lenis = new Lenis({

@@ -2,11 +2,10 @@ import React from "react";
 import { Refine, useIsAuthenticated } from "@refinedev/core";
 import { dataProvider } from "@refinedev/supabase";
 import routerBindings, {
-  NavigateToResource,
   UnsavedChangesNotifier,
   DocumentTitleHandler,
 } from "@refinedev/react-router";
-import { Route, Routes, Outlet } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import { AdminLayout } from "./components/AdminLayout";
 import { Dashboard } from "./pages/Dashboard";
@@ -141,9 +140,8 @@ const CustomAuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }
   }
 
   if (isError || !authData?.authenticated) {
-    // Redirect to home page
-    window.location.href = "/";
-    return null;
+    // Redirect to home page using React Router
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

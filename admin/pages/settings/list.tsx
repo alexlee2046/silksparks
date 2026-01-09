@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useList } from "@refinedev/core";
 import { supabase } from "../../../services/supabase";
 import { GlassCard } from "../../../components/GlassCard";
@@ -6,6 +6,31 @@ import { GlowButton } from "../../../components/GlowButton";
 import toast from "react-hot-toast";
 
 import { Authenticated } from "@refinedev/core";
+
+// Type definitions
+interface AIConfig {
+  provider: string;
+  model: string;
+  openrouter_key: string;
+  gemini_key: string;
+  temperature: number;
+  max_tokens: number;
+}
+
+interface SystemSetting {
+  key: string;
+  value: unknown;
+  updated_at?: string;
+}
+
+const DEFAULT_AI_CONFIG: AIConfig = {
+  provider: "google",
+  model: "google/gemini-2.0-flash-exp:free",
+  openrouter_key: "",
+  gemini_key: "",
+  temperature: 0.7,
+  max_tokens: 2048,
+};
 
 export const SystemSettingsList: React.FC = () => {
   const { query } = useList({
@@ -16,29 +41,30 @@ export const SystemSettingsList: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Local state for AI Config Form
-  const [aiConfig, setAiConfig] = useState<any>({
-    provider: "google",
-    model: "google/gemini-2.0-flash-exp:free",
-    openrouter_key: "",
-    gemini_key: "",
-    temperature: 0.7,
-    max_tokens: 2048,
-  });
+  const [aiConfig, setAiConfig] = useState<AIConfig>(DEFAULT_AI_CONFIG);
+
+  // Track if we've synced remote config
+  const hasSyncedRef = useRef(false);
 
   // Local state for other raw editors
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
 
+  // Sync remote config only once when data arrives
   useEffect(() => {
-    if (settings?.data) {
-      const remoteConfig = settings.data.find(
-        (s: any) => s.key === "ai_config",
-      )?.value;
+    if (settings?.data && !hasSyncedRef.current) {
+      const remoteConfig = (settings.data as SystemSetting[]).find(
+        (s) => s.key === "ai_config",
+      )?.value as Partial<AIConfig> | undefined;
       if (remoteConfig) {
-        setAiConfig((prev: any) => ({ ...prev, ...remoteConfig }));
+        setAiConfig((prev) => ({ ...prev, ...remoteConfig }));
+        hasSyncedRef.current = true;
       }
     }
   }, [settings]);
+  // Cast settings to expected type (Refine returns BaseRecord[], we know it's SystemSetting[])
+  const typedSettings = settings as SettingsData | undefined;
+
   return (
     <Authenticated key="admin-settings-auth" fallback={null}>
       <SystemSettingsContent
@@ -51,26 +77,32 @@ export const SystemSettingsList: React.FC = () => {
         setEditValue={setEditValue}
         isUpdating={isUpdating}
         setIsUpdating={setIsUpdating}
-        settings={settings}
+        settings={typedSettings}
         refetch={refetch}
       />
     </Authenticated>
   );
 };
 
-const SystemSettingsContent: React.FC<{
+interface SettingsData {
+  data: SystemSetting[];
+}
+
+interface SystemSettingsContentProps {
   isLoading: boolean;
-  aiConfig: any;
-  setAiConfig: any;
+  aiConfig: AIConfig;
+  setAiConfig: React.Dispatch<React.SetStateAction<AIConfig>>;
   editingKey: string | null;
-  setEditingKey: any;
+  setEditingKey: React.Dispatch<React.SetStateAction<string | null>>;
   editValue: string;
-  setEditValue: any;
+  setEditValue: React.Dispatch<React.SetStateAction<string>>;
   isUpdating: boolean;
-  setIsUpdating: any;
-  settings: any;
-  refetch: any;
-}> = ({
+  setIsUpdating: React.Dispatch<React.SetStateAction<boolean>>;
+  settings: SettingsData | undefined;
+  refetch: () => void;
+}
+
+const SystemSettingsContent: React.FC<SystemSettingsContentProps> = ({
   isLoading,
   aiConfig,
   setAiConfig,
@@ -93,8 +125,8 @@ const SystemSettingsContent: React.FC<{
     );
   }
 
-  const handleAiConfigChange = (field: string, value: any) => {
-    setAiConfig((prev: any) => ({ ...prev, [field]: value }));
+  const handleAiConfigChange = (field: keyof AIConfig, value: string | number) => {
+    setAiConfig((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSaveAiConfig = async () => {
@@ -103,7 +135,7 @@ const SystemSettingsContent: React.FC<{
       const { error } = await supabase.from("system_settings").upsert(
         {
           key: "ai_config",
-          value: aiConfig,
+          value: aiConfig as unknown as import("../../../types/database").Json,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "key" },
@@ -116,15 +148,16 @@ const SystemSettingsContent: React.FC<{
         toast.success("AI Engine settings updated successfully!");
         refetch();
       }
-    } catch (e: any) {
-      toast.error(`Error: ${e.message}`);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Unknown error";
+      toast.error(`Error: ${message}`);
     } finally {
       setIsUpdating(false);
     }
   };
 
   // Generic handler for other JSON fields
-  const handleEditRaw = (key: string, value: any) => {
+  const handleEditRaw = (key: string, value: unknown) => {
     setEditingKey(key);
     setEditValue(
       typeof value === "object"
@@ -137,7 +170,7 @@ const SystemSettingsContent: React.FC<{
     if (!editingKey) return;
     setIsUpdating(true);
     try {
-      const parsedValue = JSON.parse(editValue);
+      const parsedValue = JSON.parse(editValue) as import("../../../types/database").Json;
       const { error } = await supabase.from("system_settings").upsert(
         {
           key: editingKey,
@@ -161,10 +194,10 @@ const SystemSettingsContent: React.FC<{
     }
   };
 
-  const aiPrompts = settings?.data.find((s: any) => s.key === "ai_prompts");
+  const aiPrompts = settings?.data.find((s) => s.key === "ai_prompts");
   const otherSettings =
     settings?.data.filter(
-      (s: any) => s.key !== "ai_config" && s.key !== "ai_prompts",
+      (s) => s.key !== "ai_config" && s.key !== "ai_prompts",
     ) || [];
 
   return (
@@ -345,7 +378,7 @@ const SystemSettingsContent: React.FC<{
           <h2 className="text-lg font-bold text-text-muted uppercase tracking-widest pl-2">
             Misc Settings
           </h2>
-          {otherSettings.map((setting: any) => (
+          {otherSettings.map((setting) => (
             <GlassCard key={setting.key} className="p-6 border-surface-border">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-foreground font-bold capitalize">

@@ -1,21 +1,26 @@
 import { vi } from "vitest";
-import type { User, Session } from "@supabase/supabase-js";
 
 // ============================================================================
 // Mock Data Factories
 // ============================================================================
 
-export interface MockUser extends Partial<User> {
+export interface MockUser {
   id: string;
   email: string;
   created_at: string;
+  app_metadata?: Record<string, unknown>;
+  user_metadata?: Record<string, unknown>;
+  aud?: string;
+  role?: string;
 }
 
-export interface MockSession extends Partial<Session> {
+export interface MockSession {
   user: MockUser;
   access_token: string;
   refresh_token: string;
   expires_at: number;
+  expires_in?: number;
+  token_type?: string;
 }
 
 export interface MockProfile {

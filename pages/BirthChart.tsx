@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Screen, NavProps } from "../types";
 import { useUser } from "../context/UserContext";
 import { useLanguage } from "../context/LanguageContext";
-import {
-  AstrologyEngine,
-  PlanetaryPositions,
-  FiveElementsDistribution,
-} from "../services/AstrologyEngine";
+import { AstrologyEngine } from "../services/AstrologyEngine";
 import AIService from "../services/ai";
 import { RateLimitError } from "../services/ai/SupabaseAIProvider";
 import { motion } from "framer-motion";

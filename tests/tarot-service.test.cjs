@@ -4,23 +4,11 @@
  */
 
 const assert = require("assert");
+const seedrandom = require("seedrandom");
 
-// 模拟 seedrandom
-// 注意：这是一个简单的模拟，实际使用 seedrandom 库
+// 使用与生产代码相同的 seedrandom 库
 function createRng(seed) {
-  let h = 2166136261;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return function () {
-    h ^= h >>> 16;
-    h = Math.imul(h, 2246822507);
-    h ^= h >>> 13;
-    h = Math.imul(h, 3266489909);
-    h ^= h >>> 16;
-    return (h >>> 0) / 4294967296;
-  };
+  return seedrandom(seed);
 }
 
 // 测试种子生成

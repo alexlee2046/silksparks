@@ -1,12 +1,15 @@
 import { test, expect } from "@playwright/test";
 
+const BASE_URL = process.env.BASE_URL || "http://localhost:3007";
+
 test.describe("Favorites Workflow", () => {
   test.beforeEach(async ({ page }) => {
     try {
       console.log("BE: Navigating to home");
-      await page.goto("http://localhost:3009/");
+      await page.goto(BASE_URL);
 
-      const signOutBtn = page.locator('button:has-text("Sign Out")').first();
+      // 支持中英文
+      const signOutBtn = page.locator('button:has-text("Sign Out"), button:has-text("退出登录"), button:has-text("登出")').first();
       if (await signOutBtn.isVisible()) {
         console.log("BE: Signing out");
         await signOutBtn.click();
@@ -14,16 +17,17 @@ test.describe("Favorites Workflow", () => {
       }
 
       console.log("BE: Clicking Login");
-      await page.click('button:has-text("Login")');
+      // 支持中英文
+      await page.click('button:has-text("Login"), button:has-text("Sign In"), button:has-text("登录")');
 
       console.log("BE: Waiting for form");
       await page.waitForSelector("form", { state: "visible" });
 
-      // Switch to Sign Up
+      // Switch to Sign Up (支持中英文)
       console.log("BE: Switching to Sign Up");
-      await page.click('button:has-text("Sign Up")');
+      await page.click('button:has-text("Sign Up"), button:has-text("注册")');
       // Wait for Name field
-      await page.waitForSelector('input[placeholder*="Sharma"]', {
+      await page.waitForSelector('input[placeholder*="Sharma"], input[placeholder*="名字"]', {
         state: "visible",
       });
 
@@ -39,17 +43,18 @@ test.describe("Favorites Workflow", () => {
       await page.fill('input[type="password"]', "password123");
 
       console.log("BE: Submitting Sign Up");
-      await page.click('button:has-text("Create Account")');
+      // 支持中英文
+      await page.click('button:has-text("Create Account"), button:has-text("创建账户"), button:has-text("注册")');
 
       console.log("BE: Waiting for success or confirmation");
 
-      // Race condition: either success or message
+      // Race condition: either success or message (支持中英文)
       const successOrMessage = await Promise.race([
         page
-          .waitForSelector('button:has-text("Sign Out")', { timeout: 10000 })
+          .waitForSelector('button:has-text("Sign Out"), button:has-text("退出登录"), button:has-text("登出")', { timeout: 10000 })
           .then(() => "logged_in"),
         page
-          .waitForSelector("text=Check your email", { timeout: 10000 })
+          .waitForSelector("text=Check your email, text=检查您的邮箱", { timeout: 10000 })
           .then(() => "check_email"),
       ]);
 
@@ -81,7 +86,7 @@ test.describe("Favorites Workflow", () => {
 
     // 1. Go to Home to find products
     console.log("Navigating to home...");
-    await page.goto("http://localhost:3009/");
+    await page.goto(BASE_URL);
 
     // Wait for products to load
     await page.waitForSelector(".snap-start", { timeout: 10000 });
@@ -121,7 +126,7 @@ test.describe("Favorites Workflow", () => {
     console.log("Toast appeared.");
 
     // 2. Go to User Dashboard -> Favorites
-    await page.goto("http://localhost:3009/dashboard");
+    await page.goto(`${BASE_URL}/dashboard`);
 
     await page.click("text=Favorites");
 

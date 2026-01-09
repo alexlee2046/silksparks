@@ -37,11 +37,34 @@ export const CardSelector: React.FC<CardSelectorProps> = ({
   const currentPositionLabel = positionLabels[selectedIndices.length] || "";
   const remainingCount = selectCount - selectedIndices.length;
 
+  // 取消选择某张牌
+  const handleDeselectCard = useCallback(
+    (cardIndex: number) => {
+      // 触觉反馈
+      if (navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+      setSelectedIndices((prev) => prev.filter((idx) => idx !== cardIndex));
+    },
+    []
+  );
+
   const handleCardClick = useCallback(
     (cardIndex: number) => {
       if (isShuffling) return;
-      if (selectedIndices.includes(cardIndex)) return;
+
+      // 如果已选中，则取消选择
+      if (selectedIndices.includes(cardIndex)) {
+        handleDeselectCard(cardIndex);
+        return;
+      }
+
       if (selectedIndices.length >= selectCount) return;
+
+      // 触觉反馈
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
 
       const newSelected = [...selectedIndices, cardIndex];
       setSelectedIndices(newSelected);
@@ -54,7 +77,7 @@ export const CardSelector: React.FC<CardSelectorProps> = ({
         }, 500);
       }
     },
-    [selectedIndices, selectCount, onComplete, isShuffling]
+    [selectedIndices, selectCount, onComplete, isShuffling, handleDeselectCard]
   );
 
   // 计算扇形排列的位置
@@ -179,18 +202,16 @@ export const CardSelector: React.FC<CardSelectorProps> = ({
             return (
               <motion.div
                 key={cardIndex}
-                className={`absolute w-48 h-[300px] cursor-pointer transition-all duration-300 ${
-                  isSelected ? "pointer-events-none" : ""
-                }`}
+                className="absolute w-48 h-[300px] cursor-pointer transition-all duration-300"
                 initial={{ opacity: 0, y: 100, rotate: 0 }}
                 animate={{
-                  opacity: isSelected ? 0.3 : 1,
-                  y: isSelected ? -50 : transform.y,
+                  opacity: isSelected ? 0.6 : 1,
+                  y: isSelected ? -60 : transform.y,
                   x: transform.x,
                   rotate: transform.rotate,
-                  scale: isSelected ? 0.8 : transform.scale,
-                  zIndex: isSelected ? -1 : transform.zIndex,
-                  filter: isSelected ? "grayscale(0.5)" : "none",
+                  scale: isSelected ? 0.85 : transform.scale,
+                  zIndex: isSelected ? 50 : transform.zIndex,
+                  filter: isSelected ? "grayscale(0.3)" : "none",
                 }}
                 exit={{ opacity: 0, y: -100 }}
                 transition={{
@@ -207,19 +228,36 @@ export const CardSelector: React.FC<CardSelectorProps> = ({
                         y: transform.y - 30,
                         transition: { duration: 0.2 },
                       }
-                    : {}
+                    : {
+                        scale: 0.9,
+                        opacity: 0.8,
+                        transition: { duration: 0.2 },
+                      }
                 }
               >
-                {/* 选中标记 */}
+                {/* 选中标记 - 可点击取消 */}
                 {isSelected && (
                   <motion.div
-                    className="absolute -top-4 -right-2 w-8 h-8 bg-[#F4C025] rounded-full flex items-center justify-center z-50 shadow-lg"
+                    className="absolute -top-4 -right-2 z-50 group/badge"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                   >
-                    <span className="text-black font-bold text-sm">
-                      {selectionOrder + 1}
-                    </span>
+                    {/* 序号徽章 */}
+                    <div className="w-8 h-8 bg-[#F4C025] rounded-full flex items-center justify-center shadow-lg group-hover/badge:bg-red-500 transition-colors duration-200">
+                      <span className="text-black font-bold text-sm group-hover/badge:hidden">
+                        {selectionOrder + 1}
+                      </span>
+                      <span className="material-symbols-outlined text-white text-sm hidden group-hover/badge:block">
+                        close
+                      </span>
+                    </div>
+                    {/* 取消提示 */}
+                    <motion.div
+                      className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-red-400 opacity-0 group-hover/badge:opacity-100 transition-opacity"
+                      initial={{ opacity: 0 }}
+                    >
+                      Tap to undo
+                    </motion.div>
                   </motion.div>
                 )}
 

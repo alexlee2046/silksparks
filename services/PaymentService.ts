@@ -104,7 +104,12 @@ export const PaymentService = {
       throw new Error("Stripe not initialized");
     }
 
-    const { error } = await stripe.redirectToCheckout({ sessionId });
+    // Cast to include deprecated redirectToCheckout method
+    type StripeWithRedirect = typeof stripe & {
+      redirectToCheckout: (opts: { sessionId: string }) => Promise<{ error?: { message: string } }>;
+    };
+
+    const { error } = await (stripe as StripeWithRedirect).redirectToCheckout({ sessionId });
     if (error) {
       throw new Error(error.message);
     }
@@ -133,10 +138,11 @@ export const PaymentService = {
       }
 
       // Verify products exist (inventory 列不存在)
+      const numericIds = productIds.filter((id): id is number => typeof id === "number");
       const { data: products, error } = await supabase
         .from("products")
-        .select("id, title")
-        .in("id", productIds);
+        .select("id, name")
+        .in("id", numericIds);
 
       if (error) {
         console.error("[PaymentService] Product check failed:", error);

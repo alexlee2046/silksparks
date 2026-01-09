@@ -458,7 +458,7 @@ describe("BirthDataForm", () => {
     it("should have autofocus on name input", () => {
       render(<BirthDataForm />);
       const nameInput = screen.getByPlaceholderText("Enter your name");
-      expect(nameInput).toHaveFocus;
+      expect(nameInput).toHaveFocus();
     });
 
     it("should have labels for inputs", () => {

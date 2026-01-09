@@ -324,4 +324,112 @@ describe("Auth", () => {
       expect(passwordInput).toHaveAttribute("type", "password");
     });
   });
+
+  describe("additional behaviors", () => {
+    it("should disable submit button while loading to prevent double submission", async () => {
+      mockSignInWithPassword.mockReturnValue(new Promise(() => {}));
+
+      render(<Auth />);
+
+      fireEvent.change(screen.getByPlaceholderText("seeker@silkspark.com"), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("••••••••"), {
+        target: { value: "password123" },
+      });
+
+      const submit = screen.getByRole("button", { name: "Sign In" });
+      fireEvent.submit(submit);
+
+      expect(screen.getByText("Processing...")).toBeInTheDocument();
+      expect(submit).toBeDisabled();
+
+      fireEvent.click(submit);
+      expect(mockSignInWithPassword).toHaveBeenCalledTimes(1);
+    });
+
+    it("should clear error and message when a new submission starts", async () => {
+      mockSignInWithPassword.mockResolvedValueOnce({ error: { message: "Invalid credentials" } });
+
+      render(<Auth />);
+
+      fireEvent.change(screen.getByPlaceholderText("seeker@silkspark.com"), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("••••••••"), {
+        target: { value: "wrong" },
+      });
+      fireEvent.submit(screen.getByRole("button", { name: "Sign In" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Invalid credentials")).toBeInTheDocument();
+      });
+
+      mockSignInWithPassword.mockReturnValue(new Promise(() => {}));
+      fireEvent.submit(screen.getByRole("button", { name: "Sign In" }));
+
+      await waitFor(() => {
+        expect(screen.queryByText("Invalid credentials")).toBeNull();
+        expect(screen.getByText("Processing...")).toBeInTheDocument();
+      });
+    });
+
+    it("should handle thrown exceptions from auth client and show fallback error", async () => {
+      mockSignInWithPassword.mockRejectedValueOnce(new Error("Network down"));
+
+      render(<Auth />);
+
+      fireEvent.change(screen.getByPlaceholderText("seeker@silkspark.com"), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("••••••••"), {
+        target: { value: "password123" },
+      });
+
+      fireEvent.submit(screen.getByRole("button", { name: "Sign In" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Network down")).toBeInTheDocument();
+      });
+    });
+
+    it("should not call onClose if login fails", async () => {
+      mockSignInWithPassword.mockResolvedValueOnce({ error: { message: "Invalid" } });
+      const onClose = vi.fn();
+
+      render(<Auth onClose={onClose} />);
+
+      fireEvent.change(screen.getByPlaceholderText("seeker@silkspark.com"), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("••••••••"), {
+        target: { value: "password123" },
+      });
+
+      fireEvent.submit(screen.getByRole("button", { name: "Sign In" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Invalid")).toBeInTheDocument();
+        expect(onClose).not.toHaveBeenCalled();
+      });
+    });
+
+    it("should preserve entered inputs when switching modes and back", () => {
+      render(<Auth />);
+
+      const emailInput = screen.getByPlaceholderText("seeker@silkspark.com") as HTMLInputElement;
+      const passwordInput = screen.getByPlaceholderText("••••••••") as HTMLInputElement;
+
+      fireEvent.change(emailInput, { target: { value: "persist@example.com" } });
+      fireEvent.change(passwordInput, { target: { value: "persistpass" } });
+
+      fireEvent.click(screen.getByText("Don't have an account? Sign Up"));
+      fireEvent.click(screen.getByText("Already have an account? Sign In"));
+
+      expect((screen.getByPlaceholderText("seeker@silkspark.com") as HTMLInputElement).value).toBe(
+        "persist@example.com"
+      );
+      expect((screen.getByPlaceholderText("••••••••") as HTMLInputElement).value).toBe("persistpass");
+    });
+  });
 });

@@ -5,10 +5,10 @@ import { paraglideVitePlugin } from "@inlang/paraglide-js";
 
 export default defineConfig(({ mode }) => {
   // Load environment variables (available for future use)
-  const _env = loadEnv(mode, ".", "");
+  void loadEnv(mode, ".", "");
   return {
     server: {
-      port: 3000,
+      port: 3101,
       host: "0.0.0.0",
     },
     plugins: [

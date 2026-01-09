@@ -10,17 +10,20 @@ import {
   Product,
 } from "../services/RecommendationEngine";
 import { useUser } from "../context/UserContext";
+import toast from "react-hot-toast";
 
-// Database product type
+// Database product type (matches types/database.ts)
 interface DBProduct {
   id: number;
-  title: string;
+  name: string;
   price: number;
   description: string | null;
   image_url: string | null;
-  element: string | null;
-  badge: string | null;
+  category: string | null;
+  stock: number | null;
+  featured: boolean;
   created_at: string;
+  updated_at: string | null;
 }
 
 // Component prop types
@@ -43,18 +46,11 @@ interface ShopItemProps {
   index: number;
 }
 
-interface ExpCardProps {
-  icon: string;
-  title: string;
-  desc: string;
-  delay?: number;
-}
-
 export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   const [products, setProducts] = useState<DBProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<string[]>([]);
-  const [sortOrder, setSortOrder] = useState<string>("newest");
+  const [sortOrder] = useState<string>("newest");
   const { addItem, setIsCartOpen } = useCart();
 
   // Recommendations state
@@ -73,7 +69,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
       const selectedElements = filters.filter((f) => elements.includes(f));
 
       if (selectedElements.length > 0) {
-        query = query.in("element", selectedElements);
+        query = query.in("category", selectedElements);
       }
 
       // Apply Sort at DB level (efficient)
@@ -98,7 +94,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
         if (complexFilters.length > 0) {
           filteredData = data.filter((product) => {
             const descLower = product.description?.toLowerCase() ?? "";
-            const titleLower = product.title?.toLowerCase() ?? "";
+            const titleLower = product.name?.toLowerCase() ?? "";
 
             return complexFilters.some((filterText) => {
               const lowerFilter = filterText.toLowerCase();
@@ -125,6 +121,7 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
         setProducts(filteredData);
       } else {
         console.error("Error loading products:", error);
+        toast.error("Failed to load products. Please try again.");
       }
 
       // Fetch Recommendations
@@ -151,27 +148,14 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
   const handleQuickAdd = (e: React.MouseEvent, product: DBProduct) => {
     e.stopPropagation();
     addItem({
-      id: product.id,
-      name: product.title,
+      id: String(product.id),
+      name: product.name,
       price: product.price,
-      description: product.description,
-      image: product.image_url,
-      tags: [product.element || "General"],
+      description: product.description || "",
+      image: product.image_url || "",
+      tags: [product.category || "General"],
     });
     setIsCartOpen(true);
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 1, y: 0 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   return (
@@ -352,13 +336,13 @@ export const ShopList: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                 <ShopItem
                   key={product.id}
                   index={index}
-                  title={product.title}
+                  title={product.name}
                   price={`$${product.price.toFixed(2)}`}
-                  element={product.element}
+                  element={product.category}
                   image={product.image_url}
-                  badge={product.badge}
+                  badge={product.featured ? "Featured" : null}
                   onClick={() => {
-                    if (setProductId) setProductId(product.id);
+                    if (setProductId) setProductId(String(product.id));
                     setScreen(Screen.PRODUCT_DETAIL);
                   }}
                   onQuickAdd={(e) => handleQuickAdd(e, product)}
@@ -504,7 +488,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .eq("id", productId)
+        .eq("id", Number(productId))
         .single();
 
       if (!error && data) {
@@ -518,12 +502,12 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
   const handleAddToCart = () => {
     if (product) {
       addItem({
-        id: product.id,
-        name: product.title,
+        id: String(product.id),
+        name: product.name,
         price: product.price,
-        description: product.description,
-        image: product.image_url,
-        tags: [product.element || "General"],
+        description: product.description || "",
+        image: product.image_url || "",
+        tags: [product.category || "General"],
       });
       setIsCartOpen(true);
     }
@@ -591,7 +575,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
               Shop
             </span>
             <span className="text-text-muted">/</span>
-            <span className="text-foreground font-medium">{product.title}</span>
+            <span className="text-foreground font-medium">{product.name}</span>
           </motion.div>
 
           <div className="flex flex-col lg:flex-row gap-10 px-4 py-4">
@@ -632,10 +616,10 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
               <div className="flex flex-col gap-4 text-left">
                 <div>
                   <h1 className="text-foreground text-4xl md:text-5xl font-display font-light leading-tight tracking-[-0.02em]">
-                    {product.title}
+                    {product.name}
                   </h1>
                   <p className="text-primary font-bold mt-2 text-lg">
-                    {product.badge || "Sacred Artifact"}
+                    {product.featured ? "Featured" : "Sacred Artifact"}
                   </p>
                 </div>
 
@@ -673,7 +657,7 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
                     </h3>
                     <p className="text-text-muted text-sm font-light leading-relaxed">
                       This item aligns with the{" "}
-                      <strong>{product.element || "Ether"}</strong> element,
+                      <strong>{product.category || "Ether"}</strong> element,
                       enhancing your natural energies.
                     </p>
                   </div>
@@ -716,19 +700,3 @@ export const ProductDetail: React.FC<NavProps> = ({ setScreen, productId }) => {
     </div>
   );
 };
-
-const ExpCard: React.FC<ExpCardProps> = ({ icon, title, desc }) => (
-  <GlassCard
-    className="flex flex-col gap-6 p-8 items-center text-center hover:border-primary/30"
-    intensity="low"
-    hoverEffect
-  >
-    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent border border-primary/20 flex items-center justify-center text-primary mb-2 shadow-[0_0_30px_rgba(244,192,37,0.1)]">
-      <span className="material-symbols-outlined text-3xl">{icon}</span>
-    </div>
-    <div className="flex flex-col gap-3">
-      <h3 className="text-foreground text-xl font-bold font-display">{title}</h3>
-      <p className="text-text-muted text-sm leading-relaxed">{desc}</p>
-    </div>
-  </GlassCard>
-);

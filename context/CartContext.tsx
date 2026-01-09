@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { Product } from "../services/RecommendationEngine";
+import toast from "react-hot-toast";
 
 export interface CartItem extends Product {
   quantity: number;
@@ -27,9 +28,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       const savedCart = localStorage.getItem("silk_spark_cart");
       if (savedCart) {
         try {
-          return JSON.parse(savedCart);
+          const parsed = JSON.parse(savedCart);
+          // 验证数据结构是否有效
+          if (Array.isArray(parsed) && parsed.every(item =>
+            item && typeof item.id === "string" && typeof item.quantity === "number"
+          )) {
+            return parsed;
+          }
+          // 数据格式无效，清除并通知用户
+          console.warn("[Cart] Invalid cart data structure, resetting cart");
+          localStorage.removeItem("silk_spark_cart");
         } catch (e) {
-          console.error("Failed to load cart", e);
+          // JSON 解析失败，清除损坏的数据
+          console.error("[Cart] Failed to parse cart data, resetting cart", e);
+          localStorage.removeItem("silk_spark_cart");
+          // 延迟显示 toast，避免在初始化时触发
+          setTimeout(() => {
+            toast.error("购物车数据已重置，请重新添加商品");
+          }, 100);
         }
       }
     }

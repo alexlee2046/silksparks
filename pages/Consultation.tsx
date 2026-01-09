@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { Screen, NavProps } from "../types";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
-import { useUser } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
+import { useLocaleFormat } from "../hooks/useLocaleFormat";
 import { supabase } from "../services/supabase";
+import toast from "react-hot-toast";
 import type { Expert } from "../types/database";
 
 // Component prop types
@@ -35,6 +36,7 @@ interface DeliveryOptionProps {
 export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
   const [experts, setExperts] = React.useState<Expert[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const { currencySymbol } = useLocaleFormat();
 
   React.useEffect(() => {
     const fetchExperts = async () => {
@@ -45,19 +47,14 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
 
       if (!error && data) {
         setExperts(data);
+      } else if (error) {
+        console.error("Error loading experts:", error);
+        toast.error("Failed to load experts. Please try again.");
       }
       setLoading(false);
     };
     fetchExperts();
   }, []);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
 
   return (
     <div className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-10 py-10 bg-background min-h-screen">
@@ -127,7 +124,7 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
               "Feng Shui",
               "Dream Interpretation",
               "Numerology",
-            ].map((e, i) => (
+            ].map((e) => (
               <label
                 key={e}
                 className="flex gap-x-3 items-center cursor-pointer group"
@@ -160,13 +157,13 @@ export const Experts: React.FC<NavProps> = ({ setScreen, setExpertId }) => {
                 key={expert.id}
                 index={index}
                 name={expert.name}
-                title={expert.title}
-                rating={expert.rating.toFixed(1)}
+                title={expert.title || "Spiritual Guide"}
+                rating={expert.rating}
                 reviews={expert.review_count}
-                price={`$${expert.price_per_min}/min`}
-                tags={expert.tags || []}
-                image={expert.image_url}
-                isOnline={expert.is_online}
+                price={`${currencySymbol}${(expert.hourly_rate / 60).toFixed(2)}/min`}
+                tags={expert.specialties}
+                image={expert.avatar_url}
+                isOnline={false}
                 onBook={() => {
                   if (setExpertId) setExpertId(expert.id);
                   setScreen(Screen.BOOKING);
@@ -248,7 +245,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {tags.map((t: string) => (
+          {tags?.map((t: string) => (
             <span
               key={t}
               className="px-2 py-1 rounded-md bg-surface-border/30 border border-surface-border text-text-muted text-[10px] font-bold uppercase tracking-wider group-hover:border-primary/20 transition-colors"
@@ -259,18 +256,20 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         </div>
 
         <div className="mt-auto pt-4 flex gap-3">
-          <button
+          <GlowButton
+            variant="secondary"
             onClick={() => onProfile && onProfile()}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-surface-border text-foreground text-sm font-bold hover:bg-surface-border/30 transition-colors"
+            className="flex-1 text-sm"
           >
             Profile
-          </button>
-          <button
+          </GlowButton>
+          <GlowButton
+            variant="primary"
             onClick={onBook}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-background text-sm font-bold hover:bg-primary-hover transition-colors shadow-[0_0_15px_-3px_rgba(244,192,37,0.3)]"
+            className="flex-1 text-sm"
           >
             Book
-          </button>
+          </GlowButton>
         </div>
       </div>
     </GlassCard>
@@ -280,7 +279,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 export const ExpertProfile: React.FC<NavProps> = ({
   setScreen,
   expertId,
-  setExpertId,
 }) => {
   const [expert, setExpert] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
@@ -319,7 +317,7 @@ export const ExpertProfile: React.FC<NavProps> = ({
       <div className="relative h-[40vh] min-h-[400px]">
         <div className="absolute inset-0">
           <img
-            src={expert.image_url}
+            src={expert.avatar_url}
             className="w-full h-full object-cover"
             alt={expert.name}
             loading="eager"
@@ -340,7 +338,7 @@ export const ExpertProfile: React.FC<NavProps> = ({
               Back to Experts
             </button>
             <div className="flex flex-wrap gap-3">
-              {expert.tags?.map((t: string) => (
+              {expert.specialties?.map((t: string) => (
                 <span
                   key={t}
                   className="px-3 py-1 rounded-full bg-surface/50 border border-surface-border text-foreground text-xs font-bold uppercase tracking-wider backdrop-blur-md"
@@ -440,6 +438,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
   const [calendarDays, setCalendarDays] = React.useState<Date[]>([]);
   const [availableSlots, setAvailableSlots] = React.useState<string[]>([]);
   const [selectedSlot, setSelectedSlot] = React.useState<string | null>(null);
+  const { formatDate, formatCurrency } = useLocaleFormat();
 
   // Fetch Expert
   React.useEffect(() => {
@@ -506,8 +505,9 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
 
         // Generate slots based on start/end time
         const slots = [];
-        const start = parseInt(avail[0].start_time.split(":")[0]);
-        const end = parseInt(avail[0].end_time.split(":")[0]);
+        const firstAvail = avail[0];
+        const start = parseInt(firstAvail?.start_time?.split(":")[0] || "9");
+        const end = parseInt(firstAvail?.end_time?.split(":")[0] || "17");
 
         for (let h = start; h < end; h++) {
           // Check if slot is booked
@@ -529,8 +529,8 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
     const bookingData = {
       expertId,
       expertName: expert.name,
-      expertImage: expert.image_url,
-      price: expert.price_per_min,
+      expertImage: expert.avatar_url,
+      price: expert.hourly_rate / 60,
       date: selectedDate,
       time: selectedSlot,
     };
@@ -574,7 +574,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
               <img
                 alt="Expert Avatar"
                 className="h-full w-full object-cover"
-                src={expert.image_url}
+                src={expert.avatar_url}
                 loading="lazy"
                 decoding="async"
               />
@@ -618,7 +618,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                     Standard Consultation
                   </h4>
                   <span className="text-primary font-bold text-xl">
-                    ${(expert.price_per_min * 30).toFixed(2)}
+                    {formatCurrency((expert.hourly_rate / 60) * 30)}
                   </span>
                 </div>
                 <p className="text-sm text-text-muted mb-6 font-light leading-relaxed truncate-2-lines">
@@ -671,9 +671,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                           `}
                         >
                           <span className="text-[10px] uppercase opacity-60">
-                            {date.toLocaleDateString("en-US", {
-                              weekday: "short",
-                            })}
+                            {date.toLocaleDateString(undefined, { weekday: "short" })}
                           </span>
                           <span className="text-lg">{date.getDate()}</span>
                         </button>
@@ -686,11 +684,7 @@ export const Booking: React.FC<NavProps> = ({ setScreen, expertId }) => {
                 <div className="p-8 md:w-1/2 bg-surface/50 flex flex-col">
                   <div className="mb-10">
                     <h3 className="text-2xl font-bold text-foreground mb-2 font-display tracking-tight">
-                      {selectedDate.toLocaleDateString("en-US", {
-                        weekday: "long",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatDate(selectedDate, "long")}
                     </h3>
                     <p className="text-xs text-primary flex items-center gap-2 font-black uppercase tracking-[0.1em]">
                       <span className="material-symbols-outlined text-[16px]">
@@ -936,7 +930,7 @@ export const Delivery: React.FC<NavProps> = ({ setScreen, expertId }) => {
       ? expert.name
       : bookingData.expertName || "Expert Guide";
     const price = expert
-      ? expert.price_per_min * 30
+      ? (expert.hourly_rate / 60) * 30
       : bookingData.price * 30 || 120.0; // 30 mins
 
     // Add to Cart

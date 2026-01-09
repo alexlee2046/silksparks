@@ -13,11 +13,15 @@ import {
 } from "../../services/RecommendationEngine";
 import { getCardNumberDisplay, GOLD_FOIL_FILTER } from "./tarotUtils";
 import { CardSelector } from "./CardSelector";
+import { TarotCardBack } from "./TarotCardBack";
+import { TarotLoadingOverlay } from "./TarotLoadingOverlay";
+import { TarotInterpretation } from "./TarotInterpretation";
 import {
   initDailyTarot,
   selectDailyCard,
   type DailyTarotResult,
 } from "../../services/TarotService";
+import type { LuckyElements } from "../../services/ai/types";
 
 interface DrawnTarotCard extends TarotCardType {
   keywords?: string[];
@@ -41,6 +45,11 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
   );
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [aiLoadingStartTime, setAiLoadingStartTime] = useState<number | null>(null);
+  const [coreMessage, setCoreMessage] = useState<string>("");
+  const [actionAdvice, setActionAdvice] = useState<string>("");
+  const [luckyElements, setLuckyElements] = useState<LuckyElements | undefined>(undefined);
 
   // 初始化每日塔罗会话（基于种子，同一天结果一致）
   const initSession = useCallback(() => {
@@ -70,7 +79,7 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
 
       // 翻牌动画
       setTimeout(async () => {
-        const selectedIndex = selectedIndices[0];
+        const selectedIndex = selectedIndices[0] ?? 0;
         const drawnCard = selectDailyCard(tarotSession.seed, selectedIndex);
 
         if (!drawnCard) {
@@ -85,6 +94,11 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
           keywords: [],
         };
         setCard(cardWithKeywords);
+        setReadingState("revealed");
+
+        // 开始 AI 加载
+        setIsAILoading(true);
+        setAiLoadingStartTime(Date.now());
 
         // 调用 AI 生成解读
         try {
@@ -95,6 +109,10 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
           });
           const interpret = response.interpretation;
           setInterpretation(interpret);
+          setCoreMessage(response.coreMessage || "");
+          setActionAdvice(response.actionAdvice || "");
+          setLuckyElements(response.luckyElements);
+          setIsAILoading(false);
 
           const recs = await RecommendationEngine.getRecommendations(interpret);
           setRecommendations(recs);
@@ -114,6 +132,7 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
           });
         } catch (e) {
           console.error("[TarotDaily] Tarot AI error:", e);
+          setIsAILoading(false);
           if (e instanceof RateLimitError) {
             // 显示登录引导而不是 toast
             setShowLoginPrompt(true);
@@ -133,8 +152,6 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
             }
           }
         }
-
-        setReadingState("revealed");
       }, 1500);
     },
     [tarotSession, addArchive]
@@ -149,6 +166,11 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
     setTarotSession(null);
     setShowLoginPrompt(false);
     setAiError(null);
+    setIsAILoading(false);
+    setAiLoadingStartTime(null);
+    setCoreMessage("");
+    setActionAdvice("");
+    setLuckyElements(undefined);
   }, []);
 
   // 取消选牌
@@ -214,29 +236,17 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                   className="cursor-pointer group relative w-full max-w-64 mx-auto"
                 >
                   <div className="relative w-full aspect-[256/380] perspective-1000">
-                    {/* 卡牌堆效果 */}
-                    <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-3 translate-y-3 -z-20"></div>
-                    <div className="absolute top-0 left-0 w-full h-full bg-[#141414] border border-[#F4C025]/30 rounded-2xl transform translate-x-1.5 translate-y-1.5 -z-10"></div>
+                    {/* 卡牌堆效果 - 使用统一的 TarotCardBack */}
+                    <div className="absolute top-0 left-0 w-full h-full rounded-2xl transform translate-x-3 translate-y-3 -z-20 opacity-60">
+                      <TarotCardBack showPattern={false} />
+                    </div>
+                    <div className="absolute top-0 left-0 w-full h-full rounded-2xl transform translate-x-1.5 translate-y-1.5 -z-10 opacity-80">
+                      <TarotCardBack showPattern={false} />
+                    </div>
 
-                    <div className="relative w-full h-full rounded-2xl bg-gradient-to-b from-[#0d0d0d] via-[#0a0a0a] to-[#0d0d0d] border-2 border-[#F4C025]/50 overflow-hidden shadow-2xl flex flex-col items-center justify-center transform transition-transform duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_0_60px_rgba(244,192,37,0.3)]">
-                      {/* 发光效果 */}
-                      <div className="absolute inset-0 bg-[#F4C025]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                      {/* 中心图标 */}
-                      <div className="relative z-10">
-                        <div className="w-24 h-24 rounded-full border-2 border-[#F4C025]/40 flex items-center justify-center group-hover:border-[#F4C025]/80 transition-colors">
-                          <span className="material-symbols-outlined text-[#F4C025] text-5xl group-hover:scale-110 transition-transform">
-                            auto_awesome
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 底部文字 */}
-                      <div className="absolute bottom-8 text-center">
-                        <span className="text-[#F4C025]/80 text-[10px] font-serif tracking-[0.3em] uppercase">
-                          Silk & Sparks
-                        </span>
-                      </div>
+                    {/* 主卡牌背面 */}
+                    <div className="relative w-full h-full transform transition-transform duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_0_60px_rgba(244,192,37,0.3)]">
+                      <TarotCardBack showPattern={true} />
                     </div>
                   </div>
 
@@ -312,48 +322,90 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                     transition={{ type: "spring", stiffness: 50 }}
                     className="relative w-[300px] md:w-[360px] aspect-[4/7] rounded-2xl group cursor-pointer perspective-1000"
                   >
+                    {/* Reversed Card Pulsing Border Effect */}
+                    {card.isReversed && (
+                      <motion.div
+                        className="absolute -inset-[2px] rounded-2xl pointer-events-none z-0"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.4))",
+                          boxShadow: "0 0 30px rgba(239, 68, 68, 0.3), inset 0 0 30px rgba(239, 68, 68, 0.1)",
+                        }}
+                        animate={{
+                          opacity: [0.5, 0.8, 0.5],
+                          scale: [1, 1.01, 1],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    )}
+
                     <div
-                      className={`absolute inset-0 w-full h-full rounded-2xl bg-[#141414] border-2 border-[#F4C025] transition-transform duration-500 group-hover:scale-[1.02] flex flex-col p-[6%] shadow-[0_0_50px_rgba(244,192,37,0.2)] ${
-                        card.isReversed ? "rotate-180" : ""
+                      className={`absolute inset-0 w-full h-full rounded-2xl bg-[#141414] transition-transform duration-500 group-hover:scale-[1.02] flex flex-col p-[6%] ${
+                        card.isReversed
+                          ? "border-2 border-red-500/70 shadow-[0_0_50px_rgba(239,68,68,0.2)]"
+                          : "border-2 border-[#F4C025] shadow-[0_0_50px_rgba(244,192,37,0.2)]"
                       }`}
                     >
                       {/* 内边框 */}
-                      <div className="absolute inset-3 border border-[#F4C025] rounded-xl opacity-80 pointer-events-none z-20"></div>
+                      <div className={`absolute inset-3 border rounded-xl opacity-80 pointer-events-none z-20 ${
+                        card.isReversed ? "border-red-500/50" : "border-[#F4C025]"
+                      }`}></div>
 
                       {/* 顶部编号 */}
                       <div className="h-[10%] flex items-center justify-center pt-4">
-                        <span className="text-[#F4C025] font-serif font-bold text-3xl tracking-widest z-20">
+                        <span className={`font-serif font-bold text-3xl tracking-widest z-20 ${
+                          card.isReversed ? "text-red-400" : "text-[#F4C025]"
+                        }`}>
                           {getCardNumberDisplay(card)}
                         </span>
                       </div>
 
                       {/* 图像 */}
                       <div className="flex-1 relative overflow-hidden my-4 mx-2">
-                        <div
+                        <motion.div
                           className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110 opacity-90"
                           style={{
                             backgroundImage: `url("${card.image}")`,
                             backgroundSize: "contain",
                             backgroundPosition: "center",
                             backgroundRepeat: "no-repeat",
-                            filter: GOLD_FOIL_FILTER,
+                            filter: card.isReversed
+                              ? `${GOLD_FOIL_FILTER} hue-rotate(-30deg)`
+                              : GOLD_FOIL_FILTER,
                           }}
-                        ></div>
+                          initial={{ rotate: 0 }}
+                          animate={{ rotate: card.isReversed ? 180 : 0 }}
+                          transition={{ duration: 0.8 }}
+                        />
                       </div>
 
                       {/* 底部标题 */}
                       <div className="h-[12%] flex flex-col items-center justify-center pb-4 z-20">
-                        <h3 className="text-[#F4C025] font-serif font-bold text-xl uppercase tracking-[0.1em] text-center leading-tight">
+                        <h3 className={`font-serif font-bold text-xl uppercase tracking-[0.1em] text-center leading-tight ${
+                          card.isReversed ? "text-red-400" : "text-[#F4C025]"
+                        }`}>
                           {card.name}
                         </h3>
                       </div>
                     </div>
 
-                    {/* 逆位标识 */}
+                    {/* 逆位标识 - 红色徽章 */}
                     {card.isReversed && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#F4C025] text-black text-[10px] font-bold uppercase tracking-widest rounded-full">
-                        Reversed
-                      </div>
+                      <motion.div
+                        className="absolute -top-3 -right-3 z-50"
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg border-2 border-red-400/50">
+                          <span className="material-symbols-outlined text-white text-xl rotate-180">
+                            arrow_upward
+                          </span>
+                        </div>
+                      </motion.div>
                     )}
                   </motion.div>
                 </div>
@@ -408,12 +460,22 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                         psychology
                       </span>
                     </div>
-                    <h3 className="text-foreground font-bold mb-4 text-lg flex items-center gap-2">
+                    <h3 className="text-foreground font-bold mb-6 text-lg flex items-center gap-2">
                       <span className="text-[#F4C025]">✦</span> AI
                       Interpretation
                     </h3>
 
-                    {showLoginPrompt ? (
+                    {/* AI 加载状态 */}
+                    {isAILoading && (
+                      <TarotLoadingOverlay
+                        isLoading={isAILoading}
+                        cards={card ? [card] : []}
+                        startTime={aiLoadingStartTime || undefined}
+                      />
+                    )}
+
+                    {/* 登录提示 */}
+                    {!isAILoading && showLoginPrompt && (
                       <div className="text-center py-4">
                         <div className="mb-4">
                           <span className="material-symbols-outlined text-[#F4C025] text-4xl mb-2 block">
@@ -440,10 +502,16 @@ export const TarotDaily: React.FC<NavProps> = ({ setScreen }) => {
                           Sign In to Continue
                         </button>
                       </div>
-                    ) : (
-                      <p className="text-gray-300 leading-relaxed text-lg font-light">
-                        {interpretation || "Interpreting the stars..."}
-                      </p>
+                    )}
+
+                    {/* 解读内容 - 使用分区组件 */}
+                    {!isAILoading && !showLoginPrompt && interpretation && (
+                      <TarotInterpretation
+                        interpretation={interpretation}
+                        coreMessage={coreMessage}
+                        actionAdvice={actionAdvice}
+                        luckyElements={luckyElements}
+                      />
                     )}
                   </div>
 

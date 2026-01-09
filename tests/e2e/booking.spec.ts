@@ -103,14 +103,18 @@ test.describe("预约日历功能", () => {
     const dateButtons = page.locator("button").filter({ hasText: /^\d{1,2}$/ });
     const dateCount = await dateButtons.count();
 
-    if (dateCount > 1) {
-      // 点击第二个日期（跳过今天）
-      await dateButtons.nth(1).click();
+    // 安全地选择一个日期（跳过今天，如果有足够的日期）
+    const targetIndex = Math.min(1, dateCount - 1);
+    if (dateCount > 0) {
+      console.log(`Found ${dateCount} date buttons, clicking index ${targetIndex}`);
+      await dateButtons.nth(targetIndex).click();
       await page.waitForTimeout(500);
 
       // 时间槽区域应该更新（可能为空或有内容）
       // 不能确定一定有可用时间，只检查页面没有崩溃
       await expect(page.getByText("Back to Experts")).toBeVisible();
+    } else {
+      console.log("No date buttons found - skipping date selection");
     }
   });
 

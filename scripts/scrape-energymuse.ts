@@ -73,8 +73,8 @@ async function scrapeEnergyMuse() {
       })
       .catch(() => null);
 
-    // 获取促销产品信息
-    const products: ProductInfo[] = await page.evaluate(() => {
+    // 获取促销产品信息 (for future use/debugging)
+    void await page.evaluate(() => {
       const items: ProductInfo[] = [];
 
       // 尝试多种选择器
@@ -135,8 +135,8 @@ async function scrapeEnergyMuse() {
 
     const extractedProducts: ProductInfo[] = [];
     priceMatches.slice(0, 20).forEach((match, index) => {
-      const original = parseFloat(match[1]);
-      const sale = parseFloat(match[2]);
+      const original = parseFloat(match[1] ?? "0");
+      const sale = parseFloat(match[2] ?? "0");
       const discount = (((original - sale) / original) * 100).toFixed(0);
       extractedProducts.push({
         name: `产品 ${index + 1}`,
@@ -155,9 +155,8 @@ async function scrapeEnergyMuse() {
     await page.waitForTimeout(3000);
 
     const allProductsText = await page.locator("body").textContent();
-    const allPriceMatches = [
-      ...(allProductsText?.matchAll(pricePattern) || []),
-    ];
+    // Collect additional price matches for future use
+    void [...(allProductsText?.matchAll(pricePattern) || [])];
 
     // 4. 尝试访问 FAQ 页面获取运费信息
     console.log("\n📋 正在获取 FAQ 运费信息...");
@@ -181,11 +180,11 @@ async function scrapeEnergyMuse() {
       /orders?\s*over\s*\$?([\d,.]+)\s*(?:ship|get)\s*free/gi,
     ];
 
-    let shippingInfo = "";
+    // Search for shipping info patterns (for future reporting)
     for (const pattern of shippingPatterns) {
       const match = faqText?.match(pattern) || allProductsText?.match(pattern);
       if (match) {
-        shippingInfo = match[0];
+        void match[0]; // Found shipping info
         break;
       }
     }

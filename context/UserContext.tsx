@@ -205,6 +205,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       if (pError) throw pError;
 
       // 只加载 profile 数据，archives/orders/favorites 由专用 hooks 延迟加载
+      // Parse preferences from Json type
+      const prefs = profile?.preferences as { marketingConsent?: boolean } | null;
+
       setUser({
         id: userId,
         name: profile?.full_name || "",
@@ -212,11 +215,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         birthData: {
           date: profile?.birth_date ? new Date(profile.birth_date) : null,
           time: profile?.birth_time || "",
-          location: profile?.lat
-            ? { name: profile.birth_place, lat: profile.lat, lng: profile.lng }
+          location: profile?.lat && profile?.lng != null
+            ? { name: profile.birth_place || "", lat: profile.lat, lng: profile.lng }
             : null,
         },
-        preferences: profile?.preferences || { marketingConsent: false },
+        preferences: { marketingConsent: prefs?.marketingConsent ?? false },
         // 这些字段现在由 useArchives/useOrders/useFavorites hooks 管理
         archives: [],
         orders: [],
@@ -310,9 +313,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
           try {
             const baseDate = new Date(date);
             const [timePart, modifier] = time.split(" ");
-            const [hoursStr, minutesStr] = timePart.split(":");
-            let hours = Number(hoursStr);
-            const minutes = Number(minutesStr);
+            const [hoursStr, minutesStr] = (timePart ?? "12:00").split(":");
+            let hours = Number(hoursStr ?? 12);
+            const minutes = Number(minutesStr ?? 0);
 
             if (modifier === "PM" && hours < 12) hours += 12;
             if (modifier === "AM" && hours === 12) hours = 0;
@@ -340,12 +343,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const addArchive = useCallback(async (item: ArchiveItem) => {
     if (!session) return;
+    // Cast content to Json for Supabase compatibility
+    const contentAsJson = (typeof item.content === "string"
+      ? item.content
+      : item.content) as import("../types/database").Json;
     const { error } = await supabase.from("archives").insert({
       user_id: session.user.id,
       type: item.type,
       title: item.title,
       summary: item.summary,
-      content: item.content,
+      content: contentAsJson,
       image_url: item.image,
     });
 

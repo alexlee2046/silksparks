@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../services/supabase";
 import { useUser } from "../context/UserContext";
 import type { TarotCard, LuckyElements } from "../services/ai/types";
+import type { Json } from "../types/database";
 
 // ============ 类型定义 ============
 
@@ -94,7 +95,7 @@ export function useTarotStreak(): UseTarotStreakReturn {
         longestStreak: data?.longest_streak ?? 0,
         totalReadings: data?.total_readings ?? 0,
         lastReadingDate: data?.last_reading_date ?? null,
-        recentCards: data?.recent_cards ?? [],
+        recentCards: (data?.recent_cards ?? []) as unknown as TarotCard[],
       };
 
       // 更新缓存
@@ -146,12 +147,12 @@ export function useTarotStreak(): UseTarotStreakReturn {
           {
             p_user_id: userId,
             p_reading_type: readingType,
-            p_cards: cards,
+            p_cards: cards as unknown as Json,
             p_question: options?.question ?? null,
             p_interpretation: options?.interpretation ?? null,
             p_core_message: options?.coreMessage ?? null,
             p_action_advice: options?.actionAdvice ?? null,
-            p_lucky_elements: options?.luckyElements ?? null,
+            p_lucky_elements: (options?.luckyElements ?? null) as Json | null,
             p_seed: options?.seed ?? null,
           }
         );
@@ -170,6 +171,7 @@ export function useTarotStreak(): UseTarotStreakReturn {
         statsCache = null;
 
         // 更新本地状态
+        const today = new Date().toISOString().split("T")[0] ?? null;
         setStats((prev) =>
           prev
             ? {
@@ -177,7 +179,7 @@ export function useTarotStreak(): UseTarotStreakReturn {
                 currentStreak: result.currentStreak,
                 longestStreak: result.longestStreak,
                 totalReadings: result.totalReadings,
-                lastReadingDate: new Date().toISOString().split("T")[0],
+                lastReadingDate: today,
               }
             : null
         );

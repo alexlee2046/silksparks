@@ -64,6 +64,7 @@ export interface Database {
           is_admin?: boolean;
           updated_at?: string | null;
         };
+        Relationships: [];
       };
       products: {
         Row: {
@@ -100,6 +101,7 @@ export interface Database {
           featured?: boolean;
           updated_at?: string | null;
         };
+        Relationships: [];
       };
       product_tags: {
         Row: {
@@ -116,6 +118,15 @@ export interface Database {
           product_id?: number;
           tag?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "product_tags_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       orders: {
         Row: {
@@ -154,6 +165,15 @@ export interface Database {
           shipping_address?: Json | null;
           updated_at?: string | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: "orders_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       order_items: {
         Row: {
@@ -184,6 +204,22 @@ export interface Database {
           type?: "product" | "service" | "consultation";
           image_url?: string | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       archives: {
         Row: {
@@ -213,6 +249,7 @@ export interface Database {
           content?: Json;
           image_url?: string | null;
         };
+        Relationships: [];
       };
       favorites: {
         Row: {
@@ -231,6 +268,7 @@ export interface Database {
           user_id?: string;
           product_id?: number;
         };
+        Relationships: [];
       };
       experts: {
         Row: {
@@ -273,6 +311,7 @@ export interface Database {
           featured?: boolean;
           updated_at?: string | null;
         };
+        Relationships: [];
       };
       expert_availability: {
         Row: {
@@ -299,6 +338,7 @@ export interface Database {
           end_time?: string;
           is_available?: boolean;
         };
+        Relationships: [];
       };
       appointments: {
         Row: {
@@ -330,6 +370,7 @@ export interface Database {
           notes?: string | null;
           updated_at?: string | null;
         };
+        Relationships: [];
       };
       currencies: {
         Row: {
@@ -360,6 +401,7 @@ export interface Database {
           is_default?: boolean;
           updated_at?: string | null;
         };
+        Relationships: [];
       };
       shipping_zones: {
         Row: {
@@ -381,6 +423,7 @@ export interface Database {
           countries?: string[];
           updated_at?: string | null;
         };
+        Relationships: [];
       };
       shipping_rates: {
         Row: {
@@ -408,6 +451,15 @@ export interface Database {
           min_days?: number | null;
           max_days?: number | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: "shipping_rates_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "shipping_zones";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       system_settings: {
         Row: {
@@ -426,6 +478,7 @@ export interface Database {
           value?: Json;
           updated_at?: string | null;
         };
+        Relationships: [];
       };
       notifications: {
         Row: {
@@ -452,6 +505,7 @@ export interface Database {
           type?: string;
           read?: boolean;
         };
+        Relationships: [];
       };
       admin_audit_logs: {
         Row: {
@@ -477,6 +531,7 @@ export interface Database {
           created_at?: string;
         };
         Update: never;
+        Relationships: [];
       };
       ai_usage_logs: {
         Row: {
@@ -506,10 +561,44 @@ export interface Database {
           created_at?: string;
         };
         Update: never;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_tarot_stats: {
+        Args: {
+          p_user_id: string;
+        };
+        Returns: {
+          current_streak: number;
+          longest_streak: number;
+          total_readings: number;
+          last_reading_date: string | null;
+          recent_cards: Json;
+        };
+      };
+      record_tarot_reading: {
+        Args: {
+          p_user_id: string;
+          p_reading_type: "daily" | "three_card" | "celtic_cross";
+          p_cards: Json;
+          p_question: string | null;
+          p_interpretation: string | null;
+          p_core_message: string | null;
+          p_action_advice: string | null;
+          p_lucky_elements: Json | null;
+          p_seed: string | null;
+        };
+        Returns: {
+          reading_id: string;
+          current_streak: number;
+          longest_streak: number;
+          total_readings: number;
+          is_new_streak: boolean;
+        };
+      };
+    };
     Enums: Record<string, never>;
   };
 }

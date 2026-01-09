@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../services/supabase";
 import { useUser } from "../context/UserContext";
 import type { ArchiveItem } from "../context/UserContext";
-
 interface UseArchivesReturn {
   archives: ArchiveItem[];
   loading: boolean;
@@ -64,9 +63,9 @@ export function useArchives(): UseArchivesReturn {
           type: a.type,
           date: new Date(a.created_at),
           title: a.title,
-          summary: a.summary,
-          content: a.content,
-          image: a.image_url,
+          summary: a.summary ?? "",
+          content: (a.content ?? "") as string | Record<string, unknown>,
+          image: a.image_url ?? undefined,
         })) || [];
 
       // Update cache

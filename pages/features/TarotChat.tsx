@@ -35,8 +35,8 @@ export const TarotChat: React.FC<TarotChatProps> = ({
   initialReading,
   onClose,
 }) => {
-  const { session, profile } = useUser();
-  const isPremium = profile?.tier === "premium";
+  const { user } = useUser();
+  const isPremium = user?.tier === "premium";
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -83,12 +83,6 @@ export const TarotChat: React.FC<TarotChatProps> = ({
       const previousContext = messages
         .map((m) => `${m.role === "user" ? "问" : "答"}: ${m.content}`)
         .join("\n");
-
-      const cardsDescription = drawnCards
-        .map(
-          (c) => `${c.name} (${c.isReversed ? "Reversed" : "Upright"}) - ${c.position || "single"}`
-        )
-        .join(", ");
 
       // 调用 AI 追问
       const response = await AIService.generateTarotReading({

@@ -26,6 +26,7 @@ export const OrderShow: React.FC = () => {
   }
 
   const handleStatusUpdate = (status: string) => {
+    if (!order?.id) return;
     update({
       resource: "orders",
       id: order.id,

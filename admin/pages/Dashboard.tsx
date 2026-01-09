@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useList, useNavigation } from "@refinedev/core";
 import { GlassCard } from "../../components/GlassCard";
 import { GlowButton } from "../../components/GlowButton";

@@ -22,6 +22,40 @@ import {
   type LuckyElements,
 } from "./types";
 
+// ============ 超时控制 ============
+
+/**
+ * AI 请求超时时间 (毫秒)
+ * 30秒是合理的平衡：足够长让 AI 完成复杂分析，但不会让用户无限等待
+ */
+const AI_TIMEOUT_MS = 30000;
+
+/**
+ * 超时错误类
+ */
+export class AITimeoutError extends Error {
+  constructor(operation: string) {
+    super(`AI 服务响应超时 (${operation})，请稍后重试`);
+    this.name = "AITimeoutError";
+  }
+}
+
+/**
+ * 为 Promise 添加超时控制
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operation: string,
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new AITimeoutError(operation)), timeoutMs),
+    ),
+  ]);
+}
+
 // ============ 服务注册 ============
 
 /**
@@ -100,7 +134,11 @@ export function getCurrentProvider(): AIProvider {
 export async function generateBirthChartAnalysis(
   request: BirthChartAnalysisRequest,
 ): Promise<BirthChartAnalysisResponse> {
-  return getService().generateBirthChartAnalysis(request);
+  return withTimeout(
+    getService().generateBirthChartAnalysis(request),
+    AI_TIMEOUT_MS,
+    "星盘分析",
+  );
 }
 
 /**
@@ -116,7 +154,11 @@ export async function generateBirthChartAnalysis(
 export async function generateTarotReading(
   request: TarotReadingRequest,
 ): Promise<TarotReadingResponse> {
-  return getService().generateTarotReading(request);
+  return withTimeout(
+    getService().generateTarotReading(request),
+    AI_TIMEOUT_MS,
+    "塔罗解读",
+  );
 }
 
 /**
@@ -137,7 +179,11 @@ export async function generateTarotFollowUp(
   if (!service.generateTarotFollowUp) {
     throw new Error("当前 AI 提供商不支持塔罗追问功能");
   }
-  return service.generateTarotFollowUp(request);
+  return withTimeout(
+    service.generateTarotFollowUp(request),
+    AI_TIMEOUT_MS,
+    "塔罗追问",
+  );
 }
 
 /**
@@ -149,7 +195,11 @@ export async function generateTarotFollowUp(
 export async function generateDailySpark(
   request: DailySparkRequest,
 ): Promise<DailySparkResponse> {
-  return getService().generateDailySpark(request);
+  return withTimeout(
+    getService().generateDailySpark(request),
+    AI_TIMEOUT_MS,
+    "每日灵感",
+  );
 }
 
 /**

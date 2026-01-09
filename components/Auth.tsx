@@ -16,6 +16,8 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [showResend, setShowResend] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +34,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
         if (error) throw error;
         if (onClose) onClose();
       } else {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -47,9 +49,43 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
         // If there's no trigger yet, we can't do much here as Auth is separate from public.profiles
 
         setMessage("Check your email for the confirmation link!");
+        setShowResend(true);
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during authentication.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 重新发送确认邮件
+  const handleResendConfirmation = async () => {
+    if (resendCooldown > 0) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      });
+      if (error) throw error;
+
+      setMessage("Confirmation email sent! Check your inbox and spam folder.");
+      // 设置 60 秒冷却期
+      setResendCooldown(60);
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err: any) {
+      setError(err.message || "Failed to resend confirmation email.");
     } finally {
       setLoading(false);
     }
@@ -151,6 +187,18 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
             {message && (
               <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-xs text-center">
                 {message}
+                {showResend && (
+                  <button
+                    type="button"
+                    onClick={handleResendConfirmation}
+                    disabled={loading || resendCooldown > 0}
+                    className="block w-full mt-2 text-primary hover:text-primary-hover disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+                  >
+                    {resendCooldown > 0
+                      ? `Resend in ${resendCooldown}s`
+                      : "Resend confirmation email"}
+                  </button>
+                )}
               </div>
             )}
 

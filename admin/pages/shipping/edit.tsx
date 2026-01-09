@@ -4,7 +4,6 @@ import {
   useList,
   useCreate,
   useDelete,
-  useUpdate,
 } from "@refinedev/core";
 import { GlassCard } from "../../../components/GlassCard";
 import { GlowButton } from "../../../components/GlowButton";
@@ -41,7 +40,6 @@ export const ShippingEdit: React.FC = () => {
   const {
     data: ratesData,
     isLoading: ratesLoading,
-    refetch: refetchRates,
   } = ratesQuery;
 
   // 3. Rate Mutations

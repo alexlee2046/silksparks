@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Screen, NavProps } from "../types";
 import AIService from "../services/ai";
 import { RateLimitError } from "../services/ai/SupabaseAIProvider";
@@ -17,20 +17,53 @@ import { JsonLd } from "../components/JsonLd";
 import toast from "react-hot-toast";
 import * as m from "../src/paraglide/messages";
 
-export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
+/**
+ * 根据出生日期计算太阳星座
+ */
+function getSunSign(birthDate: Date): string {
+  const month = birthDate.getMonth() + 1; // 0-indexed
+  const day = birthDate.getDate();
+
+  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "Aries";
+  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "Taurus";
+  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "Gemini";
+  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "Cancer";
+  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "Leo";
+  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "Virgo";
+  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "Libra";
+  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "Scorpio";
+  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "Sagittarius";
+  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "Capricorn";
+  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "Aquarius";
+  return "Pisces"; // Feb 19 - Mar 20
+}
+
+/**
+ * 获取当天的星座（基于太阳当前位置）
+ */
+function getTodaySign(): string {
+  return getSunSign(new Date());
+}
+
+export const Home: React.FC<NavProps> = ({ setScreen }) => {
   const [dailySpark, setDailySpark] = useState<string>(
     m["home.dailySpark.loading"](),
   );
   const [showForm, setShowForm] = useState(false);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const { isBirthDataComplete, user } = useUser();
-  const { addItem, addToCart } = useCart();
+  const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { locale } = useLanguage(); // Subscribe to locale changes
   void locale; // Ensure re-render on language change
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 计算用户星座（基于出生日期，如果没有则使用当天星座）
+  const userSign = useMemo(() => {
+    if (user?.birthData?.date) {
+      return getSunSign(user.birthData.date);
+    }
+    return getTodaySign();
+  }, [user?.birthData?.date]);
 
   // Fetch featured products
   useEffect(() => {
@@ -41,29 +74,25 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
     fetchProducts();
   }, []);
 
-  // Handle add to cart
-  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
-    e.stopPropagation();
-    addItem(product);
-  };
-
   useEffect(() => {
     const fetchSpark = async () => {
-      const cached = localStorage.getItem("daily_spark");
       const today = new Date().toDateString();
-      const cachedDate = localStorage.getItem("daily_spark_date");
+      // 缓存键包含星座，这样不同星座有不同的缓存
+      const cacheKey = `daily_spark_${userSign}`;
+      const cached = localStorage.getItem(cacheKey);
+      const cachedDate = localStorage.getItem(`${cacheKey}_date`);
 
       if (cached && cachedDate === today) {
         setDailySpark(cached);
       } else {
         try {
           const response = await AIService.generateDailySpark({
-            sign: "Scorpio",
+            sign: userSign,
           });
           const spark = response.message;
           setDailySpark(spark);
-          localStorage.setItem("daily_spark", spark);
-          localStorage.setItem("daily_spark_date", today);
+          localStorage.setItem(cacheKey, spark);
+          localStorage.setItem(`${cacheKey}_date`, today);
 
           // 显示 fallback 状态提示
           if (response.meta?.isFallback) {
@@ -83,7 +112,7 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
       }
     };
     fetchSpark();
-  }, []);
+  }, [userSign]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -320,12 +349,11 @@ export const Home: React.FC<NavProps> = ({ setScreen, setProductId }) => {
                   isFavorited={isFavorite(Number(product.id))}
                   onToggleFavorite={() => toggleFavorite(Number(product.id))}
                   onClick={() => {
-                    setSelectedProduct(product);
-                    setIsModalOpen(true);
+                    // Product detail view not implemented in Home
                   }}
                   onAddToCart={() => {
-                    addToCart({ ...product, type: "product" });
-                    toast.success(`Added ${product.title} to cart`);
+                    addItem(product);
+                    toast.success(`Added ${product.name} to cart`);
                   }}
                 />
               ))

@@ -649,10 +649,14 @@ export const UserSettings: React.FC<NavProps> = ({ setScreen }) => {
 export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
   const { user } = useUser();
   const [consultations, setConsultations] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [_loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchConsultations = async () => {
+      if (!user.id) {
+        setLoading(false);
+        return;
+      }
       // Fetch from appointments table which holds the actual bookings
       const { data, error } = await supabase
         .from("appointments")
@@ -677,7 +681,7 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
       }
       setLoading(false);
     };
-    if (user.id) fetchConsultations();
+    fetchConsultations();
   }, [user.id]);
 
   return (
@@ -764,9 +768,9 @@ export const Consultations: React.FC<NavProps> = ({ setScreen }) => {
   );
 };
 
-const Favorites: React.FC<NavProps> = ({ setScreen }) => {
+export const Favorites: React.FC<NavProps> = ({ setScreen }) => {
   const { favorites, toggleFavorite } = useFavorites();
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
   const [products, setProducts] = React.useState<Tables<"products">[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -843,8 +847,15 @@ const Favorites: React.FC<NavProps> = ({ setScreen }) => {
                 // simplifying to just toast for now or basic view
               }}
               onAddToCart={() => {
-                addToCart({ ...product, type: "product" });
-                toast.success(`Added ${product.title} to cart`);
+                addItem({
+                  id: String(product.id),
+                  name: product.name,
+                  price: product.price,
+                  description: product.description || "",
+                  image: product.image_url || "",
+                  tags: [product.category || "General"],
+                });
+                toast.success(`Added ${product.name} to cart`);
               }}
             />
           ))}

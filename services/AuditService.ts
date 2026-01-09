@@ -81,7 +81,8 @@ export const AuditService = {
       // Note: IP address cannot be obtained client-side, will be null
       // For production, use Edge Function to capture IP from request headers
 
-      const { error } = await supabase.from("admin_audit_logs").insert({
+      // Cast to any to work around incomplete database types
+      const { error } = await (supabase.from("admin_audit_logs") as ReturnType<typeof supabase.from>).insert({
         admin_id: user.id,
         action: entry.action,
         target_type: entry.targetType,
@@ -90,7 +91,7 @@ export const AuditService = {
         new_value: entry.newValue || null,
         metadata: entry.metadata || {},
         user_agent: userAgent,
-      });
+      } as Record<string, unknown>);
 
       if (error) {
         console.error("[AuditService] Failed to log action:", error);
@@ -131,8 +132,9 @@ export const AuditService = {
         endDate,
       } = options;
 
-      let query = supabase
-        .from("admin_audit_logs")
+      // Cast to work around incomplete database types
+      let query = (supabase
+        .from("admin_audit_logs") as ReturnType<typeof supabase.from>)
         .select(`
           *,
           profiles:admin_id (
@@ -170,11 +172,14 @@ export const AuditService = {
       }
 
       // Transform the joined data
-      const logs: AuditLogRecord[] = (data || []).map((log) => ({
-        ...log,
+      type LogWithProfiles = Record<string, unknown> & {
+        profiles?: { display_name?: string; email?: string } | null;
+      };
+      const logs: AuditLogRecord[] = ((data || []) as LogWithProfiles[]).map((log) => ({
+        ...(log as Record<string, unknown>),
         admin_name: log.profiles?.display_name || "Unknown",
         admin_email: log.profiles?.email || "",
-      }));
+      })) as AuditLogRecord[];
 
       return { data: logs, count: count || 0 };
     } catch (err) {

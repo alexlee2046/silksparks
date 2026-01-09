@@ -17,8 +17,8 @@ export interface Product {
 
 /** 数据库返回的产品记录 */
 interface DbProduct {
-  id: string;
-  title: string;
+  id: number;
+  name: string;
   price: number;
   description: string | null;
   image_url: string | null;
@@ -94,7 +94,7 @@ async function fetchProductsWithTags(): Promise<DbProduct[]> {
   // 从数据库获取 (简化查询，移除不存在的 product_tags 关系)
   const { data, error } = await supabase.from("products").select(`
     id,
-    title,
+    name,
     price,
     description,
     image_url
@@ -131,7 +131,7 @@ export const RecommendationEngine = {
     // Process and Score (简化：基于标题和描述匹配)
     const scoredProducts: ScoredProduct[] = productsData.map((p) => {
       let score = 0;
-      const titleLower = p.title.toLowerCase();
+      const titleLower = p.name.toLowerCase();
       const descLower = p.description?.toLowerCase() ?? "";
 
       // Keyword matching in title (高分)
@@ -142,8 +142,8 @@ export const RecommendationEngine = {
 
       // Map to frontend interface
       return {
-        id: p.id,
-        name: p.title,
+        id: String(p.id),
+        name: p.name,
         price: p.price,
         description: p.description ?? "",
         image: p.image_url ?? "",
@@ -169,8 +169,8 @@ export const RecommendationEngine = {
       // Shuffle remaining items to keep it dynamic
       for (let i = remaining.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        const temp = remaining[i];
-        remaining[i] = remaining[j];
+        const temp = remaining[i]!;
+        remaining[i] = remaining[j]!;
         remaining[j] = temp;
       }
 
@@ -203,9 +203,9 @@ export const RecommendationEngine = {
   async getFeaturedProducts(limit: number = 4): Promise<Product[]> {
     /** 映射数据库产品到前端产品 */
     const mapToProduct = (p: DbProduct): Product => ({
-      id: p.id,
-      name: p.title,
-      title: p.title,
+      id: String(p.id),
+      name: p.name,
+      title: p.name,
       price: p.price,
       description: p.description ?? "",
       image: p.image_url ?? "",
@@ -219,7 +219,7 @@ export const RecommendationEngine = {
 
     const { data, error } = await supabase
       .from("products")
-      .select("id, title, price, description, image_url")
+      .select("id, name, price, description, image_url")
       .order("created_at", { ascending: false })
       .limit(20); // 缓存更多以备不同 limit 请求
 
@@ -259,15 +259,17 @@ export const RecommendationEngine = {
     // 1. 从牌面提取关键词
     cards.forEach((card) => {
       // 大阿尔卡那
-      if (card.arcana === "Major" && MAJOR_ARCANA_KEYWORDS[card.name]) {
-        keywords.push(...MAJOR_ARCANA_KEYWORDS[card.name]);
+      const majorKeywords = MAJOR_ARCANA_KEYWORDS[card.name];
+      if (card.arcana === "Major" && majorKeywords) {
+        keywords.push(...majorKeywords);
       }
 
       // 小阿尔卡那 - 根据套牌
       if (card.arcana === "Minor" && card.suit) {
         const suitLower = card.suit.toLowerCase();
-        if (SUIT_KEYWORDS[suitLower]) {
-          keywords.push(...SUIT_KEYWORDS[suitLower]);
+        const suitKeywords = SUIT_KEYWORDS[suitLower];
+        if (suitKeywords) {
+          keywords.push(...suitKeywords);
         }
       }
 
@@ -293,7 +295,7 @@ export const RecommendationEngine = {
     // 评分产品 (简化：基于标题和描述匹配，product_tags 表不存在)
     const scoredProducts: ScoredProduct[] = productsData.map((p) => {
       let score = 0;
-      const titleLower = p.title?.toLowerCase() ?? "";
+      const titleLower = p.name?.toLowerCase() ?? "";
       const descLower = p.description?.toLowerCase() ?? "";
 
       // 关键词匹配
@@ -321,8 +323,8 @@ export const RecommendationEngine = {
       }
 
       return {
-        id: p.id,
-        name: p.title,
+        id: String(p.id),
+        name: p.name,
         price: p.price,
         description: p.description ?? "",
         image: p.image_url ?? "",
@@ -345,8 +347,8 @@ export const RecommendationEngine = {
       // 随机打乱
       for (let i = remaining.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        const temp = remaining[i];
-        remaining[i] = remaining[j];
+        const temp = remaining[i]!;
+        remaining[i] = remaining[j]!;
         remaining[j] = temp;
       }
 

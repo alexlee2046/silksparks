@@ -62,10 +62,10 @@ async function testProductsAPI() {
 
     if (error) throw error;
 
-    // 验证排序
+    // 验证排序 (使用 parseFloat 确保数值比较)
     let sorted = true;
     for (let i = 1; i < data.length; i++) {
-      if (data[i].price > data[i - 1].price) {
+      if (parseFloat(data[i].price) > parseFloat(data[i - 1].price)) {
         sorted = false;
         break;
       }
@@ -74,7 +74,7 @@ async function testProductsAPI() {
     if (sorted) {
       log("PASS", "产品价格降序排序");
     } else {
-      log("FAIL", "产品价格降序排序", "排序不正确");
+      log("FAIL", "产品价格降序排序", `排序不正确: ${data.map(d => d.price).join(' > ')}`);
     }
   } catch (err) {
     log("FAIL", "产品价格降序排序", err.message);
@@ -278,10 +278,10 @@ async function testShippingAPI() {
 
     if (error) throw error;
 
-    // 验证价格排序
+    // 验证价格排序 (使用 parseFloat 确保数值比较)
     let sorted = true;
     for (let i = 1; i < data.length; i++) {
-      if (data[i].price < data[i - 1].price) {
+      if (parseFloat(data[i].price) < parseFloat(data[i - 1].price)) {
         sorted = false;
         break;
       }
@@ -290,7 +290,7 @@ async function testShippingAPI() {
     if (sorted) {
       log("PASS", "费率价格升序排序");
     } else {
-      log("FAIL", "费率价格升序排序", "排序不正确");
+      log("FAIL", "费率价格升序排序", `排序不正确: ${data.map(d => d.price).join(' < ')}`);
     }
   } catch (err) {
     log("FAIL", "费率价格升序排序", err.message);

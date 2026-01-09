@@ -5,7 +5,7 @@ import { GlassCard } from "../components/GlassCard";
 import { GlowButton } from "../components/GlowButton";
 import { supabase } from "../services/supabase";
 import toast from "react-hot-toast";
-import type { Currency, ShippingZoneWithRates, ShippingRate } from "../types/database";
+import type { Currency as CurrencyType, ShippingZoneWithRates } from "../types/database";
 
 // Component prop types
 interface AdminNavLinkProps {
@@ -64,6 +64,19 @@ const AdminLayout: React.FC<{
     <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
     <div className="max-w-[1440px] mx-auto relative z-10">
+      {/* Coming Soon Banner */}
+      <div className="mb-8 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-4">
+        <span className="material-symbols-outlined text-amber-500 text-[24px]">
+          construction
+        </span>
+        <div>
+          <p className="text-amber-500 font-bold text-sm">管理后台开发中</p>
+          <p className="text-text-muted text-xs">
+            此功能尚在开发阶段，配置更改暂时无法保存。我们正在努力完善中。
+          </p>
+        </div>
+      </div>
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold uppercase tracking-widest text-primary">
@@ -310,7 +323,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ name, icon, connected }) =>
 );
 
 export const Currency: React.FC<NavProps> = ({ setScreen }) => {
-  const [currencies, setCurrencies] = React.useState<Currency[]>([]);
+  const [currencies, setCurrencies] = React.useState<CurrencyType[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -595,8 +608,15 @@ export const SystemSettings: React.FC<NavProps> = ({ setScreen }) => {
 
     if (error) {
       console.error("[Admin] Failed to fetch AI settings:", error.message);
-    } else if (data?.value) {
-      setConfig((prev) => ({ ...prev, ...data.value }));
+    } else if (data?.value && typeof data.value === "object" && !Array.isArray(data.value)) {
+      const remoteConfig = data.value as Record<string, unknown>;
+      setConfig((prev) => ({
+        ...prev,
+        ...(typeof remoteConfig.model === "string" ? { model: remoteConfig.model } : {}),
+        ...(typeof remoteConfig.temperature === "number" ? { temperature: remoteConfig.temperature } : {}),
+        ...(typeof remoteConfig.maxTokens === "number" ? { maxTokens: remoteConfig.maxTokens } : {}),
+        ...(typeof remoteConfig.apiKey === "string" ? { apiKey: remoteConfig.apiKey } : {}),
+      }));
     }
     setLoading(false);
   };

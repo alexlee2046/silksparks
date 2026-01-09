@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
+import { useUser } from "../../context/UserContext";
 import * as m from "../../src/paraglide/messages";
 
 const SocialIcon: React.FC<{ icon: string; label: string }> = ({
@@ -36,6 +37,7 @@ const FooterLink: React.FC<{
 
 export const Footer: React.FC = () => {
   const { locale } = useLanguage();
+  const { user } = useUser();
   void locale; // 确保语言切换时重渲染
 
   return (
@@ -72,7 +74,7 @@ export const Footer: React.FC = () => {
 
           {/* The Spark - 占星/塔罗功能 */}
           <div className="md:col-span-2 space-y-5">
-            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level="2">
+            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level={2}>
               <span
                 className="material-symbols-outlined text-primary text-[14px]"
                 aria-hidden="true"
@@ -91,7 +93,7 @@ export const Footer: React.FC = () => {
 
           {/* The Silk - 商店/咨询 */}
           <div className="md:col-span-2 space-y-5">
-            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level="2">
+            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level={2}>
               <span
                 className="material-symbols-outlined text-primary text-[14px]"
                 aria-hidden="true"
@@ -109,7 +111,7 @@ export const Footer: React.FC = () => {
 
           {/* My Space - 用户中心 */}
           <div className="md:col-span-2 space-y-5">
-            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level="2">
+            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level={2}>
               <span
                 className="material-symbols-outlined text-primary text-[14px]"
                 aria-hidden="true"
@@ -127,7 +129,7 @@ export const Footer: React.FC = () => {
 
           {/* Newsletter */}
           <div className="col-span-2 md:col-span-2 space-y-5">
-            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level="2">
+            <p className="text-foreground font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2" role="heading" aria-level={2}>
               <span
                 className="material-symbols-outlined text-primary text-[14px]"
                 aria-hidden="true"
@@ -195,15 +197,17 @@ export const Footer: React.FC = () => {
             >
               Cookies
             </button>
-            <Link
-              to="/admin"
-              className="hover:text-primary transition-colors flex items-center gap-1"
-            >
-              <span className="material-symbols-outlined text-[10px]">
-                shield_person
-              </span>{" "}
-              Admin
-            </Link>
+{user?.isAdmin && (
+              <Link
+                to="/admin"
+                className="hover:text-primary transition-colors flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-[10px]">
+                  shield_person
+                </span>{" "}
+                Admin
+              </Link>
+            )}
           </div>
         </div>
       </div>

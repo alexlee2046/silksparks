@@ -101,8 +101,8 @@ export function getZodiacFromDate(date: Date): ZodiacSign {
  */
 export function getZodiacFromLongitude(longitude: number): ZodiacSign {
   const normalized = ((longitude % 360) + 360) % 360;
-  const index = Math.floor(normalized / 30);
-  return ZODIAC_SIGNS[index];
+  const index = Math.floor(normalized / 30) % 12;
+  return ZODIAC_SIGNS[index] ?? "Aries";
 }
 
 /**

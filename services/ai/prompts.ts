@@ -54,17 +54,21 @@ Please provide:
 Format your response as flowing paragraphs, not bullet points. Be specific to their chart, not generic.
 `,
 
-    QUICK_INSIGHT: (req: BirthChartAnalysisRequest) => `
+    QUICK_INSIGHT: (req: BirthChartAnalysisRequest) => {
+      const sortedElements = Object.entries(req.elements).sort(([, a], [, b]) => b - a);
+      const dominantElement = sortedElements[0]?.[0] ?? "Fire";
+      return `
 Give a brief cosmic insight for ${req.name} with Sun in ${req.planets.Sun} and Moon in ${req.planets.Moon}.
-Their dominant element is ${Object.entries(req.elements).sort(([, a], [, b]) => b - a)[0][0]}.
+Their dominant element is ${dominantElement}.
 2-3 sentences max. Make it personal and actionable.
-`,
+`;
+    },
   },
 
   // 塔罗解读
   TAROT: {
     SINGLE_CARD: (req: TarotReadingRequest) => {
-      const card = req.cards[0];
+      const card = req.cards[0]!;
       return `
 The seeker asked: "${req.question}"
 
@@ -80,7 +84,9 @@ Be specific to the question asked. Avoid generic meanings.
     },
 
     THREE_CARD_SPREAD: (req: TarotReadingRequest) => {
-      const [past, present, future] = req.cards;
+      const past = req.cards[0]!;
+      const present = req.cards[1]!;
+      const future = req.cards[2]!;
       return `
 The seeker asked: "${req.question}"
 

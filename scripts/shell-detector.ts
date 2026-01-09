@@ -18,7 +18,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import * as readline from "readline";
+// readline reserved for future interactive features
 
 interface ShellPattern {
   name: string;
@@ -366,7 +366,7 @@ class ShellDetector {
     }
 
     // 复杂模式检测
-    for (const [key, detector] of Object.entries(COMPLEX_PATTERNS)) {
+    for (const [_key, detector] of Object.entries(COMPLEX_PATTERNS)) {
       const matches = detector.detect(content);
       for (const match of matches) {
         const index = content.indexOf(match);

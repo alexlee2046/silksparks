@@ -39,8 +39,8 @@ export const AstrologyEngine = {
    */
   calculatePlanetaryPositions(
     date: Date,
-    lat: number,
-    lng: number,
+    _lat: number,
+    _lng: number,
   ): PlanetaryPositions {
     const time = Astronomy.MakeTime(date);
 

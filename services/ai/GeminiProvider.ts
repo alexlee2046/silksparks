@@ -84,8 +84,14 @@ class GeminiProviderImpl implements IAIService {
         .eq("key", "ai_config")
         .single();
 
-      if (data?.value) {
-        this.configCache = { ...DEFAULT_CONFIG, ...data.value };
+      if (data?.value && typeof data.value === "object" && !Array.isArray(data.value)) {
+        const remoteConfig = data.value as Record<string, unknown>;
+        this.configCache = {
+          ...DEFAULT_CONFIG,
+          ...(remoteConfig.model && typeof remoteConfig.model === "string" ? { model: remoteConfig.model } : {}),
+          ...(typeof remoteConfig.temperature === "number" ? { temperature: remoteConfig.temperature } : {}),
+          ...(typeof remoteConfig.maxTokens === "number" ? { maxTokens: remoteConfig.maxTokens } : {}),
+        };
         this.lastConfigFetch = now;
         return this.configCache;
       }
@@ -275,7 +281,7 @@ class GeminiProviderImpl implements IAIService {
   private extractSection(text: string, keyword: string): string | null {
     const regex = new RegExp(`\\*\\*${keyword}[^*]*\\*\\*[:\\s]*([^*]+)`, "i");
     const match = text.match(regex);
-    return match ? match[1].trim() : null;
+    return match?.[1]?.trim() ?? null;
   }
 
   private extractCardMeaning(text: string, cardName: string): string | null {
