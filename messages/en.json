@@ -42,11 +42,12 @@
   },
   "home": {
     "hero": {
-      "title1": "Ancient Wisdom",
-      "title2": "Artificial Intelligence",
-      "subtitle": "Enter the Spark Engine. Decode your stars instantly with our AI-powered astrological interpreter that bridges the gap between mysticism and technology.",
-      "cta": "Reveal My Chart",
-      "ctaExisting": "View My Chart",
+      "badge": "Two Ancient Wisdoms. One Truth.",
+      "title1": "Your Stars Tell One Story.",
+      "title2": "Your Birth Hour Tells Another.",
+      "subtitle": "Western astrology reads the sky. Chinese astrology reads the moment. We read both.",
+      "cta": "Discover My Fusion Reading",
+      "ctaExisting": "View My Fusion Reading",
       "inputPlaceholder": "Enter your birth details...",
       "privacyNote": "Encrypted & Private"
     },
@@ -55,7 +56,18 @@
       "loading": "Aligning with the cosmos...",
       "viewHoroscope": "View Horoscope"
     },
+    "fusionInsights": {
+      "example1": "A Wood Day Master with a Scorpio Sun — bamboo bending through deep waters. You thrive under pressure.",
+      "example2": "Fire meets Taurus — passion grounded in patience. Your determination is unshakeable.",
+      "example3": "Metal Day Master, Gemini rising — sharp wit refined by curiosity. You cut through complexity with ease."
+    },
     "features": {
+      "fusion": {
+        "title": "Fusion Reading",
+        "description": "East meets West in your chart. Discover how Chinese BaZi and Western astrology reveal your complete cosmic blueprint.",
+        "action": "Get Fusion Reading",
+        "badge": "Featured"
+      },
       "tarot": {
         "title": "AI Tarot Reader",
         "description": "Ask any question and receive a detailed 3-card spread interpretation powered by our mystical LLM.",
@@ -63,7 +75,7 @@
       },
       "experts": {
         "title": "Expert Consultation",
-        "description": "Connect with real astrologers for deep-dive sessions when the AI insights spark more questions.",
+        "description": "Talk to experts who speak both languages — Eastern and Western astrology combined.",
         "action": "Book Expert"
       },
       "shop": {
@@ -97,9 +109,39 @@
     "form": {
       "name": "Name",
       "birthDate": "Birth Date",
+      "birthDateHint": "Determines your Western sun sign and Chinese year pillar",
       "birthTime": "Birth Time",
+      "birthTimeHint": "The hour reveals your Day Master — the core of Chinese astrology",
+      "birthTimeUnknown": "I don't know my birth time",
+      "birthTimeUnknownNote": "Some insights require exact time for full accuracy",
       "birthPlace": "Birth Place",
+      "birthPlaceHint": "Pinpoints planetary positions at your exact moment of birth",
       "generate": "Generate Chart"
+    }
+  },
+  "fusion": {
+    "title": "Unlock Your Fusion Reading",
+    "subtitle": "We need three keys to read your cosmic map:",
+    "cta": "Generate My Fusion Reading",
+    "page": {
+      "title": "Your Fusion Reading",
+      "summaryTitle": "Cosmic Identity",
+      "elementHarmony": "Element Harmony",
+      "coreInsights": "Core Fusion Insights",
+      "moreInsights": "More Insights",
+      "westernDetails": "View Western Chart Details",
+      "chineseDetails": "View Chinese BaZi Details",
+      "literature": "Literature & Sources",
+      "saveToArchives": "Save to Archives",
+      "shareReading": "Share Reading",
+      "noData": "Complete your birth profile to unlock your fusion reading.",
+      "enterData": "Enter Birth Details",
+      "dayMaster": "Day Master",
+      "sunSign": "Sun Sign",
+      "saving": "Saving...",
+      "saved": "Saved ✓",
+      "saveError": "Failed to save. Tap to retry.",
+      "saveSuccess": "Reading saved to archives!"
     }
   },
   "tarot": {

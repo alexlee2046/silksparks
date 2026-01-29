@@ -42,11 +42,12 @@
   },
   "home": {
     "hero": {
-      "title1": "古老智慧",
-      "title2": "人工智能",
-      "subtitle": "进入星火引擎。借助我们的AI占星解读器，即刻解码你的星象，连接神秘主义与科技的桥梁。",
-      "cta": "揭示我的星盘",
-      "ctaExisting": "查看我的星盘",
+      "badge": "两种古老智慧，一个真相。",
+      "title1": "你的星辰诉说一个故事。",
+      "title2": "你的时辰讲述另一个。",
+      "subtitle": "西方占星读天象，东方八字读时辰。我们读懂两者。",
+      "cta": "探索我的融合解读",
+      "ctaExisting": "查看我的融合解读",
       "inputPlaceholder": "输入你的出生信息...",
       "privacyNote": "加密且私密"
     },
@@ -55,7 +56,18 @@
       "loading": "与宇宙对齐中...",
       "viewHoroscope": "查看星座运势"
     },
+    "fusionInsights": {
+      "example1": "甲木日主配天蝎太阳——翠竹穿深水，在压力中茁壮。",
+      "example2": "火遇金牛——热情扎根于耐心，你的决心不可动摇。",
+      "example3": "金日主，双子上升——敏锐的智慧因好奇而精炼，你轻松穿透复杂。"
+    },
     "features": {
+      "fusion": {
+        "title": "融合解读",
+        "description": "东西方在你的命盘中交汇。探索八字与西方占星如何揭示你完整的宇宙蓝图。",
+        "action": "获取融合解读",
+        "badge": "精选"
+      },
       "tarot": {
         "title": "AI塔罗解读",
         "description": "提出任何问题，获得由神秘语言模型驱动的三牌阵详细解读。",
@@ -63,7 +75,7 @@
       },
       "experts": {
         "title": "专家咨询",
-        "description": "当AI洞见激发更多问题时，与真正的占星师进行深度交流。",
+        "description": "与精通东西方命理的专家交流——融汇贯通两种智慧。",
         "action": "预约专家"
       },
       "shop": {
@@ -97,9 +109,39 @@
     "form": {
       "name": "姓名",
       "birthDate": "出生日期",
+      "birthDateHint": "决定你的西方太阳星座和八字年柱",
       "birthTime": "出生时间",
+      "birthTimeHint": "时辰揭示你的日主——八字的核心",
+      "birthTimeUnknown": "我不知道准确的出生时间",
+      "birthTimeUnknownNote": "部分洞察需要精确时间才能完整显示",
       "birthPlace": "出生地点",
+      "birthPlaceHint": "精确定位出生时刻的行星位置",
       "generate": "生成星盘"
+    }
+  },
+  "fusion": {
+    "title": "解锁你的融合解读",
+    "subtitle": "我们需要三把钥匙来解读你的宇宙地图：",
+    "cta": "生成我的融合解读",
+    "page": {
+      "title": "你的融合解读",
+      "summaryTitle": "命理身份",
+      "elementHarmony": "元素和谐度",
+      "coreInsights": "核心融合洞察",
+      "moreInsights": "更多洞察",
+      "westernDetails": "查看西方星盘详情",
+      "chineseDetails": "查看八字详情",
+      "literature": "典籍与来源",
+      "saveToArchives": "保存到档案",
+      "shareReading": "分享解读",
+      "noData": "完善出生资料以解锁融合解读。",
+      "enterData": "输入出生信息",
+      "dayMaster": "日主",
+      "sunSign": "太阳星座",
+      "saving": "保存中...",
+      "saved": "已保存 ✓",
+      "saveError": "保存失败，点击重试",
+      "saveSuccess": "解读已保存至档案！"
     }
   },
   "tarot": {
