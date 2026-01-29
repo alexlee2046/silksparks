@@ -7,6 +7,7 @@ import type {
   BirthChartAnalysisRequest,
   TarotReadingRequest,
   DailySparkRequest,
+  FusionAnalysisRequest,
 } from "./types";
 
 // ============ 提示词模板 ============
@@ -28,6 +29,15 @@ Respond in the same language as the user's request.`,
 Your messages are poetic yet practical, inspiring without being preachy.
 Keep responses concise but meaningful.
 Respond in the same language as the user's request.`,
+
+    FUSION_MASTER: `你是精通西方占星和中国八字的命理大师。
+你的解读遵循以下原则：
+1. 尊重两个传统体系，不强行合并，承认它们的独立价值
+2. 寻找真实的联系（如节气与黄道的天文对应），而非牵强附会
+3. 引用经典文献支持解读，增加可信度
+4. 提供实用的、可执行的建议
+5. 用温和专业的语气，既有权威感又亲切可近
+根据用户的语言偏好回复。`,
   },
 
   // 星盘分析
@@ -117,6 +127,60 @@ Include a lucky color and number if naturally fitting.
 Create a personalized daily guidance for someone ${req.sign ? `with ${req.sign} Sun sign` : ""}.
 Today's cosmic energy suggests: [consider current astrological transits].
 Maximum 30 words. Make it feel personally crafted.
+`,
+  },
+
+  // 东西方融合分析
+  FUSION: {
+    FULL_ANALYSIS: (req: FusionAnalysisRequest) => {
+      const quotesSection =
+        req.quotes && req.quotes.length > 0
+          ? `
+**经典引用：**
+${req.quotes.map((q) => `《${q.source}》：「${q.originalText}」——${q.translation}`).join("\n")}`
+          : "";
+
+      return `
+为${req.name}提供东西方命理融合分析。
+
+**八字信息：**
+- 四柱：${req.baziData.fourPillars}
+- 日主：${req.baziData.dayMaster}（${req.baziData.dayMasterElement}）
+- 日主强弱：${req.baziData.strength}
+- 五行分布：${Object.entries(req.baziData.wuXingDistribution).map(([e, p]) => `${e}${p}%`).join(" ")}
+- 喜用神：${req.baziData.favorableElements.join("、")}
+- 忌神：${req.baziData.unfavorableElements.join("、")}
+
+**西方星盘：**
+- 太阳星座：${req.westernData.sunSign}
+- 月亮星座：${req.westernData.moonSign}
+- 主导元素：${req.westernData.dominantElement}
+${quotesSection}
+
+请提供${req.tier === "free" ? "简要" : "详细"}的融合分析：
+
+1. **东方视角** (${req.tier === "free" ? "2句" : "3-4句"})：基于八字日主和五行的核心特质分析。
+
+2. **西方视角** (${req.tier === "free" ? "2句" : "3-4句"})：基于太阳月亮星座的性格与情感分析。
+
+3. **融合洞察** (${req.tier === "free" ? "2句" : "4-5句"})：两个体系的共鸣点和互补之处。探讨它们如何共同描绘此人的命理图景。
+
+4. **实用建议**：
+   - 幸运色彩：基于喜用神
+   - 有利时机：基于五行旺衰
+   - 需要注意：基于忌神和挑战
+
+用温和专业的语气，结合经典智慧与现代心理学视角。${req.locale === "zh-CN" ? "请用中文回复。" : ""}
+`;
+    },
+
+    BRIEF_INSIGHT: (req: FusionAnalysisRequest) => `
+为${req.name}提供简短的东西方命理融合洞察。
+
+八字日主：${req.baziData.dayMaster}（${req.baziData.dayMasterElement}）
+太阳星座：${req.westernData.sunSign}
+
+3-4句话概述这两个体系的交汇点。要具体、有洞察力。${req.locale === "zh-CN" ? "请用中文回复。" : ""}
 `,
   },
 } as const;

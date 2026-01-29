@@ -300,6 +300,8 @@ export interface Database {
           rating: number | null;
           review_count: number;
           featured: boolean;
+          is_online: boolean;
+          last_active_at: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -314,6 +316,8 @@ export interface Database {
           rating?: number | null;
           review_count?: number;
           featured?: boolean;
+          is_online?: boolean;
+          last_active_at?: string | null;
           created_at?: string;
           updated_at?: string | null;
         };
@@ -327,6 +331,8 @@ export interface Database {
           rating?: number | null;
           review_count?: number;
           featured?: boolean;
+          is_online?: boolean;
+          last_active_at?: string | null;
           updated_at?: string | null;
         };
         Relationships: [];
@@ -644,6 +650,110 @@ export interface Database {
           }
         ];
       };
+      newsletter_subscribers: {
+        Row: {
+          id: string;
+          email: string;
+          user_id: string | null;
+          subscribed_at: string;
+          unsubscribed_at: string | null;
+          source: "footer" | "checkout" | "signup" | "popup";
+          is_verified: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          user_id?: string | null;
+          subscribed_at?: string;
+          unsubscribed_at?: string | null;
+          source?: "footer" | "checkout" | "signup" | "popup";
+          is_verified?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          email?: string;
+          user_id?: string | null;
+          subscribed_at?: string;
+          unsubscribed_at?: string | null;
+          source?: "footer" | "checkout" | "signup" | "popup";
+          is_verified?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_subscribers_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      bazi_charts: {
+        Row: {
+          id: string;
+          user_id: string;
+          birth_date: string;
+          birth_hour: number;
+          timezone: string | null;
+          latitude: number | null;
+          longitude: number | null;
+          location_name: string | null;
+          four_pillars: Json;
+          day_master: Json;
+          wu_xing_distribution: Json;
+          ten_gods: Json;
+          element_preferences: Json;
+          fusion_analysis: Json | null;
+          version: string;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          birth_date: string;
+          birth_hour: number;
+          timezone?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          location_name?: string | null;
+          four_pillars: Json;
+          day_master: Json;
+          wu_xing_distribution: Json;
+          ten_gods: Json;
+          element_preferences: Json;
+          fusion_analysis?: Json | null;
+          version?: string;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          birth_date?: string;
+          birth_hour?: number;
+          timezone?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          location_name?: string | null;
+          four_pillars?: Json;
+          day_master?: Json;
+          wu_xing_distribution?: Json;
+          ten_gods?: Json;
+          element_preferences?: Json;
+          fusion_analysis?: Json | null;
+          version?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bazi_charts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -712,6 +822,8 @@ export type SystemSetting = Tables<"system_settings">;
 export type Notification = Tables<"notifications">;
 export type AdminAuditLog = Tables<"admin_audit_logs">;
 export type AIUsageLog = Tables<"ai_usage_logs">;
+export type NewsletterSubscriber = Tables<"newsletter_subscribers">;
+export type BaZiChart = Tables<"bazi_charts">;
 
 // Product with tags (common join)
 export type ProductWithTags = Product & {

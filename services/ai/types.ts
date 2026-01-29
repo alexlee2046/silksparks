@@ -207,6 +207,62 @@ export interface DailySparkResponse {
 
 // ============ AI 服务接口 ============
 
+// ============ 东西方融合类型 ============
+
+/** 融合分析请求 */
+export interface FusionAnalysisRequest {
+  name: string;
+  birthDate: Date;
+  birthHour?: number;
+  birthPlace?: string;
+  latitude?: number;
+  longitude?: number;
+  /** BaZi chart data (pre-calculated) */
+  baziData: {
+    fourPillars: string; // e.g., "甲子 丙寅 戊午 庚申"
+    dayMaster: string; // e.g., "戊"
+    dayMasterElement: string; // e.g., "土"
+    strength: string; // e.g., "旺"
+    wuXingDistribution: Record<string, number>;
+    favorableElements: string[];
+    unfavorableElements: string[];
+  };
+  /** Western astrology data */
+  westernData: {
+    sunSign: string;
+    moonSign: string;
+    dominantElement: string;
+  };
+  /** Literature quotes to include */
+  quotes?: Array<{
+    source: string;
+    originalText: string;
+    translation: string;
+  }>;
+  tier: "free" | "member" | "premium";
+  locale?: "zh-CN" | "en-US";
+}
+
+/** 融合分析响应 */
+export interface FusionAnalysisResponse {
+  /** 综合分析文本 */
+  analysis: string;
+  /** 东方体系洞察 */
+  easternInsights: string;
+  /** 西方体系洞察 */
+  westernInsights: string;
+  /** 融合建议 */
+  fusionAdvice: string;
+  /** 个性化建议 */
+  recommendations: {
+    colors: string[];
+    timing: string[];
+    cautions: string[];
+  };
+  /** 元数据 */
+  meta: AIResponseMeta;
+}
+
 /** AI 服务抽象接口 */
 export interface IAIService {
   /** 服务名称 */
@@ -235,4 +291,9 @@ export interface IAIService {
 
   /** 清除缓存 */
   clearCache(): void;
+
+  /** 生成东西方融合分析 (可选) */
+  generateFusionAnalysis?(
+    request: FusionAnalysisRequest
+  ): Promise<FusionAnalysisResponse>;
 }
