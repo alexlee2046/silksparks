@@ -12,7 +12,7 @@ import {
   RecommendationEngine,
   Product,
 } from "../services/RecommendationEngine";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { SEO } from "../components/SEO";
 import { JsonLd } from "../components/JsonLd";
 import toast from "react-hot-toast";
@@ -64,12 +64,13 @@ export const Home: React.FC = () => {
   const { hasCheckedInToday } = useCheckin();
 
   // 计算用户星座（基于出生日期，如果没有则使用当天星座）
+  const userBirthDate = user?.birthData?.date;
   const userSign = useMemo(() => {
-    if (user?.birthData?.date) {
-      return getSunSign(user.birthData.date);
+    if (userBirthDate) {
+      return getSunSign(userBirthDate);
     }
     return getTodaySign();
-  }, [user?.birthData?.date]);
+  }, [userBirthDate]);
 
   // Fetch featured products
   useEffect(() => {
@@ -217,10 +218,11 @@ export const Home: React.FC = () => {
         />
       )}
 
-      {/* Hero */}
-      <section className="relative flex min-h-[70vh] w-full flex-col items-center justify-center py-20 px-4 isolate">
-        {/* Glow effect */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[100px] -z-10"></div>
+      {/* Hero - East-West Fusion */}
+      <section className="relative flex min-h-[80vh] w-full flex-col items-center justify-center py-20 px-4 isolate">
+        {/* Glow effects - dual colors for East/West */}
+        <div className="absolute top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/15 rounded-full blur-[120px] -z-10"></div>
+        <div className="absolute top-1/2 right-1/3 translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-purple-500/10 rounded-full blur-[100px] -z-10"></div>
 
         <motion.div
           variants={containerVariants}
@@ -229,38 +231,42 @@ export const Home: React.FC = () => {
           className="relative z-10 flex max-w-[960px] flex-col items-center gap-10 text-center"
         >
           <div className="flex flex-col items-center gap-6">
+            {/* Fusion Badge */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 backdrop-blur-md shadow-[0_0_15px_rgba(244,192,37,0.1)]"
+              className="inline-flex items-center gap-3 rounded-full border border-primary/30 bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 px-5 py-2 backdrop-blur-md shadow-[0_0_20px_rgba(244,192,37,0.15)]"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
+              <span className="text-lg">☯</span>
               <span className="text-xs font-bold uppercase tracking-widest text-primary">
-                Spark Engine v2.0 Live
+                {m["home.hero.badge"]()}
               </span>
             </motion.div>
 
+            {/* Main Title - Two Lines */}
             <motion.h1
               data-testid="main-title"
               variants={itemVariants}
-              className="text-foreground text-5xl md:text-8xl font-light font-display tracking-tight leading-[1]"
+              className="text-foreground text-4xl md:text-7xl font-light font-display tracking-tight leading-[1.1]"
             >
-              {m["home.hero.title1"]()} <br className="hidden md:block" />
-              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-br from-primary via-primary-hover to-amber-600 dark:from-white dark:via-primary dark:to-amber-200/50 drop-shadow-[0_0_20px_rgba(244,192,37,0.3)]">
+              <span className="block">{m["home.hero.title1"]()}</span>
+              <span className="block font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-primary to-purple-400 drop-shadow-[0_0_25px_rgba(244,192,37,0.4)]">
                 {m["home.hero.title2"]()}
               </span>
             </motion.h1>
 
+            {/* Subtitle */}
             <motion.p
               variants={itemVariants}
               className="max-w-[600px] text-text-muted text-lg md:text-xl font-light leading-relaxed"
             >
               {m["home.hero.subtitle"]()}
             </motion.p>
+
+            {/* Fusion Insight Carousel */}
+            <FusionInsightCarousel />
           </div>
 
+          {/* CTA Box */}
           <motion.div
             variants={itemVariants}
             className="w-full max-w-[520px] p-2 bg-surface/80 backdrop-blur-xl rounded-2xl border border-surface-border shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] hover:border-primary/30 transition-all duration-300"
@@ -287,10 +293,10 @@ export const Home: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
                 onClick={() =>
                   isBirthDataComplete
-                    ? navigate(PATHS.HOROSCOPE)
+                    ? navigate(PATHS.FUSION)
                     : setShowForm(true)
                 }
-                className="bg-primary hover:bg-primary-hover text-background font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2 whitespace-nowrap"
+                className="bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <span className="material-symbols-outlined text-[20px]">
                   auto_awesome
@@ -308,16 +314,27 @@ export const Home: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* Features */}
+      {/* Features - Fusion First */}
       <section className="py-24 px-4 md:px-10 relative z-10">
         <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Fusion Reading - Featured */}
+          <FeatureCard
+            icon="yin_yang"
+            title={m["home.features.fusion.title"]()}
+            desc={m["home.features.fusion.description"]()}
+            action={m["home.features.fusion.action"]()}
+            onClick={() => isBirthDataComplete ? navigate(PATHS.FUSION) : setShowForm(true)}
+            index={0}
+            featured={true}
+            badge={m["home.features.fusion.badge"]()}
+          />
           <FeatureCard
             icon="psychology"
             title={m["home.features.tarot.title"]()}
             desc={m["home.features.tarot.description"]()}
             action={m["home.features.tarot.action"]()}
             onClick={() => navigate(PATHS.TAROT)}
-            index={0}
+            index={1}
           />
           <FeatureCard
             icon="group"
@@ -325,14 +342,6 @@ export const Home: React.FC = () => {
             desc={m["home.features.experts.description"]()}
             action={m["home.features.experts.action"]()}
             onClick={() => navigate(PATHS.EXPERTS)}
-            index={1}
-          />
-          <FeatureCard
-            icon="diamond"
-            title={m["home.features.shop.title"]()}
-            desc={m["home.features.shop.description"]()}
-            action={m["home.features.shop.action"]()}
-            onClick={() => navigate(PATHS.SHOP)}
             index={2}
           />
         </div>
@@ -397,30 +406,119 @@ export const Home: React.FC = () => {
   );
 };
 
-const FeatureCard = ({ icon, title, desc, action, onClick, index }: any) => (
+/**
+ * Fusion Insight Carousel - rotates through example fusion insights
+ */
+const FusionInsightCarousel: React.FC = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const insights = [
+    m["home.fusionInsights.example1"](),
+    m["home.fusionInsights.example2"](),
+    m["home.fusionInsights.example3"](),
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % insights.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [insights.length]);
+
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.5 } },
+      }}
+      className="w-full max-w-[600px] mt-4"
+    >
+      <div className="relative p-5 rounded-xl bg-surface/60 border border-surface-border backdrop-blur-md">
+        <div className="absolute -top-2 left-4 px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 rounded text-[10px] font-bold uppercase tracking-wider text-purple-300">
+          Sample Insight
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={currentIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+            className="text-foreground/90 text-sm md:text-base italic leading-relaxed"
+          >
+            "{insights[currentIndex]}"
+          </motion.p>
+        </AnimatePresence>
+        {/* Dots indicator */}
+        <div className="flex justify-center gap-1.5 mt-4">
+          {insights.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`w-1.5 h-1.5 rounded-full transition-all ${
+                idx === currentIndex
+                  ? "bg-primary w-4"
+                  : "bg-text-muted/30 hover:bg-text-muted/50"
+              }`}
+              aria-label={`View insight ${idx + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+interface FeatureCardProps {
+  icon: string;
+  title: string;
+  desc: string;
+  action: string;
+  onClick: () => void;
+  index: number;
+  featured?: boolean;
+  badge?: string;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, desc, action, onClick, index, featured, badge }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ delay: index * 0.1, duration: 0.5 }}
-    whileHover={{ y: -5, borderColor: "rgba(244, 192, 37, 0.4)" }}
-    className="group relative overflow-hidden rounded-2xl bg-surface-border/30 border border-surface-border p-8 backdrop-blur-sm transition-colors cursor-pointer"
+    whileHover={{ y: -5, borderColor: featured ? "rgba(168, 85, 247, 0.5)" : "rgba(244, 192, 37, 0.4)" }}
+    className={`group relative overflow-hidden rounded-2xl p-8 backdrop-blur-sm transition-colors cursor-pointer ${
+      featured
+        ? "bg-gradient-to-br from-primary/10 via-purple-500/5 to-surface-border/30 border-2 border-primary/30"
+        : "bg-surface-border/30 border border-surface-border"
+    }`}
     onClick={onClick}
   >
-    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-700">
-      <span className="material-symbols-outlined text-[80px] text-primary">
+    {/* Featured Badge */}
+    {badge && (
+      <div className="absolute top-4 right-4 px-2 py-1 bg-primary/90 text-background text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
+        ★ {badge}
+      </div>
+    )}
+    <div className={`absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-700`}>
+      <span className={`material-symbols-outlined text-[80px] ${featured ? "text-purple-400" : "text-primary"}`}>
         {icon}
       </span>
     </div>
     <div className="flex flex-col gap-6 relative z-10">
-      <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+      <div className={`h-14 w-14 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${
+        featured
+          ? "bg-gradient-to-br from-primary/30 via-purple-500/20 to-primary/10 border border-purple-500/30 text-purple-300"
+          : "bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 text-primary"
+      }`}>
         <span className="material-symbols-outlined text-[28px]">{icon}</span>
       </div>
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-3">{title}</h2>
+        <h2 className={`text-2xl font-bold mb-3 ${featured ? "text-foreground" : "text-foreground"}`}>{title}</h2>
         <p className="text-text-muted text-base leading-relaxed">{desc}</p>
       </div>
-      <div className="mt-2 inline-flex items-center text-sm font-bold text-primary hover:text-foreground transition-colors">
+      <div className={`mt-2 inline-flex items-center text-sm font-bold transition-colors ${
+        featured ? "text-purple-300 hover:text-foreground" : "text-primary hover:text-foreground"
+      }`}>
         {action}{" "}
         <span className="material-symbols-outlined text-lg ml-2 group-hover:translate-x-1 transition-transform">
           arrow_right_alt

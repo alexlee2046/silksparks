@@ -3,6 +3,7 @@ import { useUser, UserLocation } from "../context/UserContext";
 import { useLocationSearch } from "../hooks/useLocationSearch";
 import { LocationResult } from "../services/LocationSearchService";
 import toast from "react-hot-toast";
+import * as m from "../src/paraglide/messages";
 
 interface Props {
   onComplete?: () => void;
@@ -17,6 +18,7 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
     user.birthData.date ? user.birthData.date.toISOString().split("T")[0] : "",
   );
   const [tempTime, setTempTime] = useState(user.birthData.time || "");
+  const [timeUnknown, setTimeUnknown] = useState(false);
   const [tempLocation, setTempLocation] = useState<UserLocation | null>(user.birthData.location || null);
   const [tempConsent, setTempConsent] = useState(user.preferences.marketingConsent || false);
   const [locationSkipped, setLocationSkipped] = useState(false);
@@ -110,8 +112,18 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
     if (onComplete) onComplete();
   };
 
-  // Check if we can proceed to next step (date and time required, location optional)
-  const canProceedFromStep2 = tempDate && tempTime;
+  // Handle time unknown toggle
+  const handleTimeUnknownToggle = (checked: boolean) => {
+    setTimeUnknown(checked);
+    if (checked) {
+      setTempTime("12:00"); // Default to noon if unknown
+    } else {
+      setTempTime("");
+    }
+  };
+
+  // Check if we can proceed to next step (date required, time required or marked unknown)
+  const canProceedFromStep2 = tempDate && (tempTime || timeUnknown);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
@@ -167,15 +179,16 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
         {step === 2 && (
           <div className="flex flex-col gap-4 animate-fade-in-up">
             <h2 className="text-2xl font-bold text-primary text-center">
-              Time & Space
+              {m["fusion.title"]()}
             </h2>
             <p className="text-text-muted text-center text-sm">
-              When and where did your journey begin?
+              {m["fusion.subtitle"]()}
             </p>
 
+            {/* Birth Date */}
             <div className="flex flex-col gap-2">
               <label className="text-xs font-bold text-text-muted uppercase">
-                Date of Birth
+                {m["birthChart.form.birthDate"]()}
               </label>
               <input
                 type="date"
@@ -183,24 +196,55 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
                 onChange={(e) => setTempDate(e.target.value)}
                 className="bg-background border border-surface-border rounded-lg p-3 text-foreground focus:border-primary outline-none"
               />
+              <p className="text-xs text-primary/70 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[14px]">info</span>
+                {m["birthChart.form.birthDateHint"]()}
+              </p>
             </div>
 
+            {/* Birth Time */}
             <div className="flex flex-col gap-2">
               <label className="text-xs font-bold text-text-muted uppercase">
-                Time of Birth
+                {m["birthChart.form.birthTime"]()}
               </label>
               <input
                 type="time"
                 value={tempTime}
                 onChange={(e) => setTempTime(e.target.value)}
-                className="bg-background border border-surface-border rounded-lg p-3 text-foreground focus:border-primary outline-none"
+                disabled={timeUnknown}
+                className={`bg-background border border-surface-border rounded-lg p-3 text-foreground focus:border-primary outline-none transition-opacity ${
+                  timeUnknown ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               />
+              <p className="text-xs text-primary/70 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[14px]">info</span>
+                {m["birthChart.form.birthTimeHint"]()}
+              </p>
+
+              {/* Time Unknown Checkbox */}
+              <label className="flex items-center gap-2 cursor-pointer mt-1">
+                <input
+                  type="checkbox"
+                  checked={timeUnknown}
+                  onChange={(e) => handleTimeUnknownToggle(e.target.checked)}
+                  className="accent-primary"
+                />
+                <span className="text-sm text-text-muted">
+                  {m["birthChart.form.birthTimeUnknown"]()}
+                </span>
+              </label>
+              {timeUnknown && (
+                <p className="text-xs text-amber-400/80 flex items-center gap-1.5 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                  <span className="material-symbols-outlined text-[14px]">warning</span>
+                  {m["birthChart.form.birthTimeUnknownNote"]()}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-2" ref={dropdownRef}>
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-text-muted uppercase">
-                  Place of Birth
+                  {m["birthChart.form.birthPlace"]()}
                   <span className="text-text-muted font-normal ml-1">(optional)</span>
                 </label>
                 {(tempLocation || locationSkipped) && (
@@ -212,6 +256,10 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
                   </button>
                 )}
               </div>
+              <p className="text-xs text-primary/70 flex items-center gap-1.5 -mt-1">
+                <span className="material-symbols-outlined text-[14px]">info</span>
+                {m["birthChart.form.birthPlaceHint"]()}
+              </p>
 
               {/* Selected location or skipped state */}
               {tempLocation ? (
@@ -368,9 +416,9 @@ export const BirthDataForm: React.FC<Props> = ({ onComplete, onCancel }) => {
               </button>
               <button
                 onClick={handleFinish}
-                className="flex-1 bg-primary text-background font-bold py-3 rounded-lg hover:bg-primary-hover shadow-[0_0_15px_rgba(244,192,37,0.3)] transition-all"
+                className="flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-3 rounded-lg shadow-[0_0_15px_rgba(244,192,37,0.3)] transition-all"
               >
-                Activate Engine
+                {m["fusion.cta"]()}
               </button>
             </div>
           </div>

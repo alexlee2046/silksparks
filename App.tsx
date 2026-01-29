@@ -54,6 +54,7 @@ const LazyCookies = lazy(() => import("./pages/legal").then(m => ({ default: m.C
 const LazyRewards = lazy(() => import("./pages/Rewards").then(m => ({ default: m.Rewards })));
 const LazyMembership = lazy(() => import("./pages/Membership").then(m => ({ default: m.Membership })));
 const LazyYearlyForecast = lazy(() => import("./pages/features/YearlyForecast").then(m => ({ default: m.YearlyForecast })));
+const LazyFusionReading = lazy(() => import("./pages/FusionReading").then(m => ({ default: m.FusionReading })));
 
 // ============ 加载状态组件 ============
 const LoadingSpinner: React.FC = () => (
@@ -192,6 +193,7 @@ const AppContent: React.FC = () => {
           <Route path="/horoscope" element={<BirthChart />} />
           <Route path="/horoscope/report" element={<LazyAstrologyReport />} />
           <Route path="/horoscope/yearly" element={<LazyYearlyForecast />} />
+          <Route path="/fusion" element={<LazyFusionReading />} />
           <Route path="/tarot" element={<LazyTarotDaily />} />
           <Route path="/tarot/spread" element={<LazyTarotSpread />} />
 

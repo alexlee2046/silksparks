@@ -24,6 +24,9 @@ export const PATHS = {
   HOROSCOPE_REPORT: "/horoscope/report",
   HOROSCOPE_YEARLY: "/horoscope/yearly",
 
+  // 融合解读
+  FUSION: "/fusion",
+
   // 塔罗
   TAROT: "/tarot",
   TAROT_SPREAD: "/tarot/spread",
