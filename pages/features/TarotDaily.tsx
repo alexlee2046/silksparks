@@ -50,6 +50,7 @@ export const TarotDaily: React.FC = () => {
   const [coreMessage, setCoreMessage] = useState<string>("");
   const [actionAdvice, setActionAdvice] = useState<string>("");
   const [luckyElements, setLuckyElements] = useState<LuckyElements | undefined>(undefined);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   // 初始化每日塔罗会话（基于种子，同一天结果一致）
   const initSession = useCallback(() => {
