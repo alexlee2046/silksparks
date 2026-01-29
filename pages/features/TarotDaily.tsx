@@ -22,6 +22,7 @@ import {
   type DailyTarotResult,
 } from "../../services/TarotService";
 import type { LuckyElements } from "../../services/ai/types";
+import { TarotShareCard } from "../../components/TarotShareCard";
 
 interface DrawnTarotCard extends TarotCardType {
   keywords?: string[];
@@ -420,9 +421,7 @@ export const TarotDaily: React.FC = () => {
                       </h2>
                       <div className="flex gap-2">
                         <button
-                          onClick={() =>
-                            toast.success("Shared to your cosmic timeline!")
-                          }
+                          onClick={() => setShowShareCard(true)}
                           className="h-10 w-10 rounded-full bg-surface-border/30 border border-surface-border flex items-center justify-center hover:bg-surface-border/30 hover:text-[#F4C025] transition-colors"
                         >
                           <span className="material-symbols-outlined text-lg">
@@ -577,6 +576,16 @@ export const TarotDaily: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Share Card Modal */}
+        {showShareCard && card && (
+          <TarotShareCard
+            card={card}
+            coreMessage={coreMessage}
+            interpretation={interpretation}
+            onClose={() => setShowShareCard(false)}
+          />
+        )}
       </div>
     </div>
   );
