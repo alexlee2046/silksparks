@@ -26,7 +26,7 @@ function getBonusReward(streakDays: number): string | undefined {
 
 export const CheckinService = {
   async hasCheckedInToday(userId: string): Promise<boolean> {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0] as string;
     const { data, error } = await supabase
       .from("checkin_history")
       .select("id")
@@ -71,7 +71,7 @@ export const CheckinService = {
       .from("checkin_history")
       .select("streak_days")
       .eq("user_id", userId)
-      .eq("checkin_date", yesterday)
+      .eq("checkin_date", yesterday as string)
       .maybeSingle();
 
     const newStreak = yesterdayCheckin ? yesterdayCheckin.streak_days + 1 : 1;

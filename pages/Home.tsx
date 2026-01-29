@@ -83,15 +83,17 @@ export const Home: React.FC = () => {
   // Show check-in reminder for logged-in users who haven't checked in
   useEffect(() => {
     if (session && !hasCheckedInToday) {
-      const hasSeenToday = localStorage.getItem(`home_checkin_${new Date().toDateString()}`);
+      const todayKey = `silksparks_home_checkin_${new Date().toDateString()}`;
+      const hasSeenToday = localStorage.getItem(todayKey);
       if (!hasSeenToday) {
         const timer = setTimeout(() => {
           setShowCheckin(true);
-          localStorage.setItem(`home_checkin_${new Date().toDateString()}`, "true");
+          localStorage.setItem(todayKey, "true");
         }, 3000);
         return () => clearTimeout(timer);
       }
     }
+    return undefined;
   }, [session, hasCheckedInToday]);
 
   useEffect(() => {

@@ -32,6 +32,8 @@ export interface Database {
           is_admin: boolean;
           created_at: string;
           updated_at: string | null;
+          last_checkin_date: string | null;
+          streak_days: number;
         };
         Insert: {
           id: string;
@@ -48,6 +50,8 @@ export interface Database {
           is_admin?: boolean;
           created_at?: string;
           updated_at?: string | null;
+          last_checkin_date?: string | null;
+          streak_days?: number;
         };
         Update: {
           id?: string;
@@ -63,6 +67,8 @@ export interface Database {
           tier?: string;
           is_admin?: boolean;
           updated_at?: string | null;
+          last_checkin_date?: string | null;
+          streak_days?: number;
         };
         Relationships: [];
       };
@@ -575,6 +581,69 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      checkin_history: {
+        Row: {
+          id: string;
+          user_id: string;
+          checkin_date: string;
+          streak_days: number;
+          points_earned: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          checkin_date?: string;
+          streak_days?: number;
+          points_earned?: number;
+          created_at?: string;
+        };
+        Update: {
+          streak_days?: number;
+          points_earned?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "checkin_history_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      point_transactions: {
+        Row: {
+          id: string;
+          user_id: string;
+          amount: number;
+          type: "checkin" | "share" | "purchase" | "reward" | "referral" | "admin";
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          amount: number;
+          type: "checkin" | "share" | "purchase" | "reward" | "referral" | "admin";
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          amount?: number;
+          type?: "checkin" | "share" | "purchase" | "reward" | "referral" | "admin";
+          description?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "point_transactions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -637,6 +706,8 @@ export type Appointment = Tables<"appointments">;
 export type Currency = Tables<"currencies">;
 export type ShippingZone = Tables<"shipping_zones">;
 export type ShippingRate = Tables<"shipping_rates">;
+export type CheckinHistory = Tables<"checkin_history">;
+export type PointTransaction = Tables<"point_transactions">;
 export type SystemSetting = Tables<"system_settings">;
 export type Notification = Tables<"notifications">;
 export type AdminAuditLog = Tables<"admin_audit_logs">;

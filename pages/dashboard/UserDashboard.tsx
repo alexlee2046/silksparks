@@ -20,10 +20,11 @@ export const UserDashboard: React.FC = () => {
 
   // Show check-in modal on first visit if not checked in
   useEffect(() => {
-    const hasSeenToday = localStorage.getItem(`checkin_prompt_${new Date().toDateString()}`);
+    const todayKey = `silksparks_checkin_prompt_${new Date().toDateString()}`;
+    const hasSeenToday = localStorage.getItem(todayKey);
     if (!hasCheckedInToday && !hasSeenToday) {
       setShowCheckin(true);
-      localStorage.setItem(`checkin_prompt_${new Date().toDateString()}`, "true");
+      localStorage.setItem(todayKey, "true");
     }
   }, [hasCheckedInToday]);
 

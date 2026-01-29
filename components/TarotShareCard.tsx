@@ -45,6 +45,19 @@ export const TarotShareCard: React.FC<TarotShareCardProps> = ({
   const shortInterpretation =
     coreMessage || interpretation.substring(0, 100) + "...";
 
+  // Award share points helper (15 points per share, max 2/day)
+  const awardSharePoints = useCallback(async () => {
+    const today = new Date().toDateString();
+    const shareKey = `silksparks_share_count_${today}`;
+    const shareCount = parseInt(localStorage.getItem(shareKey) || "0", 10);
+
+    if (shareCount < 2 && user.id) {
+      await updateUser({ points: (user.points || 0) + 15 });
+      localStorage.setItem(shareKey, String(shareCount + 1));
+      toast.success("+15 Spark Points!", { icon: "✨" });
+    }
+  }, [user.id, user.points, updateUser]);
+
   // 生成图片并分享
   const handleShare = useCallback(async () => {
     if (!cardRef.current) return;
@@ -84,18 +97,7 @@ export const TarotShareCard: React.FC<TarotShareCardProps> = ({
         if (navigator.canShare(shareData)) {
           await navigator.share(shareData);
           toast.success("Shared successfully!");
-
-          // Award share points (15 points per share, max 2/day)
-          const today = new Date().toDateString();
-          const shareKey = `share_count_${today}`;
-          const shareCount = parseInt(localStorage.getItem(shareKey) || "0", 10);
-
-          if (shareCount < 2 && user.id) {
-            await updateUser({ points: (user.points || 0) + 15 });
-            localStorage.setItem(shareKey, String(shareCount + 1));
-            toast.success("+15 Spark Points!", { icon: "✨" });
-          }
-
+          await awardSharePoints();
           return;
         }
       }
@@ -111,24 +113,14 @@ export const TarotShareCard: React.FC<TarotShareCardProps> = ({
       URL.revokeObjectURL(url);
 
       toast.success("Image downloaded!");
-
-      // Award share points (15 points per share, max 2/day)
-      const today = new Date().toDateString();
-      const shareKey = `share_count_${today}`;
-      const shareCount = parseInt(localStorage.getItem(shareKey) || "0", 10);
-
-      if (shareCount < 2 && user.id) {
-        await updateUser({ points: (user.points || 0) + 15 });
-        localStorage.setItem(shareKey, String(shareCount + 1));
-        toast.success("+15 Spark Points!", { icon: "✨" });
-      }
+      await awardSharePoints();
     } catch (error) {
       console.error("[TarotShareCard] Share error:", error);
       toast.error("Failed to generate share image");
     } finally {
       setIsGenerating(false);
     }
-  }, [card, shortInterpretation]);
+  }, [card, shortInterpretation, awardSharePoints]);
 
   // 复制文本
   const handleCopyText = useCallback(async () => {
