@@ -50,7 +50,7 @@ CREATE POLICY "Admins can view all readings"
     EXISTS (
       SELECT 1 FROM profiles
       WHERE profiles.id = auth.uid()
-      AND profiles."isAdmin" = true
+      AND profiles.is_admin = true
     )
   );
 
