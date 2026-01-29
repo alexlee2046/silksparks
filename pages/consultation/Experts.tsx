@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
 import { motion } from "framer-motion";
@@ -8,15 +8,84 @@ import toast from "react-hot-toast";
 import type { Expert } from "../../types/database";
 import { ExpertCard } from "./ExpertCard";
 
+// Define expertise filter options
+const EXPERTISE_OPTIONS = [
+  "Astrology",
+  "Tarot Reading",
+  "Feng Shui",
+  "Dream Interpretation",
+  "Numerology",
+] as const;
+
+type ExpertiseFilter = (typeof EXPERTISE_OPTIONS)[number];
+
+// Helper function to determine if an expert is online
+// Based on is_online flag or last_active_at timestamp (within 15 minutes)
+function isExpertOnline(expert: Expert): boolean {
+  // If is_online field exists and is explicitly set, use it
+  if (expert.is_online !== undefined && expert.is_online !== null) {
+    return expert.is_online;
+  }
+
+  // Fallback: check last_active_at (within 15 minutes = online)
+  if (expert.last_active_at) {
+    const lastActive = new Date(expert.last_active_at);
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    return lastActive > fifteenMinutesAgo;
+  }
+
+  // Default to false if no data available
+  return false;
+}
+
 export const Experts: React.FC = () => {
   const navigate = useNavigate();
   const { currencySymbol } = useLocaleFormat();
+
+  // Filter state management
+  const [selectedFilters, setSelectedFilters] = useState<Set<ExpertiseFilter>>(new Set());
 
   const { data: experts, loading } = useSupabaseQuery<Expert>({
     table: "experts",
     orderBy: { column: "rating", ascending: false },
     onError: () => toast.error("Failed to load experts. Please try again."),
   });
+
+  // Filter experts based on selected specialties
+  const filteredExperts = useMemo(() => {
+    if (selectedFilters.size === 0) {
+      return experts;
+    }
+    return experts.filter((expert) => {
+      if (!expert.specialties || expert.specialties.length === 0) {
+        return false;
+      }
+      // Check if any of the expert's specialties match the selected filters
+      return expert.specialties.some((specialty) =>
+        Array.from(selectedFilters).some(
+          (filter) => specialty.toLowerCase().includes(filter.toLowerCase())
+        )
+      );
+    });
+  }, [experts, selectedFilters]);
+
+  // Toggle filter handler
+  const handleToggleFilter = useCallback((expertise: ExpertiseFilter) => {
+    setSelectedFilters((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(expertise)) {
+        newSet.delete(expertise);
+      } else {
+        newSet.add(expertise);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Reset all filters
+  const handleResetFilters = useCallback(() => {
+    setSelectedFilters(new Set());
+  }, []);
 
   return (
     <div className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-10 py-10 bg-background min-h-screen">
@@ -72,36 +141,40 @@ export const Experts: React.FC = () => {
             <h3 className="text-foreground text-xl font-bold font-display">
               Filters
             </h3>
-            <button className="text-xs text-primary font-bold uppercase tracking-wider hover:text-primary-hover transition-colors">
+            <button
+              onClick={handleResetFilters}
+              className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+                selectedFilters.size > 0
+                  ? "text-primary hover:text-primary-hover"
+                  : "text-text-muted cursor-not-allowed"
+              }`}
+              disabled={selectedFilters.size === 0}
+            >
               Reset
             </button>
           </div>
           <div className="flex flex-col gap-5">
             <p className="text-text-muted text-xs font-bold uppercase tracking-widest">
-              Expertise
+              Expertise {selectedFilters.size > 0 && `(${selectedFilters.size})`}
             </p>
-            {[
-              "Astrology",
-              "Tarot Reading",
-              "Feng Shui",
-              "Dream Interpretation",
-              "Numerology",
-            ].map((e) => (
+            {EXPERTISE_OPTIONS.map((expertise) => (
               <label
-                key={e}
+                key={expertise}
                 className="flex gap-x-3 items-center cursor-pointer group"
               >
                 <div className="relative flex items-center">
                   <input
                     type="checkbox"
-                    className="peer appearance-none h-4 w-4 border border-surface-border rounded bg-surface-border/30 checked:bg-primary checked:border-primary transition-all"
+                    checked={selectedFilters.has(expertise)}
+                    onChange={() => handleToggleFilter(expertise)}
+                    className="peer appearance-none h-4 w-4 border border-surface-border rounded bg-surface-border/30 checked:bg-primary checked:border-primary transition-all cursor-pointer"
                   />
                   <span className="absolute inset-0 flex items-center justify-center text-black opacity-0 peer-checked:opacity-100 material-symbols-outlined text-[12px] pointer-events-none">
                     check
                   </span>
                 </div>
                 <span className="text-text-muted text-sm group-hover:text-foreground transition-colors">
-                  {e}
+                  {expertise}
                 </span>
               </label>
             ))}
@@ -113,8 +186,23 @@ export const Experts: React.FC = () => {
             <div className="col-span-full py-20 text-center text-text-muted tracking-widest uppercase italic">
               Searching the cosmos for available guides...
             </div>
+          ) : filteredExperts.length === 0 ? (
+            <div className="col-span-full py-20 text-center">
+              <span className="material-symbols-outlined text-4xl text-text-muted mb-4 block">
+                search_off
+              </span>
+              <p className="text-text-muted">
+                No experts match your selected filters.
+              </p>
+              <button
+                onClick={handleResetFilters}
+                className="mt-4 text-primary hover:text-foreground text-sm font-medium transition-colors"
+              >
+                Clear filters
+              </button>
+            </div>
           ) : (
-            experts.map((expert, index) => (
+            filteredExperts.map((expert, index) => (
               <ExpertCard
                 key={expert.id}
                 index={index}
@@ -125,7 +213,7 @@ export const Experts: React.FC = () => {
                 price={`${currencySymbol}${(expert.hourly_rate / 60).toFixed(2)}/min`}
                 tags={expert.specialties}
                 image={expert.avatar_url}
-                isOnline={false}
+                isOnline={isExpertOnline(expert)}
                 onBook={() => navigate(`${PATHS.BOOKING}?expert=${expert.id}`)}
                 onProfile={() => navigate(PATHS.EXPERT(expert.id))}
               />

@@ -2,6 +2,7 @@
 export { AstrologyReport } from "./AstrologyReport";
 export { TarotDaily } from "./TarotDaily";
 export { TarotSpread } from "./TarotSpread";
+export { YearlyForecast } from "./YearlyForecast";
 
 // Re-export shared components and utilities
 export { TarotCard } from "./TarotCard";

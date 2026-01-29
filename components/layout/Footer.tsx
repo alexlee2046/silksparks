@@ -1,24 +1,42 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { useUser } from "../../context/UserContext";
+import { NewsletterService } from "../../services/NewsletterService";
+import { PATHS } from "../../lib/paths";
 import * as m from "../../src/paraglide/messages";
 
-const SocialIcon: React.FC<{ icon: string; label: string }> = ({
+// Social media configuration - set via environment variables or leave empty to hide
+const SOCIAL_LINKS = {
+  github: import.meta.env.VITE_SOCIAL_GITHUB || "",
+  instagram: import.meta.env.VITE_SOCIAL_INSTAGRAM || "",
+  website: import.meta.env.VITE_SOCIAL_WEBSITE || "",
+};
+
+const hasSocialLinks = Object.values(SOCIAL_LINKS).some((link) => link);
+
+const SocialIcon: React.FC<{ icon: string; label: string; href?: string }> = ({
   icon,
   label,
-}) => (
-  <button
-    onClick={() => toast("Social links coming soon!", { icon: "🔗" })}
-    aria-label={label}
-    className="size-11 rounded-xl border border-surface-border bg-surface-border/30 flex items-center justify-center text-text-muted hover:text-primary active:text-primary hover:border-primary/30 transition-all md:hover:-translate-y-1 active:scale-95"
-  >
-    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
-      {icon}
-    </span>
-  </button>
-);
+  href,
+}) => {
+  if (!href) return null;
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="size-11 rounded-xl border border-surface-border bg-surface-border/30 flex items-center justify-center text-text-muted hover:text-primary active:text-primary hover:border-primary/30 transition-all md:hover:-translate-y-1 active:scale-95"
+    >
+      <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+        {icon}
+      </span>
+    </a>
+  );
+};
 
 const FooterLink: React.FC<{
   children: React.ReactNode;
@@ -37,8 +55,39 @@ const FooterLink: React.FC<{
 
 export const Footer: React.FC = () => {
   const { locale } = useLanguage();
-  const { user } = useUser();
+  const { user, session } = useUser();
   void locale; // 确保语言切换时重渲染
+
+  // Newsletter form state
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting || !email.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await NewsletterService.subscribe(
+        email,
+        "footer",
+        session?.user?.id
+      );
+
+      if (result.success) {
+        toast.success(result.message);
+        if (!result.alreadySubscribed) {
+          setEmail("");
+        }
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <footer className="bg-background border-t border-surface-border pt-20 pb-10 text-text-muted relative z-10 overflow-hidden">
@@ -65,11 +114,13 @@ export const Footer: React.FC = () => {
             <p className="text-sm leading-relaxed max-w-sm font-light">
               {m["footer.brandDescription"]()}
             </p>
-            <div className="flex gap-4">
-              <SocialIcon icon="hub" label="GitHub" />
-              <SocialIcon icon="auto_fix" label="Instagram" />
-              <SocialIcon icon="public" label="Website" />
-            </div>
+            {hasSocialLinks && (
+              <div className="flex gap-4">
+                <SocialIcon icon="hub" label="GitHub" href={SOCIAL_LINKS.github} />
+                <SocialIcon icon="auto_fix" label="Instagram" href={SOCIAL_LINKS.instagram} />
+                <SocialIcon icon="public" label="Website" href={SOCIAL_LINKS.website} />
+              </div>
+            )}
           </div>
 
           {/* The Spark - 占星/塔罗功能 */}
@@ -143,26 +194,39 @@ export const Footer: React.FC = () => {
             </p>
             <form
               className="flex flex-col gap-3"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleNewsletterSubmit}
             >
               <div className="relative">
                 <input
                   type="email"
                   placeholder="Your email"
                   aria-label="Email address for newsletter"
-                  className="w-full bg-surface-border/30 border border-surface-border rounded-xl px-4 py-3 text-foreground placeholder-white/20 focus:border-primary/50 outline-none text-xs transition-all pr-11"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full bg-surface-border/30 border border-surface-border rounded-xl px-4 py-3 text-foreground placeholder-white/20 focus:border-primary/50 outline-none text-xs transition-all pr-11 disabled:opacity-50"
                 />
                 <button
                   type="submit"
                   aria-label="Subscribe to newsletter"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 bg-primary text-background-dark rounded-lg flex items-center justify-center hover:bg-white transition-colors"
+                  disabled={isSubmitting || !email.trim()}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 bg-primary text-background-dark rounded-lg flex items-center justify-center hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span
-                    className="material-symbols-outlined text-[16px]"
-                    aria-hidden="true"
-                  >
-                    arrow_forward
-                  </span>
+                  {isSubmitting ? (
+                    <span
+                      className="material-symbols-outlined text-[16px] animate-spin"
+                      aria-hidden="true"
+                    >
+                      progress_activity
+                    </span>
+                  ) : (
+                    <span
+                      className="material-symbols-outlined text-[16px]"
+                      aria-hidden="true"
+                    >
+                      arrow_forward
+                    </span>
+                  )}
                 </button>
               </div>
             </form>
@@ -175,29 +239,25 @@ export const Footer: React.FC = () => {
             © 2025 Silk & Spark. Transcending the physical.
           </p>
           <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-            <button
-              onClick={() =>
-                toast("Privacy policy coming soon", { icon: "📋" })
-              }
+            <Link
+              to={PATHS.LEGAL_PRIVACY}
               className="hover:text-foreground transition-colors"
             >
               Privacy
-            </button>
-            <button
-              onClick={() =>
-                toast("Terms of service coming soon", { icon: "📋" })
-              }
+            </Link>
+            <Link
+              to={PATHS.LEGAL_TERMS}
               className="hover:text-foreground transition-colors"
             >
               Terms
-            </button>
-            <button
-              onClick={() => toast("Cookie policy coming soon", { icon: "🍪" })}
+            </Link>
+            <Link
+              to={PATHS.LEGAL_COOKIES}
               className="hover:text-foreground transition-colors"
             >
               Cookies
-            </button>
-{user?.isAdmin && (
+            </Link>
+            {user?.isAdmin && (
               <Link
                 to="/admin"
                 className="hover:text-primary transition-colors flex items-center gap-1"

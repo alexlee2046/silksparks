@@ -278,7 +278,10 @@ export const AstrologyReport: React.FC = () => {
             <p className="text-text-muted text-[10px] uppercase tracking-[0.2em] mb-3">
               Premium Analysis Available
             </p>
-            <button className="bg-surface-border/30 hover:bg-surface-border/30 text-foreground border border-surface-border hover:border-white/40 px-8 py-3 rounded-full text-sm font-bold transition-all backdrop-blur-md">
+            <button
+              onClick={() => navigate(PATHS.HOROSCOPE_YEARLY)}
+              className="bg-surface-border/30 hover:bg-surface-border/30 text-foreground border border-surface-border hover:border-white/40 px-8 py-3 rounded-full text-sm font-bold transition-all backdrop-blur-md"
+            >
               Unlock 12-Month Forecast
             </button>
           </div>

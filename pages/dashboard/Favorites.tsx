@@ -85,10 +85,7 @@ export const Favorites: React.FC = () => {
               index={index}
               isFavorited={true}
               onToggleFavorite={() => toggleFavorite(product.id)}
-              onClick={() => {
-                // Navigation to detail not fully established here passed props,
-                // simplifying to just toast for now or basic view
-              }}
+              onClick={() => navigate(PATHS.PRODUCT(product.id))}
               onAddToCart={() => {
                 addItem({
                   id: String(product.id),

@@ -22,6 +22,7 @@ export const PATHS = {
   // 星盘
   HOROSCOPE: "/horoscope",
   HOROSCOPE_REPORT: "/horoscope/report",
+  HOROSCOPE_YEARLY: "/horoscope/yearly",
 
   // 塔罗
   TAROT: "/tarot",
@@ -46,6 +47,10 @@ export const PATHS = {
   DASHBOARD_SETTINGS: "/dashboard/settings",
   DASHBOARD_FAVORITES: "/dashboard/favorites",
 
+  // 积分与会员
+  REWARDS: "/rewards",
+  MEMBERSHIP: "/membership",
+
   // 管理后台 (legacy - 大部分已迁移到 /admin)
   MANAGE_PAYMENTS: "/manage/payments",
   MANAGE_CURRENCY: "/manage/currency",
@@ -54,6 +59,11 @@ export const PATHS = {
 
   // Refine 管理后台
   ADMIN: "/admin",
+
+  // 法律页面
+  LEGAL_PRIVACY: "/legal/privacy",
+  LEGAL_TERMS: "/legal/terms",
+  LEGAL_COOKIES: "/legal/cookies",
 } as const;
 
 // ============ 路由元数据 ============

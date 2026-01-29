@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
 import { ELEMENTS } from "../../lib/constants";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../../services/supabase";
 import { useCart } from "../../context/CartContext";
 import {
@@ -15,17 +15,50 @@ import { FilterSection } from "./FilterSection";
 import { ShopItem } from "./ShopItem";
 import type { DBProduct } from "./types";
 
+// Sort options configuration
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "popular", label: "Most Popular" },
+] as const;
+
+type SortOption = (typeof SORT_OPTIONS)[number]["value"];
+
 export const ShopList: React.FC = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<DBProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<string[]>([]);
-  const [sortOrder] = useState<string>("newest");
+  const [sortOrder, setSortOrder] = useState<SortOption>("newest");
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
   const { addItem, setIsCartOpen } = useCart();
 
   // Recommendations state
   const { user } = useUser();
   const [recs, setRecs] = useState<Product[]>([]);
+
+  // Close sort menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
+        setShowSortMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle sort change
+  const handleSortChange = useCallback((value: SortOption) => {
+    setSortOrder(value);
+    setShowSortMenu(false);
+  }, []);
+
+  // Get current sort label
+  const currentSortLabel = SORT_OPTIONS.find((opt) => opt.value === sortOrder)?.label ?? "Newest";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -49,6 +82,9 @@ export const ShopList: React.FC = () => {
         query = query.order("price", { ascending: true });
       } else if (sortOrder === "price_desc") {
         query = query.order("price", { ascending: false });
+      } else if (sortOrder === "popular") {
+        // Sort by rating and review count for popularity
+        query = query.order("rating", { ascending: false }).order("review_count", { ascending: false });
       }
 
       const { data, error } = await query;
@@ -280,13 +316,57 @@ export const ShopList: React.FC = () => {
               <span className="text-foreground font-bold">{products.length}</span>{" "}
               artifacts found
             </p>
-            <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-surface/50 border border-surface-border rounded-full text-sm text-foreground hover:bg-surface-border/30 transition-colors">
-                <span>Sort: {sortOrder}</span>
-                <span className="material-symbols-outlined text-[18px]">
+            <div className="flex items-center gap-3 relative" ref={sortMenuRef}>
+              <button
+                onClick={() => setShowSortMenu(!showSortMenu)}
+                className="flex items-center gap-2 px-4 py-2 bg-surface/50 border border-surface-border rounded-full text-sm text-foreground hover:bg-surface-border/30 transition-colors"
+                aria-haspopup="listbox"
+                aria-expanded={showSortMenu}
+              >
+                <span>Sort: {currentSortLabel}</span>
+                <span
+                  className={`material-symbols-outlined text-[18px] transition-transform ${
+                    showSortMenu ? "rotate-180" : ""
+                  }`}
+                >
                   expand_more
                 </span>
               </button>
+
+              {/* Sort dropdown menu */}
+              <AnimatePresence>
+                {showSortMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full right-0 mt-2 min-w-[200px] bg-surface border border-surface-border rounded-xl shadow-xl z-50 overflow-hidden"
+                    role="listbox"
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleSortChange(option.value)}
+                        className={`w-full px-4 py-3 text-left text-sm transition-colors flex items-center justify-between ${
+                          sortOrder === option.value
+                            ? "bg-primary/10 text-primary"
+                            : "text-foreground hover:bg-surface-border/30"
+                        }`}
+                        role="option"
+                        aria-selected={sortOrder === option.value}
+                      >
+                        <span>{option.label}</span>
+                        {sortOrder === option.value && (
+                          <span className="material-symbols-outlined text-[16px]">
+                            check
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 

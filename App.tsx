@@ -45,6 +45,16 @@ const LazyCurrency = lazy(() => import("./pages/manage").then(m => ({ default: m
 const LazyShipping = lazy(() => import("./pages/manage").then(m => ({ default: m.Shipping })));
 const LazySystemSettings = lazy(() => import("./pages/manage").then(m => ({ default: m.SystemSettings })));
 
+// 法律页面懒加载
+const LazyPrivacy = lazy(() => import("./pages/legal").then(m => ({ default: m.Privacy })));
+const LazyTerms = lazy(() => import("./pages/legal").then(m => ({ default: m.Terms })));
+const LazyCookies = lazy(() => import("./pages/legal").then(m => ({ default: m.Cookies })));
+
+// 新功能页面懒加载
+const LazyRewards = lazy(() => import("./pages/Rewards").then(m => ({ default: m.Rewards })));
+const LazyMembership = lazy(() => import("./pages/Membership").then(m => ({ default: m.Membership })));
+const LazyYearlyForecast = lazy(() => import("./pages/features/YearlyForecast").then(m => ({ default: m.YearlyForecast })));
+
 // ============ 加载状态组件 ============
 const LoadingSpinner: React.FC = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -181,8 +191,24 @@ const AppContent: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/horoscope" element={<BirthChart />} />
           <Route path="/horoscope/report" element={<LazyAstrologyReport />} />
+          <Route path="/horoscope/yearly" element={<LazyYearlyForecast />} />
           <Route path="/tarot" element={<LazyTarotDaily />} />
           <Route path="/tarot/spread" element={<LazyTarotSpread />} />
+
+          {/* 积分与会员页面 */}
+          <Route
+            path="/rewards"
+            element={
+              <ProtectedRoute
+                requiresAuth={true}
+                requiresAdmin={false}
+                onAuthClick={() => setShowAuth(true)}
+              >
+                <LazyRewards />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/membership" element={<LazyMembership />} />
 
           {/* 商店页面 */}
           <Route path="/shop" element={<LazyShopList />} />
@@ -318,6 +344,11 @@ const AppContent: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+          {/* 法律页面 */}
+          <Route path="/legal/privacy" element={<LazyPrivacy />} />
+          <Route path="/legal/terms" element={<LazyTerms />} />
+          <Route path="/legal/cookies" element={<LazyCookies />} />
 
           {/* 404 重定向到首页 */}
           <Route path="*" element={<Navigate to="/" replace />} />

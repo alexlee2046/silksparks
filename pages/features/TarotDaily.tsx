@@ -19,6 +19,7 @@ import { TarotInterpretation } from "./TarotInterpretation";
 import {
   initDailyTarot,
   selectDailyCard,
+  getCardKeywords,
   type DailyTarotResult,
 } from "../../services/TarotService";
 import type { LuckyElements } from "../../services/ai/types";
@@ -52,6 +53,8 @@ export const TarotDaily: React.FC = () => {
   const [actionAdvice, setActionAdvice] = useState<string>("");
   const [luckyElements, setLuckyElements] = useState<LuckyElements | undefined>(undefined);
   const [showShareCard, setShowShareCard] = useState(false);
+  const [isSavedToGrimoire, setIsSavedToGrimoire] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // 初始化每日塔罗会话（基于种子，同一天结果一致）
   const initSession = useCallback(() => {
@@ -90,10 +93,11 @@ export const TarotDaily: React.FC = () => {
           return;
         }
 
-        // 获取关键词
+        // 获取关键词 - 从卡牌数据中读取
+        const cardKeywords = getCardKeywords(drawnCard.id);
         const cardWithKeywords: DrawnTarotCard = {
           ...drawnCard,
-          keywords: [],
+          keywords: cardKeywords,
         };
         setCard(cardWithKeywords);
         setReadingState("revealed");
@@ -123,15 +127,8 @@ export const TarotDaily: React.FC = () => {
             toast("Using backup AI for reading", { icon: "⚠️", duration: 3000 });
           }
 
-          addArchive({
-            id: `tarot_${Date.now()}`,
-            type: "Tarot",
-            date: new Date(),
-            title: `Daily Draw: ${drawnCard.name}`,
-            summary: interpret.substring(0, 100) + "...",
-            content: interpret,
-            image: drawnCard.image,
-          });
+          // Auto-save is disabled - user can manually save via the "Save to Grimoire" button
+          // This prevents duplicate entries when both auto-save and manual save are enabled
         } catch (e) {
           console.error("[TarotDaily] Tarot AI error:", e);
           setIsAILoading(false);
@@ -159,6 +156,46 @@ export const TarotDaily: React.FC = () => {
     [tarotSession, addArchive]
   );
 
+  // Save to Grimoire handler
+  const handleSaveToGrimoire = useCallback(async () => {
+    if (!card || !interpretation || isSavedToGrimoire || isSaving) return;
+
+    if (!isLoggedIn) {
+      toast.error("Please sign in to save to your Grimoire");
+      navigate(PATHS.DASHBOARD);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await addArchive({
+        id: `tarot_${Date.now()}`,
+        type: "Tarot",
+        date: new Date(),
+        title: `Daily Draw: ${card.name}${card.isReversed ? " (Reversed)" : ""}`,
+        summary: coreMessage || interpretation.substring(0, 100) + "...",
+        content: JSON.stringify({
+          cardId: card.id,
+          cardName: card.name,
+          isReversed: card.isReversed,
+          keywords: card.keywords,
+          interpretation,
+          coreMessage,
+          actionAdvice,
+          luckyElements,
+        }),
+        image: card.image,
+      });
+      setIsSavedToGrimoire(true);
+      toast.success("Saved to your Grimoire!");
+    } catch (error) {
+      console.error("[TarotDaily] Failed to save:", error);
+      toast.error("Failed to save. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [card, interpretation, isSavedToGrimoire, isSaving, isLoggedIn, addArchive, coreMessage, actionAdvice, luckyElements, navigate]);
+
   // 重置阅读
   const resetReading = useCallback(() => {
     setReadingState("idle");
@@ -173,6 +210,8 @@ export const TarotDaily: React.FC = () => {
     setCoreMessage("");
     setActionAdvice("");
     setLuckyElements(undefined);
+    setIsSavedToGrimoire(false);
+    setIsSaving(false);
   }, []);
 
   // 取消选牌
@@ -429,27 +468,49 @@ export const TarotDaily: React.FC = () => {
                           </span>
                         </button>
                         <button
-                          onClick={() =>
-                            toast.success("Saved to your Grimoire.")
-                          }
-                          className="h-10 w-10 rounded-full bg-surface-border/30 border border-surface-border flex items-center justify-center hover:bg-surface-border/30 hover:text-[#F4C025] transition-colors"
+                          onClick={handleSaveToGrimoire}
+                          disabled={isSavedToGrimoire || isSaving || !interpretation}
+                          className={`h-10 w-10 rounded-full border flex items-center justify-center transition-colors ${
+                            isSavedToGrimoire
+                              ? "bg-primary/20 border-primary text-primary cursor-default"
+                              : isSaving
+                              ? "bg-surface-border/30 border-surface-border text-text-muted cursor-wait"
+                              : "bg-surface-border/30 border-surface-border hover:bg-surface-border/30 hover:text-[#F4C025]"
+                          }`}
+                          title={isSavedToGrimoire ? "Saved to Grimoire" : "Save to Grimoire"}
                         >
-                          <span className="material-symbols-outlined text-lg">
-                            favorite
-                          </span>
+                          {isSaving ? (
+                            <span className="material-symbols-outlined text-lg animate-spin">
+                              progress_activity
+                            </span>
+                          ) : (
+                            <span className={`material-symbols-outlined text-lg ${isSavedToGrimoire ? "fill" : ""}`}>
+                              {isSavedToGrimoire ? "bookmark_added" : "bookmark"}
+                            </span>
+                          )}
                         </button>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {["Destiny", "Insight", "Action", "Clarity"].map(
-                        (tag) => (
-                          <span
-                            key={tag}
-                            className="px-3 py-1 rounded-md bg-surface-border/30 border border-surface-border text-xs font-medium text-text-muted hover:text-foreground transition-colors cursor-default"
-                          >
-                            #{tag}
-                          </span>
-                        )
+                      {(card.keywords && card.keywords.length > 0
+                        ? card.keywords
+                        : ["Destiny", "Insight", "Action", "Clarity"]
+                      ).map((tag) => (
+                        <span
+                          key={tag}
+                          className={`px-3 py-1 rounded-md border text-xs font-medium transition-colors cursor-default ${
+                            card.isReversed
+                              ? "bg-red-500/10 border-red-500/30 text-red-300 hover:text-red-200"
+                              : "bg-surface-border/30 border-surface-border text-text-muted hover:text-foreground"
+                          }`}
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                      {card.isReversed && (
+                        <span className="px-3 py-1 rounded-md bg-red-500/20 border border-red-500/40 text-xs font-medium text-red-400">
+                          #Reversed
+                        </span>
                       )}
                     </div>
                   </div>

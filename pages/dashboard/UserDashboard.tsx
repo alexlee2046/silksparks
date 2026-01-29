@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
 import { useUser } from "../../context/UserContext";
+import AIService from "../../services/ai";
 import { motion } from "framer-motion";
 import { GlassCard } from "../../components/GlassCard";
 import { GlowButton } from "../../components/GlowButton";
@@ -11,12 +12,94 @@ import { DashboardCard } from "./DashboardCard";
 import { CheckinModal } from "../../components/CheckinModal";
 import { useCheckin } from "../../hooks/useCheckin";
 
+// Helper function to get sun sign from birth date
+function getSunSign(birthDate: Date): string {
+  const month = birthDate.getMonth() + 1;
+  const day = birthDate.getDate();
+
+  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "Aries";
+  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "Taurus";
+  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "Gemini";
+  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "Cancer";
+  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "Leo";
+  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "Virgo";
+  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "Libra";
+  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "Scorpio";
+  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "Sagittarius";
+  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "Capricorn";
+  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "Aquarius";
+  return "Pisces";
+}
+
+// Default insight for fallback
+const DEFAULT_INSIGHT = "The alignment today favors bold communication. Speak your truth, but temper it with empathy.";
+
 export const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, signOut } = useUser();
   const userName = user.name || "Seeker";
   const [showCheckin, setShowCheckin] = useState(false);
   const { hasCheckedInToday, currentStreak } = useCheckin();
+
+  // Subscription tier state (from profile or default to free)
+  const subscriptionTier = useMemo(() => {
+    // Check if user has subscription_tier field or default to free
+    // This could also check a subscriptions table in the future
+    return (user as { subscription_tier?: string }).subscription_tier || "free";
+  }, [user]);
+
+  const isPremium = subscriptionTier === "premium";
+
+  // User's sun sign for personalized insight
+  const userSign = useMemo(() => {
+    if (user?.birthData?.date) {
+      return getSunSign(user.birthData.date);
+    }
+    return null;
+  }, [user?.birthData?.date]);
+
+  // Daily insight state
+  const [dailyInsight, setDailyInsight] = useState<string>(DEFAULT_INSIGHT);
+  const [insightLoading, setInsightLoading] = useState(false);
+
+  // Fetch personalized daily insight
+  useEffect(() => {
+    const fetchDailyInsight = async () => {
+      const today = new Date().toDateString();
+      const cacheKey = userSign ? `daily_insight_${userSign}` : "daily_insight_general";
+      const cached = localStorage.getItem(cacheKey);
+      const cachedDate = localStorage.getItem(`${cacheKey}_date`);
+
+      // Use cached insight if available and from today
+      if (cached && cachedDate === today) {
+        setDailyInsight(cached);
+        return;
+      }
+
+      // Skip AI call if no sign available
+      if (!userSign) {
+        setDailyInsight(DEFAULT_INSIGHT);
+        return;
+      }
+
+      setInsightLoading(true);
+      try {
+        const response = await AIService.generateDailySpark({ sign: userSign });
+        const insight = response.message;
+        setDailyInsight(insight);
+        localStorage.setItem(cacheKey, insight);
+        localStorage.setItem(`${cacheKey}_date`, today);
+      } catch (error) {
+        console.error("[UserDashboard] Failed to fetch daily insight:", error);
+        // Use cached or default
+        setDailyInsight(cached || DEFAULT_INSIGHT);
+      } finally {
+        setInsightLoading(false);
+      }
+    };
+
+    fetchDailyInsight();
+  }, [userSign]);
 
   // Show check-in modal on first visit if not checked in
   useEffect(() => {
@@ -64,25 +147,45 @@ export const UserDashboard: React.FC = () => {
               </div>
               <div className="flex flex-col">
                 <h3 className="text-sm font-bold text-foreground">{userName}</h3>
-                <span className="text-xs text-primary font-medium tracking-wide flex items-center gap-1">
-                  Premium Member{" "}
-                  <span className="material-symbols-outlined text-[10px]">
-                    verified
+                {isPremium ? (
+                  <span className="text-xs text-primary font-medium tracking-wide flex items-center gap-1">
+                    Premium Member{" "}
+                    <span className="material-symbols-outlined text-[10px]">
+                      verified
+                    </span>
                   </span>
-                </span>
+                ) : (
+                  <span className="text-xs text-text-muted font-medium tracking-wide">
+                    Free Member
+                  </span>
+                )}
               </div>
             </div>
-            <button
-              onClick={() => navigate(PATHS.HOROSCOPE)}
-              className="flex items-center gap-2 rounded-lg bg-surface-border/30 hover:bg-surface-border/50 px-3 py-2 transition-colors group w-full border border-surface-border"
-            >
-              <span className="material-symbols-outlined text-[18px] text-primary group-hover:rotate-45 transition-transform">
-                star
-              </span>
-              <span className="text-xs font-medium text-foreground">
-                Unlock Full Chart
-              </span>
-            </button>
+            {isPremium ? (
+              <button
+                onClick={() => navigate(PATHS.HOROSCOPE)}
+                className="flex items-center gap-2 rounded-lg bg-surface-border/30 hover:bg-surface-border/50 px-3 py-2 transition-colors group w-full border border-surface-border"
+              >
+                <span className="material-symbols-outlined text-[18px] text-primary group-hover:rotate-45 transition-transform">
+                  star
+                </span>
+                <span className="text-xs font-medium text-foreground">
+                  View Full Chart
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={() => toast("Premium membership coming soon!", { icon: "✨" })}
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary/20 to-amber-500/20 hover:from-primary/30 hover:to-amber-500/30 px-3 py-2 transition-colors group w-full border border-primary/30"
+              >
+                <span className="material-symbols-outlined text-[18px] text-primary group-hover:scale-110 transition-transform">
+                  workspace_premium
+                </span>
+                <span className="text-xs font-medium text-foreground">
+                  Upgrade to Premium
+                </span>
+              </button>
+            )}
           </GlassCard>
 
           <nav className="flex flex-col gap-2">
@@ -204,12 +307,7 @@ export const UserDashboard: React.FC = () => {
                   variant="cosmic"
                   icon="diamond"
                   className="mt-4 sm:mt-0"
-                  onClick={() =>
-                    toast(
-                      "Rewards redemption coming soon! Stay tuned for exciting rewards.",
-                      { icon: "✨" },
-                    )
-                  }
+                  onClick={() => navigate(PATHS.REWARDS)}
                 >
                   Redeem Rewards
                 </GlowButton>
@@ -236,12 +334,25 @@ export const UserDashboard: React.FC = () => {
                       auto_awesome
                     </span>{" "}
                     Daily Insight
+                    {userSign && (
+                      <span className="text-xs text-primary/60 font-normal normal-case">
+                        ({userSign})
+                      </span>
+                    )}
                   </h3>
                 </div>
-                <p className="text-foreground/90 text-lg leading-relaxed italic font-light">
-                  "The alignment today favors bold communication. Speak your
-                  truth, but temper it with empathy."
-                </p>
+                {insightLoading ? (
+                  <div className="flex items-center gap-3 text-text-muted">
+                    <span className="material-symbols-outlined text-lg animate-spin">
+                      progress_activity
+                    </span>
+                    <span className="text-sm">Consulting the stars...</span>
+                  </div>
+                ) : (
+                  <p className="text-foreground/90 text-lg leading-relaxed italic font-light">
+                    "{dailyInsight}"
+                  </p>
+                )}
               </div>
               <div className="mt-8 flex items-center justify-between border-t border-surface-border pt-4">
                 <span className="text-xs text-text-muted font-bold uppercase tracking-widest">
