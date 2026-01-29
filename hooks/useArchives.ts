@@ -2,6 +2,22 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../services/supabase";
 import { useUser } from "../context/UserContext";
 import type { ArchiveItem } from "../context/UserContext";
+import type { Json } from "../types/database";
+
+export interface SaveArchiveParams {
+  userId: string;
+  type: "Astrology" | "Tarot" | "Five Elements";
+  title: string;
+  summary: string;
+  content: Record<string, unknown>;
+  imageUrl?: string;
+}
+
+export interface SaveArchiveResult {
+  data: { id: string } | null;
+  error: Error | null;
+}
+
 interface UseArchivesReturn {
   archives: ArchiveItem[];
   loading: boolean;
@@ -100,4 +116,40 @@ export function useArchives(): UseArchivesReturn {
 // Helper to invalidate cache from outside (e.g., after adding a new archive)
 export function invalidateArchivesCache() {
   archivesCache = null;
+}
+
+/**
+ * Save a new archive entry
+ * Returns { data, error } following Supabase conventions
+ */
+export async function saveArchive(
+  params: SaveArchiveParams
+): Promise<SaveArchiveResult> {
+  try {
+    const { data, error } = await supabase
+      .from("archives")
+      .insert({
+        user_id: params.userId,
+        type: params.type,
+        title: params.title,
+        summary: params.summary,
+        content: params.content as Json,
+        image_url: params.imageUrl ?? null,
+      })
+      .select("id")
+      .single();
+
+    if (error) throw error;
+
+    // Invalidate cache so next fetch includes new item
+    invalidateArchivesCache();
+
+    return { data: { id: data.id }, error: null };
+  } catch (e) {
+    console.error("[saveArchive] Error:", e);
+    return {
+      data: null,
+      error: e instanceof Error ? e : new Error("Failed to save archive"),
+    };
+  }
 }
