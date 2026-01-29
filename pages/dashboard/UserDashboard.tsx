@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
 import { useUser } from "../../context/UserContext";
@@ -8,11 +8,24 @@ import { GlowButton } from "../../components/GlowButton";
 import toast from "react-hot-toast";
 import { NavBtn } from "./NavBtn";
 import { DashboardCard } from "./DashboardCard";
+import { CheckinModal } from "../../components/CheckinModal";
+import { useCheckin } from "../../hooks/useCheckin";
 
 export const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, signOut } = useUser();
   const userName = user.name || "Seeker";
+  const [showCheckin, setShowCheckin] = useState(false);
+  const { hasCheckedInToday, currentStreak } = useCheckin();
+
+  // Show check-in modal on first visit if not checked in
+  useEffect(() => {
+    const hasSeenToday = localStorage.getItem(`checkin_prompt_${new Date().toDateString()}`);
+    if (!hasCheckedInToday && !hasSeenToday) {
+      setShowCheckin(true);
+      localStorage.setItem(`checkin_prompt_${new Date().toDateString()}`, "true");
+    }
+  }, [hasCheckedInToday]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -261,7 +274,19 @@ export const UserDashboard: React.FC = () => {
             color="from-red-400 to-pink-600"
             onClick={() => navigate(PATHS.DASHBOARD_FAVORITES)}
           />
+          <DashboardCard
+            title="Check-in"
+            icon="local_fire_department"
+            value={currentStreak}
+            label={hasCheckedInToday ? "Day Streak" : "Check in!"}
+            color="from-orange-500 to-red-500"
+            onClick={() => setShowCheckin(true)}
+          />
         </div>
+        <CheckinModal
+          isOpen={showCheckin}
+          onClose={() => setShowCheckin(false)}
+        />
       </main>
     </div>
   );
