@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
 import type { TarotCard } from "../services/ai/types";
 import toast from "react-hot-toast";
+import { useUser } from "../context/UserContext";
 
 interface TarotShareCardProps {
   /** 抽取的牌 */
@@ -31,6 +32,7 @@ export const TarotShareCard: React.FC<TarotShareCardProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const { user, updateUser } = useUser();
 
   // 格式化日期
   const formattedDate = date.toLocaleDateString("en-US", {
@@ -82,6 +84,18 @@ export const TarotShareCard: React.FC<TarotShareCardProps> = ({
         if (navigator.canShare(shareData)) {
           await navigator.share(shareData);
           toast.success("Shared successfully!");
+
+          // Award share points (15 points per share, max 2/day)
+          const today = new Date().toDateString();
+          const shareKey = `share_count_${today}`;
+          const shareCount = parseInt(localStorage.getItem(shareKey) || "0", 10);
+
+          if (shareCount < 2 && user.id) {
+            await updateUser({ points: (user.points || 0) + 15 });
+            localStorage.setItem(shareKey, String(shareCount + 1));
+            toast.success("+15 Spark Points!", { icon: "✨" });
+          }
+
           return;
         }
       }
@@ -97,6 +111,17 @@ export const TarotShareCard: React.FC<TarotShareCardProps> = ({
       URL.revokeObjectURL(url);
 
       toast.success("Image downloaded!");
+
+      // Award share points (15 points per share, max 2/day)
+      const today = new Date().toDateString();
+      const shareKey = `share_count_${today}`;
+      const shareCount = parseInt(localStorage.getItem(shareKey) || "0", 10);
+
+      if (shareCount < 2 && user.id) {
+        await updateUser({ points: (user.points || 0) + 15 });
+        localStorage.setItem(shareKey, String(shareCount + 1));
+        toast.success("+15 Spark Points!", { icon: "✨" });
+      }
     } catch (error) {
       console.error("[TarotShareCard] Share error:", error);
       toast.error("Failed to generate share image");
