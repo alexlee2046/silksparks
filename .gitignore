@@ -39,3 +39,6 @@ test-results/
 supabase/.temp/
 lighthouse-reports/
 coverage/
+
+# Git worktrees
+.worktrees/
