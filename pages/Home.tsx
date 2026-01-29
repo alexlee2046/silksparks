@@ -17,6 +17,8 @@ import { SEO } from "../components/SEO";
 import { JsonLd } from "../components/JsonLd";
 import toast from "react-hot-toast";
 import * as m from "../src/paraglide/messages";
+import { CheckinModal } from "../components/CheckinModal";
+import { useCheckin } from "../hooks/useCheckin";
 
 /**
  * 根据出生日期计算太阳星座
@@ -53,11 +55,13 @@ export const Home: React.FC = () => {
   );
   const [showForm, setShowForm] = useState(false);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const { isBirthDataComplete, user } = useUser();
+  const { isBirthDataComplete, user, session } = useUser();
   const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { locale } = useLanguage(); // Subscribe to locale changes
   void locale; // Ensure re-render on language change
+  const [showCheckin, setShowCheckin] = useState(false);
+  const { hasCheckedInToday } = useCheckin();
 
   // 计算用户星座（基于出生日期，如果没有则使用当天星座）
   const userSign = useMemo(() => {
@@ -75,6 +79,20 @@ export const Home: React.FC = () => {
     };
     fetchProducts();
   }, []);
+
+  // Show check-in reminder for logged-in users who haven't checked in
+  useEffect(() => {
+    if (session && !hasCheckedInToday) {
+      const hasSeenToday = localStorage.getItem(`home_checkin_${new Date().toDateString()}`);
+      if (!hasSeenToday) {
+        const timer = setTimeout(() => {
+          setShowCheckin(true);
+          localStorage.setItem(`home_checkin_${new Date().toDateString()}`, "true");
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [session, hasCheckedInToday]);
 
   useEffect(() => {
     const fetchSpark = async () => {
@@ -368,6 +386,11 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      <CheckinModal
+        isOpen={showCheckin}
+        onClose={() => setShowCheckin(false)}
+      />
     </div>
   );
 };
