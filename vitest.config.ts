@@ -35,12 +35,10 @@ export default defineConfig({
         "src/paraglide/**",
       ],
       thresholds: {
-        // Start low, increase as coverage grows
-        // Target: 80% → 100% over time
-        statements: 0,
-        branches: 0,
-        functions: 0,
-        lines: 0,
+        statements: 50,
+        branches: 45,
+        functions: 50,
+        lines: 50,
       },
     },
     testTimeout: 10000,
