@@ -226,10 +226,10 @@ Deno.serve(async (req) => {
 
     if (messages && Array.isArray(messages) && messages.length > 0) {
       console.log("[AI-Generate] Using provided 'messages' from request");
-      const sysMsg = messages.find((m: any) => m.role === "system");
-      const usrMsg = messages.find((m: any) => m.role === "user");
-      systemPrompt = sysMsg ? sysMsg.content : "";
-      userPrompt = usrMsg ? usrMsg.content : "";
+      const sysMsg = messages.find((m: { role: string }) => m.role === "system");
+      const usrMsg = messages.find((m: { role: string }) => m.role === "user");
+      systemPrompt = sysMsg ? sanitizeInput(sysMsg.content, 2000) : "";
+      userPrompt = usrMsg ? sanitizeInput(usrMsg.content, 2000) : "";
     } else {
       console.log("[AI-Generate] Building prompts internally based on payload");
       if (!payload && type !== "daily_spark") {
@@ -364,12 +364,16 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-  } catch (error: any) {
-    console.error("[AI-Generate] Global Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[AI-Generate] Global Error:", message);
+    return new Response(
+      JSON.stringify({ error: "AI service temporarily unavailable" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });
 
