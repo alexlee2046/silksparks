@@ -10,13 +10,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.10.0?target=deno";
 
-// SECURITY: Restrict CORS to known origins only
-const ALLOWED_ORIGINS = [
-  "https://silksparks.com",
-  "https://www.silksparks.com",
-  "http://localhost:3000", // Development
-  "http://localhost:5173", // Vite dev server
-];
+// SECURITY: Restrict CORS to known origins only (configurable via env var)
+const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") || "https://silksparks.com,https://www.silksparks.com")
+  .split(",")
+  .map(o => o.trim());
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
   // Only allow known origins, default to production domain for invalid origins
@@ -30,6 +27,21 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Vary": "Origin", // Important for CDN caching
   };
+}
+
+// SECURITY: Validate redirect URLs to prevent open redirect attacks
+function validateRedirectUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const allowedHosts = ["silksparks.com", "www.silksparks.com", "localhost"];
+    if (allowedHosts.includes(parsed.hostname)) {
+      return url;
+    }
+  } catch {
+    // Invalid URL
+  }
+  return null;
 }
 
 // Stripe Price IDs - should be configured in Stripe Dashboard
@@ -127,7 +139,7 @@ serve(async (req) => {
 
     // Parse request body
     const body: CheckoutRequest = await req.json();
-    const requestOrigin = req.headers.get("origin") || "http://localhost:3000";
+    const requestOrigin = req.headers.get("origin") || ALLOWED_ORIGINS[0];
 
     // Load Stripe price IDs from system_settings or use defaults
     const { data: stripeConfig } = await supabase
@@ -227,8 +239,8 @@ async function handleSubscriptionCheckout(
   }
 
   const priceId = plan === "monthly" ? priceIds.membership_monthly : priceIds.membership_yearly;
-  const finalSuccessUrl = successUrl || `${requestOrigin}/membership?success=true`;
-  const finalCancelUrl = cancelUrl || `${requestOrigin}/membership?canceled=true`;
+  const finalSuccessUrl = validateRedirectUrl(successUrl) || `${requestOrigin}/membership?success=true`;
+  const finalCancelUrl = validateRedirectUrl(cancelUrl) || `${requestOrigin}/membership?canceled=true`;
 
   // Check if user already has a Stripe customer ID
   const { data: profile } = await supabase
@@ -348,8 +360,8 @@ async function handleOneTimeCheckout(
   }
 
   const priceId = priceIds.yearly_forecast;
-  const finalSuccessUrl = successUrl || `${requestOrigin}/horoscope/yearly?success=true`;
-  const finalCancelUrl = cancelUrl || `${requestOrigin}/horoscope/yearly?canceled=true`;
+  const finalSuccessUrl = validateRedirectUrl(successUrl) || `${requestOrigin}/horoscope/yearly?success=true`;
+  const finalCancelUrl = validateRedirectUrl(cancelUrl) || `${requestOrigin}/horoscope/yearly?canceled=true`;
 
   // Generate idempotency key
   const idempotencyKey = `forecast_${user.id}_${new Date().getFullYear()}_${Math.floor(Date.now() / 3600000)}`;
@@ -469,9 +481,9 @@ async function handleCartCheckout(
     });
   }
 
-  // Get redirect URLs
-  const finalSuccessUrl = successUrl || `${requestOrigin}/dashboard/orders?success=true`;
-  const finalCancelUrl = cancelUrl || `${requestOrigin}/shop?canceled=true`;
+  // Get redirect URLs (validated against domain whitelist)
+  const finalSuccessUrl = validateRedirectUrl(successUrl) || `${requestOrigin}/dashboard/orders?success=true`;
+  const finalCancelUrl = validateRedirectUrl(cancelUrl) || `${requestOrigin}/shop?canceled=true`;
 
   // Calculate total using verified prices from database
   const total = validatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
