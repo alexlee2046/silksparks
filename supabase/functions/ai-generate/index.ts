@@ -3,11 +3,9 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 // ============ CORS 配置 ============
 
-const ALLOWED_ORIGINS = [
-  "https://silksparks.com",
-  "https://www.silksparks.com",
-  "http://localhost:3000",
-];
+const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") || "https://silksparks.com,https://www.silksparks.com")
+  .split(",")
+  .map(o => o.trim());
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
   const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -88,21 +86,32 @@ const ANON_DAILY_LIMIT = 5; // 每日请求限制 (匿名用户)
 
 /**
  * Hash IP address for privacy-preserving rate limiting
- * Uses a simple hash with daily salt to:
- * 1. Protect user privacy (no raw IPs stored)
- * 2. Rotate hashes daily (making tracking harder)
+ * Uses HMAC-SHA256 with daily rotation for:
+ * 1. Privacy (no raw IPs stored)
+ * 2. Daily rotation (harder to track)
+ * 3. Collision resistance (256-bit vs old 32-bit)
  */
-function hashIP(ip: string): string {
-  const today = new Date().toISOString().split("T")[0]; // Daily salt
-  const input = `${ip}:${today}:silk-spark-salt`;
-  // Simple hash using string manipulation (no crypto dependency)
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return `anon_${Math.abs(hash).toString(36)}`;
+async function hashIP(ip: string): Promise<string> {
+  const secret = Deno.env.get("RATE_LIMIT_SECRET") || "silksparks-rate-limit-default";
+  const today = new Date().toISOString().split("T")[0];
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(`${ip}:${today}`),
+  );
+  const hashHex = Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 16);
+  return `anon_${hashHex}`;
 }
 
 Deno.serve(async (req) => {
@@ -148,7 +157,7 @@ Deno.serve(async (req) => {
     const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || req.headers.get("x-real-ip")
       || "unknown";
-    const ipHash = hashIP(clientIP);
+    const ipHash = await hashIP(clientIP);
 
     // 检查速率限制: 认证用户
     if (userId) {
@@ -211,10 +220,9 @@ Deno.serve(async (req) => {
 
     const config = settingsData?.value || {};
 
-    // Prioritize DB keys (for Admin testing), then Env vars
-    const openRouterKey =
-      config.openrouter_key || Deno.env.get("OPENROUTER_API_KEY");
-    const geminiKey = config.gemini_key || Deno.env.get("GEMINI_API_KEY");
+    // API keys from environment only (never store in DB for security)
+    const openRouterKey = Deno.env.get("OPENROUTER_API_KEY");
+    const geminiKey = Deno.env.get("GEMINI_API_KEY");
 
     console.log(`[AI-Generate] Request Type: ${type}, Locale: ${locale}, User: ${userId ?? "anonymous"}`);
     console.log(
