@@ -75,6 +75,50 @@ export const Home: React.FC = () => {
     return getTodaySign();
   }, [userBirthDate]);
 
+  // Dynamic feature card ordering based on journey state
+  const featureCards = useMemo(() => {
+    const cards = [
+      {
+        key: "fusion" as const,
+        icon: "yin_yang",
+        title: m["home.features.fusion.title"](),
+        desc: m["home.features.fusion.description"](),
+        action: m["home.features.fusion.action"](),
+        onClick: () => isBirthDataComplete ? navigate(PATHS.FUSION) : setShowForm(true),
+        badge: m["home.features.fusion.badge"](),
+      },
+      {
+        key: "tarot" as const,
+        icon: "psychology",
+        title: m["home.features.tarot.title"](),
+        desc: m["home.features.tarot.description"](),
+        action: m["home.features.tarot.action"](),
+        onClick: () => navigate(PATHS.TAROT),
+      },
+      {
+        key: "experts" as const,
+        icon: "group",
+        title: m["home.features.experts.title"](),
+        desc: m["home.features.experts.description"](),
+        action: m["home.features.experts.action"](),
+        onClick: () => navigate(PATHS.EXPERTS),
+      },
+    ];
+
+    // Reorder: put the suggested feature first
+    if (isFirstVisit || suggestedNext === "tarot") {
+      // First visit or tarot suggested: Tarot first
+      const tarot = cards.find(c => c.key === "tarot")!;
+      const rest = cards.filter(c => c.key !== "tarot");
+      return [tarot, ...rest];
+    }
+    if (suggestedNext === "fusion" || suggestedNext === "astrology") {
+      // Fusion/Astrology suggested: Fusion first (default order)
+      return cards;
+    }
+    return cards;
+  }, [isFirstVisit, suggestedNext, isBirthDataComplete, navigate, setShowForm]);
+
   // Fetch featured products
   useEffect(() => {
     const fetchProducts = async () => {
@@ -324,36 +368,28 @@ export const Home: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* Features - Fusion First */}
+      {/* Features - Dynamic Order */}
       <section className="py-24 px-4 md:px-10 relative z-10">
         <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Fusion Reading - Featured */}
-          <FeatureCard
-            icon="yin_yang"
-            title={m["home.features.fusion.title"]()}
-            desc={m["home.features.fusion.description"]()}
-            action={m["home.features.fusion.action"]()}
-            onClick={() => isBirthDataComplete ? navigate(PATHS.FUSION) : setShowForm(true)}
-            index={0}
-            featured={true}
-            badge={m["home.features.fusion.badge"]()}
-          />
-          <FeatureCard
-            icon="psychology"
-            title={m["home.features.tarot.title"]()}
-            desc={m["home.features.tarot.description"]()}
-            action={m["home.features.tarot.action"]()}
-            onClick={() => navigate(PATHS.TAROT)}
-            index={1}
-          />
-          <FeatureCard
-            icon="group"
-            title={m["home.features.experts.title"]()}
-            desc={m["home.features.experts.description"]()}
-            action={m["home.features.experts.action"]()}
-            onClick={() => navigate(PATHS.EXPERTS)}
-            index={2}
-          />
+          {featureCards.map((card, index) => (
+            <div key={card.key} className="relative">
+              {completedFeatures.includes(card.key) && (
+                <div className="absolute top-3 left-3 z-10 w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-green-400 text-xs">check</span>
+                </div>
+              )}
+              <FeatureCard
+                icon={card.icon}
+                title={card.title}
+                desc={card.desc}
+                action={card.action}
+                onClick={card.onClick}
+                index={index}
+                featured={index === 0}
+                badge={index === 0 ? card.badge : undefined}
+              />
+            </div>
+          ))}
         </div>
       </section>
 
