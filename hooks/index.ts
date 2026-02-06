@@ -42,3 +42,6 @@ export { useAnimationConfig, useAnimationsEnabled } from "./useAnimationConfig";
 
 // Journey state
 export { useJourneyState } from "./useJourneyState";
+
+// Journey event tracking
+export { useJourneyTrack } from "./useJourneyTrack";
