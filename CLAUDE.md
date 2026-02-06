@@ -86,7 +86,7 @@ Core tables (all have RLS policies):
 - `archives` - AI-generated reports (astrology, tarot)
 - `products` + `product_tags` - Shop catalog
 - `orders` + `order_items` - Purchase history
-- `experts` - Consultant profiles
+- `experts` - Consultant profiles (price field: `price_per_min`, NOT `hourly_rate`)
 - `appointments` - Booking records
 - `system_settings` - Admin configuration (admin-only access)
 
@@ -120,3 +120,9 @@ Tests in `tests/` directory:
 - `e2e/` + `visual.spec.ts` - Playwright browser tests (port 3009)
 
 Run single test file: `node tests/db.test.cjs`
+
+## Gotchas
+
+- **Animation layering**: `AnimatedPage` (App.tsx) already wraps all routes with `AnimatePresence mode="wait"` + opacity transition. Page components MUST NOT add their own outer `motion.div initial={{ opacity: 0 }}` — causes stacked invisible layers and blank pages on client-side navigation. CSS class `animate-fade-in-up` also starts at `opacity: 0`.
+- **`useSupabaseQuery` stability**: Callers pass inline `orderBy` objects and `onError` callbacks. The hook uses `useRef` to stabilize these — do NOT add them back as `useCallback`/`useEffect` dependencies.
+- **Nav route mapping**: "AI Chat" in header links to `/tarot/spread` (TarotSpread component), NOT `/ai-chat`.
