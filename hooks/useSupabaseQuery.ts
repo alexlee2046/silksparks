@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "../services/supabase";
 
 // Cache storage
@@ -83,6 +83,23 @@ export function useSupabaseQuery<TRow, TResult = TRow>(
   // Track if component is mounted to prevent state updates after unmount
   const isMounted = useRef(true);
 
+  // Stabilize callback refs to prevent infinite re-render loops
+  // when callers pass inline functions (e.g. onError: () => toast.error(...))
+  const filterRef = useRef(filter);
+  filterRef.current = filter;
+  const transformRef = useRef(transform);
+  transformRef.current = transform;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+
+  // Serialize orderBy to a stable string so inline objects don't cause re-renders
+  const orderByKey = useMemo(
+    () => (orderBy ? `${orderBy.column}:${orderBy.ascending ?? true}` : ""),
+    [orderBy?.column, orderBy?.ascending]
+  );
+
   const fetchData = useCallback(async (skipCache = false) => {
     if (!enabled) {
       setData([]);
@@ -94,7 +111,8 @@ export function useSupabaseQuery<TRow, TResult = TRow>(
     if (cacheKey && !skipCache) {
       const cached = queryCache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < cacheTTL) {
-        const result = (transform ? transform(cached.data as TRow[]) : cached.data) as TResult[];
+        const currentTransform = transformRef.current;
+        const result = (currentTransform ? currentTransform(cached.data as TRow[]) : cached.data) as TResult[];
         setData(result);
         setLoading(false);
         return;
@@ -109,8 +127,9 @@ export function useSupabaseQuery<TRow, TResult = TRow>(
       let query = supabase.from(table).select(select);
 
       // Apply filter if provided
-      if (filter) {
-        query = filter(query);
+      const currentFilter = filterRef.current;
+      if (currentFilter) {
+        query = currentFilter(query);
       }
 
       // Apply ordering if provided
@@ -127,7 +146,8 @@ export function useSupabaseQuery<TRow, TResult = TRow>(
       if (!isMounted.current) return;
 
       const rows = (rawData ?? []) as TRow[];
-      const result = transform ? transform(rows) : (rows as unknown as TResult[]);
+      const currentTransform = transformRef.current;
+      const result = currentTransform ? currentTransform(rows) : (rows as unknown as TResult[]);
 
       // Update cache if cacheKey is provided
       if (cacheKey) {
@@ -138,20 +158,21 @@ export function useSupabaseQuery<TRow, TResult = TRow>(
       }
 
       setData(result);
-      onSuccess?.(result);
+      onSuccessRef.current?.(result);
     } catch (e) {
       if (!isMounted.current) return;
 
       const err = e instanceof Error ? e : new Error("Failed to fetch data");
       setError(err);
-      onError?.(err);
+      onErrorRef.current?.(err);
       console.error(`[useSupabaseQuery] Error fetching ${table}:`, err.message);
     } finally {
       if (isMounted.current) {
         setLoading(false);
       }
     }
-  }, [table, select, filter, orderBy, transform, enabled, cacheKey, cacheTTL, onError, onSuccess]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [table, select, orderByKey, enabled, cacheKey, cacheTTL]);
 
   useEffect(() => {
     isMounted.current = true;
