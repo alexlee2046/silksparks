@@ -132,4 +132,13 @@
     50% { opacity: 1; }
     100% { transform: scale(2); opacity: 0; }
   }
+
+  @keyframes breathing-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(244, 192, 37, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(244, 192, 37, 0.6), 0 0 60px rgba(244, 192, 37, 0.2); }
+  }
+
+  .cta-breathing {
+    animation: breathing-glow 2.5s ease-in-out infinite;
+  }
 }

@@ -64,7 +64,7 @@ export const Home: React.FC = () => {
   void locale; // Ensure re-render on language change
   const [showCheckin, setShowCheckin] = useState(false);
   const { hasCheckedInToday } = useCheckin();
-  const { isFirstVisit, completedFeatures, suggestedNext } = useJourneyState();
+  const { isFirstVisit, completedFeatures, suggestedNext, markVisited } = useJourneyState();
 
   // 计算用户星座（基于出生日期，如果没有则使用当天星座）
   const userBirthDate = user?.birthData?.date;
@@ -305,8 +305,11 @@ export const Home: React.FC = () => {
                   data-testid="hero-cta-primary"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(PATHS.TAROT)}
-                  className="flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2"
+                  onClick={() => {
+                    markVisited();
+                    navigate(PATHS.TAROT);
+                  }}
+                  className={`flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2${isFirstVisit ? " cta-breathing" : ""}`}
                 >
                   <span className="material-symbols-outlined text-[20px]">psychology</span>
                   {m["home.hero.cta.tarot"]?.() ?? "Draw Today's Tarot"}
@@ -316,8 +319,11 @@ export const Home: React.FC = () => {
                   data-testid="hero-cta-primary"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowForm(true)}
-                  className="flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2"
+                  onClick={() => {
+                    markVisited();
+                    setShowForm(true);
+                  }}
+                  className={`flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2${isFirstVisit ? " cta-breathing" : ""}`}
                 >
                   <span className="material-symbols-outlined text-[20px]">astronomy</span>
                   {m["home.hero.cta.starchart"]?.() ?? "Unlock Your Star Chart"}
@@ -327,8 +333,11 @@ export const Home: React.FC = () => {
                   data-testid="hero-cta-primary"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(PATHS.FUSION)}
-                  className="flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2"
+                  onClick={() => {
+                    markVisited();
+                    navigate(PATHS.FUSION);
+                  }}
+                  className={`flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2${isFirstVisit ? " cta-breathing" : ""}`}
                 >
                   <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
                   {m["home.hero.cta.fusion"]?.() ?? "Today's Fusion Reading"}
