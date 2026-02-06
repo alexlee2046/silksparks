@@ -80,7 +80,7 @@ export interface MockExpert {
   specialties: string[];
   rating: number;
   is_available: boolean;
-  hourly_rate: number;
+  price_per_min: number;
 }
 
 export interface MockAppointment {
@@ -197,7 +197,7 @@ export function createMockExpert(overrides: Partial<MockExpert> = {}): MockExper
     specialties: ["birth-chart", "tarot", "feng-shui"],
     rating: 4.8,
     is_available: true,
-    hourly_rate: 200,
+    price_per_min: 200,
     ...overrides,
   };
 }

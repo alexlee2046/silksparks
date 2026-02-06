@@ -210,7 +210,7 @@ export const Experts: React.FC = () => {
                 title={expert.title || "Spiritual Guide"}
                 rating={expert.rating}
                 reviews={expert.review_count}
-                price={`${currencySymbol}${(expert.hourly_rate / 60).toFixed(2)}/min`}
+                price={`${currencySymbol}${Number(expert.price_per_min).toFixed(2)}/min`}
                 tags={expert.specialties}
                 image={expert.avatar_url}
                 isOnline={isExpertOnline(expert)}

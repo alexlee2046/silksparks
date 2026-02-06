@@ -30,7 +30,7 @@ const EXPECTED_SCHEMA = {
     forbidden: [],
   },
   experts: {
-    required: ["id", "name", "hourly_rate", "review_count", "featured", "created_at"],
+    required: ["id", "name", "price_per_min", "review_count", "featured", "created_at"],
     optional: ["title", "bio", "avatar_url", "specialties", "rating", "updated_at"],
     // Note: experts use "is_online" in some queries but schema might differ
     forbidden: [],
@@ -199,7 +199,7 @@ async function testSelectQueries() {
     },
     {
       name: "Experts list query",
-      sql: "SELECT id, name, title, bio, avatar_url, specialties, hourly_rate, rating, review_count, featured FROM experts LIMIT 1",
+      sql: "SELECT id, name, title, bio, avatar_url, specialties, price_per_min, rating, review_count, featured FROM experts LIMIT 1",
     },
     {
       name: "Orders with user",

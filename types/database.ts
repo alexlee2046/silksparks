@@ -296,7 +296,7 @@ export interface Database {
           bio: string | null;
           avatar_url: string | null;
           specialties: string[] | null;
-          hourly_rate: number;
+          price_per_min: number;
           rating: number | null;
           review_count: number;
           featured: boolean;
@@ -312,7 +312,7 @@ export interface Database {
           bio?: string | null;
           avatar_url?: string | null;
           specialties?: string[] | null;
-          hourly_rate: number;
+          price_per_min: number;
           rating?: number | null;
           review_count?: number;
           featured?: boolean;
@@ -327,7 +327,7 @@ export interface Database {
           bio?: string | null;
           avatar_url?: string | null;
           specialties?: string[] | null;
-          hourly_rate?: number;
+          price_per_min?: number;
           rating?: number | null;
           review_count?: number;
           featured?: boolean;

@@ -36,7 +36,7 @@ export const Delivery: React.FC = () => {
       ? expert.name
       : bookingData.expertName || "Expert Guide";
     const price = expert
-      ? (expert.hourly_rate / 60) * 30
+      ? Number(expert.price_per_min) * 30
       : bookingData.price * 30 || 120.0; // 30 mins
 
     // Add to Cart

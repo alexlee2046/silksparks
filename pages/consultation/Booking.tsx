@@ -99,7 +99,7 @@ export const Booking: React.FC = () => {
       expertId,
       expertName: expert.name,
       expertImage: expert.avatar_url,
-      price: expert.hourly_rate / 60,
+      price: Number(expert.price_per_min),
       date: selectedDate,
       time: selectedSlot,
     };
@@ -187,7 +187,7 @@ export const Booking: React.FC = () => {
                     Standard Consultation
                   </h4>
                   <span className="text-primary font-bold text-xl">
-                    {formatCurrency((expert.hourly_rate / 60) * 30)}
+                    {formatCurrency(Number(expert.price_per_min) * 30)}
                   </span>
                 </div>
                 <p className="text-sm text-text-muted mb-6 font-light leading-relaxed truncate-2-lines">
