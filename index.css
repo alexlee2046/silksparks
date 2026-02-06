@@ -126,4 +126,10 @@
   .backdrop-blur-xl {
     will-change: backdrop-filter;
   }
+
+  @keyframes halo-pulse {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+  }
 }

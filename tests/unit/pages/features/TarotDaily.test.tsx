@@ -119,6 +119,52 @@ vi.mock("@/pages/features/CardSelector", () => ({
   ),
 }));
 
+// Mock useAnimationConfig
+vi.mock("@/hooks/useAnimationConfig", () => ({
+  useAnimationsEnabled: () => false,
+  useAnimationConfig: () => ({
+    shouldReduceMotion: true,
+    duration: { fast: 0, normal: 0, slow: 0 },
+    spring: { type: "tween", duration: 0 },
+    variants: {},
+    hover: {},
+    tap: {},
+  }),
+}));
+
+// Mock lib/animations
+vi.mock("@/lib/animations", () => ({
+  rituals: {
+    cardReveal: {
+      hidden: { opacity: 0 },
+      float: { opacity: 1 },
+      flip: { opacity: 1 },
+      settle: { opacity: 1 },
+    },
+  },
+  transitions: {},
+  variants: {},
+}));
+
+// Mock useJourneyState and useJourneyTrack
+vi.mock("@/hooks/useJourneyState", () => ({
+  useJourneyState: () => ({
+    completeFeature: vi.fn(),
+    completed: new Set(),
+    isComplete: false,
+  }),
+}));
+
+vi.mock("@/hooks/useJourneyTrack", () => ({
+  useJourneyTrack: () => ({ track: vi.fn() }),
+}));
+
+// Mock PerformanceContext
+vi.mock("@/context/PerformanceContext", () => ({
+  usePerformance: () => ({ qualityLevel: "high" }),
+  PerformanceProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 // Mock UserContext - hoisted to avoid initialization errors
 const { mockAddArchive } = vi.hoisted(() => ({
   mockAddArchive: vi.fn(),

@@ -27,12 +27,14 @@ import { TarotShareCard } from "../../components/TarotShareCard";
 import { JourneyNext } from "../../components/JourneyNext";
 import { useJourneyState } from "../../hooks/useJourneyState";
 import { useJourneyTrack } from "../../hooks/useJourneyTrack";
+import { rituals } from "../../lib/animations";
+import { useAnimationsEnabled } from "../../hooks/useAnimationConfig";
 
 interface DrawnTarotCard extends TarotCardType {
   keywords?: string[];
 }
 
-type ReadingState = "idle" | "shuffling" | "selecting" | "drawing" | "revealed";
+type ReadingState = "idle" | "shuffling" | "selecting" | "drawing" | "revealing" | "revealed";
 
 export const TarotDaily: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +43,7 @@ export const TarotDaily: React.FC = () => {
   const isLoggedIn = !!session?.user;
   const { completeFeature } = useJourneyState();
   const { track } = useJourneyTrack();
+  const animationsEnabled = useAnimationsEnabled();
 
   // 状态管理
   const [readingState, setReadingState] = useState<ReadingState>("idle");
@@ -88,24 +91,25 @@ export const TarotDaily: React.FC = () => {
 
       setReadingState("drawing");
 
-      // 翻牌动画
-      setTimeout(async () => {
-        const selectedIndex = selectedIndices[0] ?? 0;
-        const drawnCard = selectDailyCard(tarotSession.seed, selectedIndex);
+      // Prepare card data immediately so it's available during animation
+      const selectedIndex = selectedIndices[0] ?? 0;
+      const drawnCard = selectDailyCard(tarotSession.seed, selectedIndex);
 
-        if (!drawnCard) {
-          toast.error("Failed to draw card");
-          setReadingState("idle");
-          return;
-        }
+      if (!drawnCard) {
+        toast.error("Failed to draw card");
+        setReadingState("idle");
+        return;
+      }
 
-        // 获取关键词 - 从卡牌数据中读取
-        const cardKeywords = getCardKeywords(drawnCard.id);
-        const cardWithKeywords: DrawnTarotCard = {
-          ...drawnCard,
-          keywords: cardKeywords,
-        };
-        setCard(cardWithKeywords);
+      const cardKeywords = getCardKeywords(drawnCard.id);
+      const cardWithKeywords: DrawnTarotCard = {
+        ...drawnCard,
+        keywords: cardKeywords,
+      };
+      setCard(cardWithKeywords);
+
+      // Animation staging: drawing -> revealing -> revealed
+      const revealCard = async () => {
         setReadingState("revealed");
 
         // 开始 AI 加载
@@ -132,19 +136,14 @@ export const TarotDaily: React.FC = () => {
           if (response.meta?.isFallback) {
             toast("Using backup AI for reading", { icon: "⚠️", duration: 3000 });
           }
-
-          // Auto-save is disabled - user can manually save via the "Save to Grimoire" button
-          // This prevents duplicate entries when both auto-save and manual save are enabled
         } catch (e) {
           console.error("[TarotDaily] Tarot AI error:", e);
           setIsAILoading(false);
           if (e instanceof RateLimitError) {
-            // 显示登录引导而不是 toast
             setShowLoginPrompt(true);
             setAiError("rate_limit");
             setInterpretation("");
           } else {
-            // 其他 AI 错误，显示 fallback 消息和登录引导
             const errorMsg = e instanceof Error ? e.message : "AI service unavailable";
             setAiError(errorMsg);
             if (!isLoggedIn) {
@@ -157,9 +156,22 @@ export const TarotDaily: React.FC = () => {
             }
           }
         }
-      }, 1500);
+      };
+
+      if (!animationsEnabled) {
+        // Skip animation staging, go directly to revealed
+        revealCard();
+      } else {
+        // drawing (1000ms) -> revealing (600ms) -> revealed
+        setTimeout(() => {
+          setReadingState("revealing");
+          setTimeout(() => {
+            revealCard();
+          }, 600);
+        }, 1000);
+      }
     },
-    [tarotSession, addArchive]
+    [tarotSession, animationsEnabled, isLoggedIn]
   );
 
   // Save to Grimoire handler
@@ -335,29 +347,60 @@ export const TarotDaily: React.FC = () => {
                 </motion.div>
               )}
 
-            {/* 翻牌动画 */}
-            {readingState === "drawing" && card && (
+            {/* 翻牌动画 - drawing & revealing stages */}
+            {(readingState === "drawing" || readingState === "revealing") && card && (
               <motion.div
                 key="drawing"
-                className="relative w-full max-w-64 aspect-[256/400] perspective-1000 mx-auto"
-                initial={{ rotateY: 0, scale: 0.9 }}
-                animate={{ rotateY: 180, scale: 1.1 }}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
-                style={{ transformStyle: "preserve-3d" }}
+                className="relative flex items-center justify-center"
               >
-                <div
-                  className="absolute inset-0 backface-hidden rounded-2xl bg-[#141414] border-2 border-[#F4C025]"
-                  style={{ backfaceVisibility: "hidden" }}
-                ></div>
-                <div
-                  className="absolute inset-0 backface-hidden rounded-2xl bg-[#141414] border-2 border-[#F4C025] flex items-center justify-center shadow-[0_0_100px_rgba(244,192,37,0.5)]"
-                  style={{
-                    backfaceVisibility: "hidden",
-                    transform: "rotateY(180deg)",
-                  }}
+                <motion.div
+                  className="relative w-full max-w-64 aspect-[256/400] mx-auto"
+                  animate={
+                    readingState === "drawing" ? "float"
+                    : readingState === "revealing" ? "flip"
+                    : "settle"
+                  }
+                  variants={animationsEnabled ? rituals.cardReveal : undefined}
+                  initial={animationsEnabled ? "hidden" : undefined}
+                  style={{ perspective: 1000 }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#F4C025]/20 to-transparent opacity-50"></div>
-                </div>
+                  <div
+                    className="absolute inset-0 rounded-2xl bg-[#141414] border-2 border-[#F4C025] flex items-center justify-center overflow-hidden"
+                    style={{
+                      boxShadow: readingState === "revealing"
+                        ? "0 0 100px rgba(244,192,37,0.5)"
+                        : "0 0 40px rgba(244,192,37,0.2)",
+                    }}
+                  >
+                    {card.image && (
+                      <div
+                        className="absolute inset-0 opacity-90"
+                        style={{
+                          backgroundImage: `url("${card.image}")`,
+                          backgroundSize: "contain",
+                          backgroundPosition: "center",
+                          backgroundRepeat: "no-repeat",
+                          filter: card.isReversed
+                            ? `${GOLD_FOIL_FILTER} hue-rotate(-30deg)`
+                            : GOLD_FOIL_FILTER,
+                          transform: card.isReversed ? "rotate(180deg)" : undefined,
+                        }}
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-[#F4C025]/20 to-transparent opacity-50"></div>
+                  </div>
+                </motion.div>
+
+                {/* Silk-textured halo effect */}
+                {(readingState === "revealing" || readingState === "revealed") && animationsEnabled && (
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: 'radial-gradient(ellipse at center, rgba(244,192,37,0.15) 0%, rgba(168,85,247,0.08) 40%, transparent 70%)',
+                      animation: 'halo-pulse 1.5s ease-out forwards',
+                    }}
+                  />
+                )}
               </motion.div>
             )}
 
@@ -371,6 +414,12 @@ export const TarotDaily: React.FC = () => {
               >
                 {/* 卡牌展示 */}
                 <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                  <motion.div
+                    animate="settle"
+                    variants={animationsEnabled ? rituals.cardReveal : undefined}
+                    style={{ perspective: 1000 }}
+                    className="relative"
+                  >
                   <motion.div
                     initial={{ rotateY: 90 }}
                     animate={{ rotateY: 0 }}
@@ -462,6 +511,38 @@ export const TarotDaily: React.FC = () => {
                         </div>
                       </motion.div>
                     )}
+                  </motion.div>
+
+                  {/* Silk-textured halo effect on revealed card */}
+                  {animationsEnabled && (
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: 'radial-gradient(ellipse at center, rgba(244,192,37,0.15) 0%, rgba(168,85,247,0.08) 40%, transparent 70%)',
+                        animation: 'halo-pulse 1.5s ease-out forwards',
+                      }}
+                    />
+                  )}
+
+                  {/* Stardust particles */}
+                  {animationsEnabled && (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="absolute w-1 h-1 rounded-full bg-primary/60"
+                          initial={{ opacity: 0, x: 0, y: 0 }}
+                          animate={{
+                            opacity: [0, 1, 0],
+                            x: (Math.random() - 0.5) * 200,
+                            y: (Math.random() - 0.5) * 200,
+                          }}
+                          transition={{ duration: 1.5, delay: i * 0.1 }}
+                          style={{ left: "50%", top: "50%" }}
+                        />
+                      ))}
+                    </div>
+                  )}
                   </motion.div>
                 </div>
 
