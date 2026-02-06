@@ -13,6 +13,7 @@ import {
   Product,
 } from "../services/RecommendationEngine";
 import { motion, AnimatePresence } from "framer-motion";
+import { variants } from "../lib/animations";
 import { SEO } from "../components/SEO";
 import { JsonLd } from "../components/JsonLd";
 import toast from "react-hot-toast";
@@ -137,26 +138,6 @@ export const Home: React.FC = () => {
     fetchSpark();
   }, [userSign]);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
-    },
-  };
-
   return (
     <div className="min-h-screen">
       <SEO
@@ -225,7 +206,7 @@ export const Home: React.FC = () => {
         <div className="absolute top-1/2 right-1/3 translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-purple-500/10 rounded-full blur-[100px] -z-10"></div>
 
         <motion.div
-          variants={containerVariants}
+          variants={variants.stagger}
           initial="hidden"
           animate="visible"
           className="relative z-10 flex max-w-[960px] flex-col items-center gap-10 text-center"
@@ -233,7 +214,7 @@ export const Home: React.FC = () => {
           <div className="flex flex-col items-center gap-6">
             {/* Fusion Badge */}
             <motion.div
-              variants={itemVariants}
+              variants={variants.staggerItem}
               className="inline-flex items-center gap-3 rounded-full border border-primary/30 bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 px-5 py-2 backdrop-blur-md shadow-[0_0_20px_rgba(244,192,37,0.15)]"
             >
               <span className="text-lg">☯</span>
@@ -245,7 +226,7 @@ export const Home: React.FC = () => {
             {/* Main Title - Two Lines */}
             <motion.h1
               data-testid="main-title"
-              variants={itemVariants}
+              variants={variants.staggerItem}
               className="text-foreground text-4xl md:text-7xl font-light font-display tracking-tight leading-[1.1]"
             >
               <span className="block">{m["home.hero.title1"]()}</span>
@@ -256,7 +237,7 @@ export const Home: React.FC = () => {
 
             {/* Subtitle */}
             <motion.p
-              variants={itemVariants}
+              variants={variants.staggerItem}
               className="max-w-[600px] text-text-muted text-lg md:text-xl font-light leading-relaxed"
             >
               {m["home.hero.subtitle"]()}
@@ -268,7 +249,7 @@ export const Home: React.FC = () => {
 
           {/* CTA Box */}
           <motion.div
-            variants={itemVariants}
+            variants={variants.staggerItem}
             className="w-full max-w-[520px] p-2 bg-surface/80 backdrop-blur-xl rounded-2xl border border-surface-border shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] hover:border-primary/30 transition-all duration-300"
           >
             <div className="flex flex-col sm:flex-row gap-2">
