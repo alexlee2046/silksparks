@@ -63,6 +63,7 @@ export const TarotDaily: React.FC = () => {
   const [showShareCard, setShowShareCard] = useState(false);
   const [isSavedToGrimoire, setIsSavedToGrimoire] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveAnimState, setSaveAnimState] = useState<"idle" | "shrink" | "fly" | "done">("idle");
 
   // 初始化每日塔罗会话（基于种子，同一天结果一致）
   const initSession = useCallback(() => {
@@ -204,15 +205,25 @@ export const TarotDaily: React.FC = () => {
         }),
         image: card.image,
       });
-      setIsSavedToGrimoire(true);
-      toast.success("Saved to your Grimoire!");
+      if (animationsEnabled) {
+        setSaveAnimState("shrink");
+        setTimeout(() => setSaveAnimState("fly"), 300);
+        setTimeout(() => {
+          setSaveAnimState("done");
+          setIsSavedToGrimoire(true);
+          toast.success("Saved to your Grimoire!");
+        }, 800);
+      } else {
+        setIsSavedToGrimoire(true);
+        toast.success("Saved to your Grimoire!");
+      }
     } catch (error) {
       console.error("[TarotDaily] Failed to save:", error);
       toast.error("Failed to save. Please try again.");
     } finally {
       setIsSaving(false);
     }
-  }, [card, interpretation, isSavedToGrimoire, isSaving, isLoggedIn, addArchive, coreMessage, actionAdvice, luckyElements, navigate]);
+  }, [card, interpretation, isSavedToGrimoire, isSaving, isLoggedIn, addArchive, coreMessage, actionAdvice, luckyElements, navigate, animationsEnabled]);
 
   // 重置阅读
   const resetReading = useCallback(() => {
@@ -230,6 +241,7 @@ export const TarotDaily: React.FC = () => {
     setLuckyElements(undefined);
     setIsSavedToGrimoire(false);
     setIsSaving(false);
+    setSaveAnimState("idle");
   }, []);
 
   // 取消选牌
@@ -562,28 +574,33 @@ export const TarotDaily: React.FC = () => {
                             share
                           </span>
                         </button>
-                        <button
-                          onClick={handleSaveToGrimoire}
-                          disabled={isSavedToGrimoire || isSaving || !interpretation}
-                          className={`h-10 w-10 rounded-full border flex items-center justify-center transition-colors ${
-                            isSavedToGrimoire
-                              ? "bg-primary/20 border-primary text-primary cursor-default"
-                              : isSaving
-                              ? "bg-surface-border/30 border-surface-border text-text-muted cursor-wait"
-                              : "bg-surface-border/30 border-surface-border hover:bg-surface-border/30 hover:text-[#F4C025]"
-                          }`}
-                          title={isSavedToGrimoire ? "Saved to Grimoire" : "Save to Grimoire"}
+                        <motion.div
+                          animate={saveAnimState}
+                          variants={rituals.save}
                         >
-                          {isSaving ? (
-                            <span className="material-symbols-outlined text-lg animate-spin">
-                              progress_activity
-                            </span>
-                          ) : (
-                            <span className={`material-symbols-outlined text-lg ${isSavedToGrimoire ? "fill" : ""}`}>
-                              {isSavedToGrimoire ? "bookmark_added" : "bookmark"}
-                            </span>
-                          )}
-                        </button>
+                          <button
+                            onClick={handleSaveToGrimoire}
+                            disabled={isSavedToGrimoire || isSaving || !interpretation}
+                            className={`h-10 w-10 rounded-full border flex items-center justify-center transition-colors ${
+                              isSavedToGrimoire
+                                ? "bg-primary/20 border-primary text-primary cursor-default"
+                                : isSaving
+                                ? "bg-surface-border/30 border-surface-border text-text-muted cursor-wait"
+                                : "bg-surface-border/30 border-surface-border hover:bg-surface-border/30 hover:text-[#F4C025]"
+                            }`}
+                            title={isSavedToGrimoire ? "Saved to Grimoire" : "Save to Grimoire"}
+                          >
+                            {isSaving ? (
+                              <span className="material-symbols-outlined text-lg animate-spin">
+                                progress_activity
+                              </span>
+                            ) : (
+                              <span className={`material-symbols-outlined text-lg ${isSavedToGrimoire ? "fill" : ""}`}>
+                                {isSavedToGrimoire ? "bookmark_added" : "bookmark"}
+                              </span>
+                            )}
+                          </button>
+                        </motion.div>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">

@@ -141,6 +141,11 @@ vi.mock("@/lib/animations", () => ({
       flip: { opacity: 1 },
       settle: { opacity: 1 },
     },
+    save: {
+      idle: { opacity: 1, scale: 1 },
+      shrink: { opacity: 0.8, scale: 0.6 },
+      fly: { opacity: 0, scale: 0.3, y: -200 },
+    },
   },
   transitions: {},
   variants: {},
