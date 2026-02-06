@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 import * as m from "../src/paraglide/messages";
 import { CheckinModal } from "../components/CheckinModal";
 import { useCheckin } from "../hooks/useCheckin";
+import { useJourneyState } from "../hooks/useJourneyState";
 
 /**
  * 根据出生日期计算太阳星座
@@ -63,6 +64,7 @@ export const Home: React.FC = () => {
   void locale; // Ensure re-render on language change
   const [showCheckin, setShowCheckin] = useState(false);
   const { hasCheckedInToday } = useCheckin();
+  const { isFirstVisit, completedFeatures, suggestedNext } = useJourneyState();
 
   // 计算用户星座（基于出生日期，如果没有则使用当天星座）
   const userBirthDate = user?.birthData?.date;
@@ -244,53 +246,80 @@ export const Home: React.FC = () => {
             </motion.p>
 
             {/* Fusion Insight Carousel */}
-            <FusionInsightCarousel />
+            {!isFirstVisit && <FusionInsightCarousel />}
           </div>
 
           {/* CTA Box */}
           <motion.div
             variants={variants.staggerItem}
-            className="w-full max-w-[520px] p-2 bg-surface/80 backdrop-blur-xl rounded-2xl border border-surface-border shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] hover:border-primary/30 transition-all duration-300"
+            className="w-full max-w-[520px] flex flex-col items-center gap-4"
           >
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div
-                className="relative flex-1 group"
-                onClick={() => setShowForm(true)}
-              >
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-muted group-hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">
-                    calendar_month
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  placeholder={m["home.hero.inputPlaceholder"]()}
-                  readOnly
-                  className="cursor-pointer block w-full rounded-xl border border-surface-border bg-background pl-11 pr-4 py-4 text-foreground placeholder:text-text-muted focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-sm transition-all outline-none"
-                />
-              </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
+              {/* Primary CTA */}
+              {suggestedNext === "tarot" || (!completedFeatures.includes("tarot")) ? (
+                <motion.button
+                  data-testid="hero-cta-primary"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate(PATHS.TAROT)}
+                  className="flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[20px]">psychology</span>
+                  {m["home.hero.cta.tarot"]?.() ?? "Draw Today's Tarot"}
+                </motion.button>
+              ) : suggestedNext === "astrology" || !isBirthDataComplete ? (
+                <motion.button
+                  data-testid="hero-cta-primary"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowForm(true)}
+                  className="flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[20px]">astronomy</span>
+                  {m["home.hero.cta.starchart"]?.() ?? "Unlock Your Star Chart"}
+                </motion.button>
+              ) : (
+                <motion.button
+                  data-testid="hero-cta-primary"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate(PATHS.FUSION)}
+                  className="flex-1 bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
+                  {m["home.hero.cta.fusion"]?.() ?? "Today's Fusion Reading"}
+                </motion.button>
+              )}
+
+              {/* Secondary CTA */}
               <motion.button
+                data-testid="hero-cta-secondary"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() =>
-                  isBirthDataComplete
-                    ? navigate(PATHS.FUSION)
-                    : setShowForm(true)
-                }
-                className="bg-gradient-to-r from-primary to-amber-500 hover:from-primary-hover hover:to-amber-400 text-background font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(244,192,37,0.3)] hover:shadow-[0_0_35px_rgba(244,192,37,0.5)] flex items-center justify-center gap-2 whitespace-nowrap"
+                onClick={() => {
+                  if (suggestedNext === "tarot" || !completedFeatures.includes("tarot")) {
+                    setShowForm(true);
+                  } else {
+                    navigate(PATHS.TAROT);
+                  }
+                }}
+                className="sm:w-auto px-6 py-4 rounded-xl border border-surface-border bg-surface/60 backdrop-blur-md text-foreground hover:border-primary/30 hover:text-primary transition-all flex items-center justify-center gap-2 text-sm"
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  auto_awesome
+                <span className="material-symbols-outlined text-[18px]">
+                  {suggestedNext === "tarot" || !completedFeatures.includes("tarot") ? "calendar_month" : "psychology"}
                 </span>
-                {isBirthDataComplete ? m["home.hero.ctaExisting"]() : m["home.hero.cta"]()}
+                {suggestedNext === "tarot" || !completedFeatures.includes("tarot")
+                  ? (m["home.hero.cta.birthdata"]?.() ?? "Enter birth info")
+                  : (m["home.hero.cta.dailytarot"]?.() ?? "Daily Tarot")}
               </motion.button>
             </div>
-            <p className="mt-3 text-[10px] text-text-muted text-center flex items-center justify-center gap-1 uppercase tracking-widest">
-              <span className="material-symbols-outlined text-[12px]">
-                lock
-              </span>
-              {m["home.hero.privacyNote"]()}
-            </p>
+
+            {isFirstVisit && (
+              <p className="text-[10px] text-text-muted text-center flex items-center justify-center gap-1 uppercase tracking-widest">
+                <span className="material-symbols-outlined text-[12px]">lock</span>
+                {m["home.hero.noSignup"]?.() ?? "No signup needed"}
+              </p>
+            )}
           </motion.div>
         </motion.div>
       </section>
@@ -360,9 +389,7 @@ export const Home: React.FC = () => {
                   index={index}
                   isFavorited={isFavorite(Number(product.id))}
                   onToggleFavorite={() => toggleFavorite(Number(product.id))}
-                  onClick={() => {
-                    // Product detail view not implemented in Home
-                  }}
+                  onClick={() => navigate(PATHS.PRODUCT(product.id))}
                   onAddToCart={() => {
                     addItem(product);
                     toast.success(`Added ${product.name} to cart`);

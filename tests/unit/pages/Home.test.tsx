@@ -115,6 +115,20 @@ vi.mock("@/hooks/useFavorites", () => ({
   }),
 }));
 
+// Mock useJourneyState
+vi.mock("@/hooks/useJourneyState", () => ({
+  useJourneyState: () => ({
+    isFirstVisit: true,
+    hasAccount: false,
+    hasBirthData: false,
+    completedFeatures: [],
+    lastFeature: null,
+    suggestedNext: "tarot",
+    markVisited: vi.fn(),
+    completeFeature: vi.fn(),
+  }),
+}));
+
 // Mock BirthDataForm
 vi.mock("@/components/BirthDataForm", () => ({
   BirthDataForm: ({ onComplete, onCancel }: { onComplete?: () => void; onCancel?: () => void }) => (
@@ -167,6 +181,12 @@ vi.mock("@/src/paraglide/messages", async (importOriginal) => {
     "home.products.viewAll": "View All",
     "common.addToCart": "Add to Cart",
     "common.favorite": "Favorite",
+    "home.hero.cta.tarot": "Draw Today's Tarot",
+    "home.hero.cta.starchart": "Unlock Your Star Chart",
+    "home.hero.cta.fusion": "Today's Fusion Reading",
+    "home.hero.cta.birthdata": "Enter birth info",
+    "home.hero.cta.dailytarot": "Daily Tarot",
+    "home.hero.noSignup": "No signup needed",
   };
 
   for (const [key, value] of Object.entries(knownMocks)) {
