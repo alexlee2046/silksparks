@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "./components/Layouts";
 import { UserProvider, useUser } from "./context/UserContext";
@@ -11,6 +11,8 @@ import { Auth } from "./components/Auth";
 import { CartDrawer } from "./components/CartDrawer";
 import { Toaster } from "react-hot-toast";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { pageTransition } from "./lib/animations";
+import { useAnimationsEnabled } from "./hooks";
 import * as m from "./src/paraglide/messages";
 
 // ============ 页面组件导入 (Lazy Loading) ============
@@ -148,15 +150,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 // ============ 页面动画包装器 ============
 const AnimatedPage: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const animationsEnabled = useAnimationsEnabled();
+
+  if (!animationsEnabled) {
+    return <>{children}</>;
+  }
 
   return (
-    <AnimatePresence mode="popLayout" initial={false}>
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location.pathname}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
+        initial={pageTransition.initial}
+        animate={pageTransition.animate}
+        exit={pageTransition.exit}
         className="w-full h-full"
       >
         {children}
@@ -170,6 +176,13 @@ const AppContent: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false);
   const { loading } = useUser();
   const location = useLocation();
+
+  // 导航时滚动到顶部（首页除外）
+  useEffect(() => {
+    if (location.pathname !== "/") {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   // 根据当前路径确定布局类型
   const getLayoutType = (): "public" | "user" | "admin" => {
@@ -186,7 +199,15 @@ const AppContent: React.FC = () => {
   return (
     <Layout type={getLayoutType()} onAuthClick={() => setShowAuth(true)}>
       <AnimatedPage>
-        <Suspense fallback={<LoadingSpinner />}>
+        <Suspense fallback={
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            className="w-full min-h-[60vh] flex items-center justify-center"
+          >
+            <LoadingSpinner />
+          </motion.div>
+        }>
         <Routes>
           {/* 公开页面 */}
           <Route path="/" element={<Home />} />
