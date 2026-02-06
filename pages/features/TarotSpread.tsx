@@ -167,10 +167,7 @@ export const TarotSpread: React.FC = () => {
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
       className="relative bg-background bg-silk-pattern min-h-screen"
     >
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-surface/50 to-transparent -z-10"></div>
@@ -187,7 +184,7 @@ export const TarotSpread: React.FC = () => {
       </button>
 
       <section className="relative z-10 w-full flex flex-col items-center justify-center py-10 px-4 md:px-10">
-        <div className="text-center mb-12 animate-fade-in-up">
+        <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-surface-border bg-surface/50 backdrop-blur-md text-primary text-xs font-bold uppercase tracking-widest mb-4">
             <span className="material-symbols-outlined text-sm">
               auto_awesome
@@ -443,7 +440,7 @@ export const TarotSpread: React.FC = () => {
           )}
         </div>
       </section>
-    </motion.div>
+    </div>
   );
 };
 

@@ -134,10 +134,7 @@ export const AstrologyReport: React.FC = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
       className="flex-1 flex flex-col items-center px-4 py-8 md:py-12 md:px-10 lg:px-20 relative bg-background overflow-y-auto"
     >
       {/* Background Effect */}
@@ -304,7 +301,7 @@ export const AstrologyReport: React.FC = () => {
           <JourneyNext currentFeature="astrology" />
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
