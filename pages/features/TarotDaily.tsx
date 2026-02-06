@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
 import AIService from "../../services/ai";
@@ -24,6 +24,9 @@ import {
 } from "../../services/TarotService";
 import type { LuckyElements } from "../../services/ai/types";
 import { TarotShareCard } from "../../components/TarotShareCard";
+import { JourneyNext } from "../../components/JourneyNext";
+import { useJourneyState } from "../../hooks/useJourneyState";
+import { useJourneyTrack } from "../../hooks/useJourneyTrack";
 
 interface DrawnTarotCard extends TarotCardType {
   keywords?: string[];
@@ -36,6 +39,8 @@ export const TarotDaily: React.FC = () => {
   const { addArchive, session } = useUser();
   const userId = session?.user?.id ?? null;
   const isLoggedIn = !!session?.user;
+  const { completeFeature } = useJourneyState();
+  const { track } = useJourneyTrack();
 
   // 状态管理
   const [readingState, setReadingState] = useState<ReadingState>("idle");
@@ -65,6 +70,7 @@ export const TarotDaily: React.FC = () => {
 
   // 开始抽牌流程
   const handleStartReading = useCallback(() => {
+    track("cta_click", { cta: "tarot" });
     setReadingState("shuffling");
 
     // 洗牌动画后进入选牌阶段
@@ -73,7 +79,7 @@ export const TarotDaily: React.FC = () => {
       setTarotSession(session);
       setReadingState("selecting");
     }, 2000);
-  }, [initSession]);
+  }, [initSession, track]);
 
   // 用户选择卡牌后的处理
   const handleCardSelect = useCallback(
@@ -219,6 +225,14 @@ export const TarotDaily: React.FC = () => {
     setReadingState("idle");
     setTarotSession(null);
   }, []);
+
+  // Track journey completion when interpretation loads
+  useEffect(() => {
+    if (interpretation && !isAILoading) {
+      completeFeature("tarot");
+      track("feature_complete", { feature: "tarot" });
+    }
+  }, [interpretation, isAILoading, completeFeature, track]);
 
   return (
     <div className="flex-1 relative z-10 flex flex-col items-center py-8 px-4 md:px-8 bg-background min-h-screen">
@@ -575,6 +589,10 @@ export const TarotDaily: React.FC = () => {
                       />
                     )}
                   </div>
+
+                  {!isAILoading && interpretation && (
+                    <JourneyNext currentFeature="tarot" />
+                  )}
 
                   {recommendations.length > 0 && (
                     <div className="mt-2">
