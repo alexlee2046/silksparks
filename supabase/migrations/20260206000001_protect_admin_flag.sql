@@ -19,7 +19,7 @@ CREATE TRIGGER protect_admin_flag_trigger
   FOR EACH ROW
   EXECUTE FUNCTION public.protect_admin_flag();
 
--- Also protect tier and points from client-side manipulation
+-- Also protect tier, points, and subscription_tier from client-side manipulation
 CREATE OR REPLACE FUNCTION public.protect_privileged_fields()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -28,6 +28,9 @@ BEGIN
   END IF;
   IF NEW.points IS DISTINCT FROM OLD.points THEN
     RAISE EXCEPTION 'Cannot modify points via client';
+  END IF;
+  IF NEW.subscription_tier IS DISTINCT FROM OLD.subscription_tier THEN
+    RAISE EXCEPTION 'Cannot modify subscription_tier via client';
   END IF;
   RETURN NEW;
 END;
