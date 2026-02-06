@@ -25,6 +25,9 @@ import { WuXingWheel } from "../components/bazi/WuXingWheel";
 // TODO: Re-enable when tier-gating is implemented
 // import { TierUpgradePrompt } from "../components/fusion/TierUpgradePrompt";
 import { SEO } from "../components/SEO";
+import { JourneyNext } from "../components/JourneyNext";
+import { useJourneyState } from "../hooks/useJourneyState";
+import { useJourneyTrack } from "../hooks/useJourneyTrack";
 import * as m from "../src/paraglide/messages";
 
 // Day Master element mapping
@@ -81,6 +84,8 @@ export const FusionReading: React.FC = () => {
   const [showGuestForm, setShowGuestForm] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const { completeFeature } = useJourneyState();
+  const { track } = useJourneyTrack();
 
   // Effective birth data - prefer logged-in user, fallback to temp
   const effectiveBirthData = useMemo(() => {
@@ -186,6 +191,14 @@ export const FusionReading: React.FC = () => {
 
     return insights;
   }, [dayMasterInfo, sunSign, harmonyScore]);
+
+  // Track journey completion when fusion insights are generated
+  useEffect(() => {
+    if (fusionInsights.length > 0 && canShowReading) {
+      completeFeature("fusion");
+      track("feature_complete", { feature: "fusion" });
+    }
+  }, [fusionInsights, canShowReading, completeFeature, track]);
 
   // Build archive content for saving
   const buildArchiveContent = useCallback((): FusionArchiveContent | null => {
@@ -578,6 +591,10 @@ export const FusionReading: React.FC = () => {
             {m["fusion.page.shareReading"]()}
           </button>
         </motion.div>
+
+        {fusionInsights.length > 0 && (
+          <JourneyNext currentFeature="fusion" />
+        )}
 
         {/* Sign-in prompt for guests */}
         {!session && (

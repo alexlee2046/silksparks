@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../lib/paths";
 import AIService from "../../services/ai";
@@ -12,6 +12,9 @@ import {
 } from "../../services/AstrologyEngine";
 import { motion } from "framer-motion";
 import { ElementBar } from "./ElementBar";
+import { JourneyNext } from "../../components/JourneyNext";
+import { useJourneyState } from "../../hooks/useJourneyState";
+import { useJourneyTrack } from "../../hooks/useJourneyTrack";
 
 // Lazy load Three.js CosmicBackground
 const CosmicBackground = lazy(() =>
@@ -25,6 +28,16 @@ export const AstrologyReport: React.FC = () => {
   const [planets, setPlanets] = React.useState<PlanetaryPositions | null>(null);
   const [elements, setElements] = React.useState<FiveElementsDistribution | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const { completeFeature } = useJourneyState();
+  const { track } = useJourneyTrack();
+
+  // Track journey completion when report loads
+  useEffect(() => {
+    if (analysis && !loading) {
+      completeFeature("astrology");
+      track("feature_complete", { feature: "astrology" });
+    }
+  }, [analysis, loading, completeFeature, track]);
 
   React.useEffect(() => {
     async function generate() {
@@ -286,6 +299,10 @@ export const AstrologyReport: React.FC = () => {
             </button>
           </div>
         </motion.div>
+
+        {analysis && !loading && (
+          <JourneyNext currentFeature="astrology" />
+        )}
       </div>
     </motion.div>
   );
