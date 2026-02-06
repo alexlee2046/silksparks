@@ -39,3 +39,6 @@ export {
 
 // Animation utilities
 export { useAnimationConfig, useAnimationsEnabled } from "./useAnimationConfig";
+
+// Journey state
+export { useJourneyState } from "./useJourneyState";
