@@ -5,7 +5,7 @@
  * and Western astrology insights.
  */
 
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import { saveArchive } from "../hooks/useArchives";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +28,8 @@ import { SEO } from "../components/SEO";
 import { JourneyNext } from "../components/JourneyNext";
 import { useJourneyState } from "../hooks/useJourneyState";
 import { useJourneyTrack } from "../hooks/useJourneyTrack";
+import { rituals } from "../lib/animations";
+import { useAnimationsEnabled } from "../hooks/useAnimationConfig";
 import * as m from "../src/paraglide/messages";
 
 // Day Master element mapping
@@ -84,6 +86,9 @@ export const FusionReading: React.FC = () => {
   const [showGuestForm, setShowGuestForm] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [ritualPhase, setRitualPhase] = useState<'idle' | 'generating' | 'done'>('idle');
+  const hasShownRitualRef = useRef(false);
+  const animationsEnabled = useAnimationsEnabled();
   const { completeFeature } = useJourneyState();
   const { track } = useJourneyTrack();
 
@@ -103,6 +108,25 @@ export const FusionReading: React.FC = () => {
   }, [session, isBirthDataComplete, user.birthData, tempData, hasTempData]);
 
   const canShowReading = !!(effectiveBirthData?.date && effectiveBirthData?.time);
+
+  // Trigger ritual animation when reading data first becomes available.
+  // Uses setTimeout callbacks to avoid synchronous setState-in-effect lint violation.
+  useEffect(() => {
+    if (!canShowReading || hasShownRitualRef.current) return;
+    hasShownRitualRef.current = true;
+
+    if (!animationsEnabled) {
+      const timer = setTimeout(() => setRitualPhase('done'), 0);
+      return () => clearTimeout(timer);
+    }
+
+    const startTimer = setTimeout(() => setRitualPhase('generating'), 0);
+    const endTimer = setTimeout(() => setRitualPhase('done'), 2400);
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(endTimer);
+    };
+  }, [canShowReading, animationsEnabled]);
 
   // Calculate Western planets
   const birthDate = effectiveBirthData?.date;
@@ -382,7 +406,40 @@ export const FusionReading: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-8">
+      {/* Ritual generation animation */}
+      <AnimatePresence>
+        {ritualPhase === 'generating' && (
+          <motion.div
+            key="ritual-generating"
+            className="flex flex-col items-center justify-center py-16 gap-6"
+            variants={rituals.generate}
+            initial="hidden"
+            animate="pulse"
+            exit="expand"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="text-6xl select-none"
+              role="img"
+              aria-label="Yin-yang symbol rotating"
+            >
+              ☯
+            </motion.div>
+            <p className="text-text-muted text-sm animate-pulse">
+              Aligning Eastern and Western wisdom...
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {ritualPhase === 'done' && (
+      <motion.div
+        className="max-w-4xl mx-auto px-4 md:px-8"
+        variants={animationsEnabled ? rituals.generate : undefined}
+        initial={animationsEnabled ? "hidden" : undefined}
+        animate={animationsEnabled ? "visible" : undefined}
+      >
         {/* Summary Card */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -612,7 +669,8 @@ export const FusionReading: React.FC = () => {
             </p>
           </motion.div>
         )}
-      </div>
+      </motion.div>
+      )}
     </div>
   );
 };
